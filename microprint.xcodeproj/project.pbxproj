@@ -1,0 +1,493 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		C90072AE1B3BF6660097594F /* TFPPrintJob.m in Sources */ = {isa = PBXBuildFile; fileRef = C90072AD1B3BF6660097594F /* TFPPrintJob.m */; };
+		C90072B11B3C51F20097594F /* TFStringScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = C90072B01B3C51F20097594F /* TFStringScanner.m */; };
+		C92B59DC1B4017DC00F38FA7 /* TFPRepeatingCommandSender.m in Sources */ = {isa = PBXBuildFile; fileRef = C92B59DB1B4017DC00F38FA7 /* TFPRepeatingCommandSender.m */; };
+		C92B59DF1B40205F00F38FA7 /* TFPCLIController.m in Sources */ = {isa = PBXBuildFile; fileRef = C92B59DE1B40205F00F38FA7 /* TFPCLIController.m */; };
+		C92B59E21B40252900F38FA7 /* TFPExtrusionOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = C92B59E11B40252900F38FA7 /* TFPExtrusionOperation.m */; };
+		C92B59E51B40272600F38FA7 /* TFPRaiseHeadOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = C92B59E41B40272600F38FA7 /* TFPRaiseHeadOperation.m */; };
+		C94F60051B3804CA0074EC41 /* TFPGCodePreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60041B3804CA0074EC41 /* TFPGCodePreprocessor.m */; };
+		C94F60091B38061E0074EC41 /* TFPFeedRateConversionPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60081B38061E0074EC41 /* TFPFeedRateConversionPreprocessor.m */; };
+		C94F60131B3814F30074EC41 /* TFPBasicPreparationPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60121B3814F30074EC41 /* TFPBasicPreparationPreprocessor.m */; };
+		C94F60161B3815290074EC41 /* TFPPrintParameters.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60151B3815290074EC41 /* TFPPrintParameters.m */; };
+		C96590E11B3F5CAA009D028F /* TFPThermalBondingPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C96590E01B3F5CAA009D028F /* TFPThermalBondingPreprocessor.m */; };
+		C96590E41B3F6469009D028F /* TFPWaveBondingPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C96590E31B3F6469009D028F /* TFPWaveBondingPreprocessor.m */; };
+		C99E871F1B3AA56D0099E79E /* GBCommandLineParser.m in Sources */ = {isa = PBXBuildFile; fileRef = C99E87181B3AA56D0099E79E /* GBCommandLineParser.m */; };
+		C99E87201B3AA56D0099E79E /* GBOptionsHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = C99E871A1B3AA56D0099E79E /* GBOptionsHelper.m */; };
+		C99E87211B3AA56D0099E79E /* GBPrint.m in Sources */ = {isa = PBXBuildFile; fileRef = C99E871C1B3AA56D0099E79E /* GBPrint.m */; };
+		C99E87221B3AA56D0099E79E /* GBSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = C99E871E1B3AA56D0099E79E /* GBSettings.m */; };
+		C99E87251B3AB4CD0099E79E /* TFPDryRunPrinter.m in Sources */ = {isa = PBXBuildFile; fileRef = C99E87241B3AB4CD0099E79E /* TFPDryRunPrinter.m */; };
+		C99E87281B3ACFD10099E79E /* TFPBacklashPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C99E87271B3ACFD10099E79E /* TFPBacklashPreprocessor.m */; };
+		C9E59B6C1B316AF400343D58 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B6B1B316AF400343D58 /* main.m */; };
+		C9E59B741B316BE800343D58 /* TFPGCode.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B731B316BE800343D58 /* TFPGCode.m */; };
+		C9E59B771B316F0D00343D58 /* Extras.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B761B316F0D00343D58 /* Extras.m */; };
+		C9E59B7A1B31700B00343D58 /* TFPGCodeProgram.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B791B31700B00343D58 /* TFPGCodeProgram.m */; };
+		C9E59B901B31838000343D58 /* TFP3DVector.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B8F1B31838000343D58 /* TFP3DVector.m */; };
+		C9FD1C461B3831F800F98FF1 /* TFDataBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = C9FD1C451B3831F800F98FF1 /* TFDataBuilder.m */; };
+		C9FD1C4B1B384ED400F98FF1 /* TFPBedCompensationPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C9FD1C4A1B384ED400F98FF1 /* TFPBedCompensationPreprocessor.m */; };
+		C9FD1C511B395E9600F98FF1 /* ORSSerialPort.m in Sources */ = {isa = PBXBuildFile; fileRef = C9FD1C4E1B395E9600F98FF1 /* ORSSerialPort.m */; };
+		C9FD1C521B395E9600F98FF1 /* ORSSerialPortManager.m in Sources */ = {isa = PBXBuildFile; fileRef = C9FD1C501B395E9600F98FF1 /* ORSSerialPortManager.m */; };
+		C9FD1C561B395EBE00F98FF1 /* ORSSerialRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = C9FD1C551B395EBE00F98FF1 /* ORSSerialRequest.m */; };
+		C9FD1C591B395FD000F98FF1 /* TFPPrinterManager.m in Sources */ = {isa = PBXBuildFile; fileRef = C9FD1C581B395FD000F98FF1 /* TFPPrinterManager.m */; };
+		C9FD1C5D1B39602000F98FF1 /* MAKVONotificationCenter.m in Sources */ = {isa = PBXBuildFile; fileRef = C9FD1C5C1B39602000F98FF1 /* MAKVONotificationCenter.m */; };
+		C9FD1C601B39618300F98FF1 /* TFPPrinter.m in Sources */ = {isa = PBXBuildFile; fileRef = C9FD1C5F1B39618300F98FF1 /* TFPPrinter.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C9E59B661B316AF400343D58 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		C90072AC1B3BF6660097594F /* TFPPrintJob.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPPrintJob.h; sourceTree = "<group>"; };
+		C90072AD1B3BF6660097594F /* TFPPrintJob.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPPrintJob.m; sourceTree = "<group>"; };
+		C90072AF1B3C51F20097594F /* TFStringScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFStringScanner.h; sourceTree = "<group>"; };
+		C90072B01B3C51F20097594F /* TFStringScanner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFStringScanner.m; sourceTree = "<group>"; };
+		C92B59DA1B4017DC00F38FA7 /* TFPRepeatingCommandSender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPRepeatingCommandSender.h; sourceTree = "<group>"; };
+		C92B59DB1B4017DC00F38FA7 /* TFPRepeatingCommandSender.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPRepeatingCommandSender.m; sourceTree = "<group>"; };
+		C92B59DD1B40205F00F38FA7 /* TFPCLIController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPCLIController.h; sourceTree = "<group>"; };
+		C92B59DE1B40205F00F38FA7 /* TFPCLIController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPCLIController.m; sourceTree = "<group>"; };
+		C92B59E01B40252900F38FA7 /* TFPExtrusionOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPExtrusionOperation.h; sourceTree = "<group>"; };
+		C92B59E11B40252900F38FA7 /* TFPExtrusionOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPExtrusionOperation.m; sourceTree = "<group>"; };
+		C92B59E31B40272600F38FA7 /* TFPRaiseHeadOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPRaiseHeadOperation.h; sourceTree = "<group>"; };
+		C92B59E41B40272600F38FA7 /* TFPRaiseHeadOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPRaiseHeadOperation.m; sourceTree = "<group>"; };
+		C94F60031B3804CA0074EC41 /* TFPGCodePreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPGCodePreprocessor.h; sourceTree = "<group>"; };
+		C94F60041B3804CA0074EC41 /* TFPGCodePreprocessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPGCodePreprocessor.m; sourceTree = "<group>"; };
+		C94F60071B38061E0074EC41 /* TFPFeedRateConversionPreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPFeedRateConversionPreprocessor.h; sourceTree = "<group>"; };
+		C94F60081B38061E0074EC41 /* TFPFeedRateConversionPreprocessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPFeedRateConversionPreprocessor.m; sourceTree = "<group>"; };
+		C94F60111B3814F30074EC41 /* TFPBasicPreparationPreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPBasicPreparationPreprocessor.h; sourceTree = "<group>"; };
+		C94F60121B3814F30074EC41 /* TFPBasicPreparationPreprocessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPBasicPreparationPreprocessor.m; sourceTree = "<group>"; };
+		C94F60141B3815290074EC41 /* TFPPrintParameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPPrintParameters.h; sourceTree = "<group>"; };
+		C94F60151B3815290074EC41 /* TFPPrintParameters.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPPrintParameters.m; sourceTree = "<group>"; };
+		C96590DF1B3F5CAA009D028F /* TFPThermalBondingPreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPThermalBondingPreprocessor.h; sourceTree = "<group>"; };
+		C96590E01B3F5CAA009D028F /* TFPThermalBondingPreprocessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPThermalBondingPreprocessor.m; sourceTree = "<group>"; };
+		C96590E21B3F6469009D028F /* TFPWaveBondingPreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPWaveBondingPreprocessor.h; sourceTree = "<group>"; };
+		C96590E31B3F6469009D028F /* TFPWaveBondingPreprocessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPWaveBondingPreprocessor.m; sourceTree = "<group>"; };
+		C99E87161B3AA56D0099E79E /* GBCli.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBCli.h; sourceTree = "<group>"; };
+		C99E87171B3AA56D0099E79E /* GBCommandLineParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBCommandLineParser.h; sourceTree = "<group>"; };
+		C99E87181B3AA56D0099E79E /* GBCommandLineParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBCommandLineParser.m; sourceTree = "<group>"; };
+		C99E87191B3AA56D0099E79E /* GBOptionsHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBOptionsHelper.h; sourceTree = "<group>"; };
+		C99E871A1B3AA56D0099E79E /* GBOptionsHelper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBOptionsHelper.m; sourceTree = "<group>"; };
+		C99E871B1B3AA56D0099E79E /* GBPrint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBPrint.h; sourceTree = "<group>"; };
+		C99E871C1B3AA56D0099E79E /* GBPrint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBPrint.m; sourceTree = "<group>"; };
+		C99E871D1B3AA56D0099E79E /* GBSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBSettings.h; sourceTree = "<group>"; };
+		C99E871E1B3AA56D0099E79E /* GBSettings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBSettings.m; sourceTree = "<group>"; };
+		C99E87231B3AB4CD0099E79E /* TFPDryRunPrinter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPDryRunPrinter.h; sourceTree = "<group>"; };
+		C99E87241B3AB4CD0099E79E /* TFPDryRunPrinter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPDryRunPrinter.m; sourceTree = "<group>"; };
+		C99E87261B3ACFD10099E79E /* TFPBacklashPreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPBacklashPreprocessor.h; sourceTree = "<group>"; };
+		C99E87271B3ACFD10099E79E /* TFPBacklashPreprocessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPBacklashPreprocessor.m; sourceTree = "<group>"; };
+		C9E59B681B316AF400343D58 /* microprint */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = microprint; sourceTree = BUILT_PRODUCTS_DIR; };
+		C9E59B6B1B316AF400343D58 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		C9E59B721B316BE800343D58 /* TFPGCode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPGCode.h; sourceTree = "<group>"; };
+		C9E59B731B316BE800343D58 /* TFPGCode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPGCode.m; sourceTree = "<group>"; };
+		C9E59B751B316F0D00343D58 /* Extras.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Extras.h; sourceTree = "<group>"; };
+		C9E59B761B316F0D00343D58 /* Extras.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Extras.m; sourceTree = "<group>"; };
+		C9E59B781B31700B00343D58 /* TFPGCodeProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPGCodeProgram.h; sourceTree = "<group>"; };
+		C9E59B791B31700B00343D58 /* TFPGCodeProgram.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPGCodeProgram.m; sourceTree = "<group>"; };
+		C9E59B8E1B31838000343D58 /* TFP3DVector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFP3DVector.h; sourceTree = "<group>"; };
+		C9E59B8F1B31838000343D58 /* TFP3DVector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFP3DVector.m; sourceTree = "<group>"; };
+		C9FD1C441B3831F800F98FF1 /* TFDataBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFDataBuilder.h; sourceTree = "<group>"; };
+		C9FD1C451B3831F800F98FF1 /* TFDataBuilder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFDataBuilder.m; sourceTree = "<group>"; };
+		C9FD1C491B384ED400F98FF1 /* TFPBedCompensationPreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPBedCompensationPreprocessor.h; sourceTree = "<group>"; };
+		C9FD1C4A1B384ED400F98FF1 /* TFPBedCompensationPreprocessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPBedCompensationPreprocessor.m; sourceTree = "<group>"; };
+		C9FD1C4D1B395E9600F98FF1 /* ORSSerialPort.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ORSSerialPort.h; sourceTree = "<group>"; };
+		C9FD1C4E1B395E9600F98FF1 /* ORSSerialPort.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ORSSerialPort.m; sourceTree = "<group>"; };
+		C9FD1C4F1B395E9600F98FF1 /* ORSSerialPortManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ORSSerialPortManager.h; sourceTree = "<group>"; };
+		C9FD1C501B395E9600F98FF1 /* ORSSerialPortManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ORSSerialPortManager.m; sourceTree = "<group>"; };
+		C9FD1C541B395EBE00F98FF1 /* ORSSerialRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ORSSerialRequest.h; sourceTree = "<group>"; };
+		C9FD1C551B395EBE00F98FF1 /* ORSSerialRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ORSSerialRequest.m; sourceTree = "<group>"; };
+		C9FD1C571B395FD000F98FF1 /* TFPPrinterManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPPrinterManager.h; sourceTree = "<group>"; };
+		C9FD1C581B395FD000F98FF1 /* TFPPrinterManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPPrinterManager.m; sourceTree = "<group>"; };
+		C9FD1C5B1B39602000F98FF1 /* MAKVONotificationCenter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MAKVONotificationCenter.h; sourceTree = "<group>"; };
+		C9FD1C5C1B39602000F98FF1 /* MAKVONotificationCenter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MAKVONotificationCenter.m; sourceTree = "<group>"; };
+		C9FD1C5E1B39618300F98FF1 /* TFPPrinter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPPrinter.h; sourceTree = "<group>"; };
+		C9FD1C5F1B39618300F98FF1 /* TFPPrinter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPPrinter.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C9E59B651B316AF400343D58 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		C94F60061B3805AB0074EC41 /* Preprocessing */ = {
+			isa = PBXGroup;
+			children = (
+				C94F60031B3804CA0074EC41 /* TFPGCodePreprocessor.h */,
+				C94F60041B3804CA0074EC41 /* TFPGCodePreprocessor.m */,
+				C94F60111B3814F30074EC41 /* TFPBasicPreparationPreprocessor.h */,
+				C94F60121B3814F30074EC41 /* TFPBasicPreparationPreprocessor.m */,
+				C9FD1C491B384ED400F98FF1 /* TFPBedCompensationPreprocessor.h */,
+				C9FD1C4A1B384ED400F98FF1 /* TFPBedCompensationPreprocessor.m */,
+				C99E87261B3ACFD10099E79E /* TFPBacklashPreprocessor.h */,
+				C99E87271B3ACFD10099E79E /* TFPBacklashPreprocessor.m */,
+				C94F60071B38061E0074EC41 /* TFPFeedRateConversionPreprocessor.h */,
+				C94F60081B38061E0074EC41 /* TFPFeedRateConversionPreprocessor.m */,
+				C96590DF1B3F5CAA009D028F /* TFPThermalBondingPreprocessor.h */,
+				C96590E01B3F5CAA009D028F /* TFPThermalBondingPreprocessor.m */,
+				C96590E21B3F6469009D028F /* TFPWaveBondingPreprocessor.h */,
+				C96590E31B3F6469009D028F /* TFPWaveBondingPreprocessor.m */,
+			);
+			name = Preprocessing;
+			sourceTree = "<group>";
+		};
+		C96590DB1B3DAAFE009D028F /* Printer */ = {
+			isa = PBXGroup;
+			children = (
+				C9FD1C5E1B39618300F98FF1 /* TFPPrinter.h */,
+				C9FD1C5F1B39618300F98FF1 /* TFPPrinter.m */,
+				C99E87231B3AB4CD0099E79E /* TFPDryRunPrinter.h */,
+				C99E87241B3AB4CD0099E79E /* TFPDryRunPrinter.m */,
+				C9FD1C571B395FD000F98FF1 /* TFPPrinterManager.h */,
+				C9FD1C581B395FD000F98FF1 /* TFPPrinterManager.m */,
+			);
+			name = Printer;
+			sourceTree = "<group>";
+		};
+		C96590DC1B3DAB29009D028F /* G-code */ = {
+			isa = PBXGroup;
+			children = (
+				C9E59B781B31700B00343D58 /* TFPGCodeProgram.h */,
+				C9E59B791B31700B00343D58 /* TFPGCodeProgram.m */,
+				C9E59B721B316BE800343D58 /* TFPGCode.h */,
+				C9E59B731B316BE800343D58 /* TFPGCode.m */,
+			);
+			name = "G-code";
+			sourceTree = "<group>";
+		};
+		C96590DD1B3DAB30009D028F /* Operations */ = {
+			isa = PBXGroup;
+			children = (
+				C90072AC1B3BF6660097594F /* TFPPrintJob.h */,
+				C90072AD1B3BF6660097594F /* TFPPrintJob.m */,
+				C94F60141B3815290074EC41 /* TFPPrintParameters.h */,
+				C94F60151B3815290074EC41 /* TFPPrintParameters.m */,
+				C92B59DA1B4017DC00F38FA7 /* TFPRepeatingCommandSender.h */,
+				C92B59DB1B4017DC00F38FA7 /* TFPRepeatingCommandSender.m */,
+				C92B59E01B40252900F38FA7 /* TFPExtrusionOperation.h */,
+				C92B59E11B40252900F38FA7 /* TFPExtrusionOperation.m */,
+				C92B59E31B40272600F38FA7 /* TFPRaiseHeadOperation.h */,
+				C92B59E41B40272600F38FA7 /* TFPRaiseHeadOperation.m */,
+			);
+			name = Operations;
+			sourceTree = "<group>";
+		};
+		C96590DE1B3DAC56009D028F /* Other */ = {
+			isa = PBXGroup;
+			children = (
+				C9E59B8E1B31838000343D58 /* TFP3DVector.h */,
+				C9E59B8F1B31838000343D58 /* TFP3DVector.m */,
+				C9E59B751B316F0D00343D58 /* Extras.h */,
+				C9E59B761B316F0D00343D58 /* Extras.m */,
+			);
+			name = Other;
+			sourceTree = "<group>";
+		};
+		C99E87151B3AA56D0099E79E /* GBCli */ = {
+			isa = PBXGroup;
+			children = (
+				C99E87161B3AA56D0099E79E /* GBCli.h */,
+				C99E87171B3AA56D0099E79E /* GBCommandLineParser.h */,
+				C99E87181B3AA56D0099E79E /* GBCommandLineParser.m */,
+				C99E87191B3AA56D0099E79E /* GBOptionsHelper.h */,
+				C99E871A1B3AA56D0099E79E /* GBOptionsHelper.m */,
+				C99E871B1B3AA56D0099E79E /* GBPrint.h */,
+				C99E871C1B3AA56D0099E79E /* GBPrint.m */,
+				C99E871D1B3AA56D0099E79E /* GBSettings.h */,
+				C99E871E1B3AA56D0099E79E /* GBSettings.m */,
+			);
+			name = GBCli;
+			path = src;
+			sourceTree = "<group>";
+		};
+		C9E59B5F1B316AF400343D58 = {
+			isa = PBXGroup;
+			children = (
+				C9E59B6A1B316AF400343D58 /* microprint */,
+				C9E59B691B316AF400343D58 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		C9E59B691B316AF400343D58 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C9E59B681B316AF400343D58 /* microprint */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C9E59B6A1B316AF400343D58 /* microprint */ = {
+			isa = PBXGroup;
+			children = (
+				C9E59B6B1B316AF400343D58 /* main.m */,
+				C92B59DD1B40205F00F38FA7 /* TFPCLIController.h */,
+				C92B59DE1B40205F00F38FA7 /* TFPCLIController.m */,
+				C96590DB1B3DAAFE009D028F /* Printer */,
+				C96590DD1B3DAB30009D028F /* Operations */,
+				C96590DC1B3DAB29009D028F /* G-code */,
+				C94F60061B3805AB0074EC41 /* Preprocessing */,
+				C96590DE1B3DAC56009D028F /* Other */,
+				C9FD1C5A1B39601900F98FF1 /* External */,
+			);
+			name = microprint;
+			path = microprint;
+			sourceTree = "<group>";
+		};
+		C9FD1C531B395E9900F98FF1 /* ORSSerialPort */ = {
+			isa = PBXGroup;
+			children = (
+				C9FD1C4D1B395E9600F98FF1 /* ORSSerialPort.h */,
+				C9FD1C4E1B395E9600F98FF1 /* ORSSerialPort.m */,
+				C9FD1C4F1B395E9600F98FF1 /* ORSSerialPortManager.h */,
+				C9FD1C501B395E9600F98FF1 /* ORSSerialPortManager.m */,
+				C9FD1C541B395EBE00F98FF1 /* ORSSerialRequest.h */,
+				C9FD1C551B395EBE00F98FF1 /* ORSSerialRequest.m */,
+			);
+			name = ORSSerialPort;
+			sourceTree = "<group>";
+		};
+		C9FD1C5A1B39601900F98FF1 /* External */ = {
+			isa = PBXGroup;
+			children = (
+				C9FD1C441B3831F800F98FF1 /* TFDataBuilder.h */,
+				C9FD1C451B3831F800F98FF1 /* TFDataBuilder.m */,
+				C90072AF1B3C51F20097594F /* TFStringScanner.h */,
+				C90072B01B3C51F20097594F /* TFStringScanner.m */,
+				C99E87151B3AA56D0099E79E /* GBCli */,
+				C9FD1C531B395E9900F98FF1 /* ORSSerialPort */,
+				C9FD1C5B1B39602000F98FF1 /* MAKVONotificationCenter.h */,
+				C9FD1C5C1B39602000F98FF1 /* MAKVONotificationCenter.m */,
+			);
+			name = External;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C9E59B671B316AF400343D58 /* microprint */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C9E59B6F1B316AF400343D58 /* Build configuration list for PBXNativeTarget "microprint" */;
+			buildPhases = (
+				C9E59B641B316AF400343D58 /* Sources */,
+				C9E59B651B316AF400343D58 /* Frameworks */,
+				C9E59B661B316AF400343D58 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = microprint;
+			productName = microprint;
+			productReference = C9E59B681B316AF400343D58 /* microprint */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C9E59B601B316AF400343D58 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0630;
+				ORGANIZATIONNAME = "Tomas Franzén";
+				TargetAttributes = {
+					C9E59B671B316AF400343D58 = {
+						CreatedOnToolsVersion = 6.3.2;
+					};
+				};
+			};
+			buildConfigurationList = C9E59B631B316AF400343D58 /* Build configuration list for PBXProject "microprint" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = C9E59B5F1B316AF400343D58;
+			productRefGroup = C9E59B691B316AF400343D58 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C9E59B671B316AF400343D58 /* microprint */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C9E59B641B316AF400343D58 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C90072AE1B3BF6660097594F /* TFPPrintJob.m in Sources */,
+				C9E59B901B31838000343D58 /* TFP3DVector.m in Sources */,
+				C9E59B741B316BE800343D58 /* TFPGCode.m in Sources */,
+				C9FD1C5D1B39602000F98FF1 /* MAKVONotificationCenter.m in Sources */,
+				C99E87281B3ACFD10099E79E /* TFPBacklashPreprocessor.m in Sources */,
+				C94F60091B38061E0074EC41 /* TFPFeedRateConversionPreprocessor.m in Sources */,
+				C96590E41B3F6469009D028F /* TFPWaveBondingPreprocessor.m in Sources */,
+				C92B59DC1B4017DC00F38FA7 /* TFPRepeatingCommandSender.m in Sources */,
+				C92B59E51B40272600F38FA7 /* TFPRaiseHeadOperation.m in Sources */,
+				C9E59B6C1B316AF400343D58 /* main.m in Sources */,
+				C9FD1C461B3831F800F98FF1 /* TFDataBuilder.m in Sources */,
+				C99E87201B3AA56D0099E79E /* GBOptionsHelper.m in Sources */,
+				C90072B11B3C51F20097594F /* TFStringScanner.m in Sources */,
+				C92B59E21B40252900F38FA7 /* TFPExtrusionOperation.m in Sources */,
+				C9FD1C511B395E9600F98FF1 /* ORSSerialPort.m in Sources */,
+				C9E59B771B316F0D00343D58 /* Extras.m in Sources */,
+				C9FD1C601B39618300F98FF1 /* TFPPrinter.m in Sources */,
+				C99E87221B3AA56D0099E79E /* GBSettings.m in Sources */,
+				C9FD1C4B1B384ED400F98FF1 /* TFPBedCompensationPreprocessor.m in Sources */,
+				C9FD1C591B395FD000F98FF1 /* TFPPrinterManager.m in Sources */,
+				C99E87251B3AB4CD0099E79E /* TFPDryRunPrinter.m in Sources */,
+				C92B59DF1B40205F00F38FA7 /* TFPCLIController.m in Sources */,
+				C99E871F1B3AA56D0099E79E /* GBCommandLineParser.m in Sources */,
+				C9FD1C561B395EBE00F98FF1 /* ORSSerialRequest.m in Sources */,
+				C96590E11B3F5CAA009D028F /* TFPThermalBondingPreprocessor.m in Sources */,
+				C99E87211B3AA56D0099E79E /* GBPrint.m in Sources */,
+				C94F60051B3804CA0074EC41 /* TFPGCodePreprocessor.m in Sources */,
+				C94F60161B3815290074EC41 /* TFPPrintParameters.m in Sources */,
+				C9FD1C521B395E9600F98FF1 /* ORSSerialPortManager.m in Sources */,
+				C94F60131B3814F30074EC41 /* TFPBasicPreparationPreprocessor.m in Sources */,
+				C9E59B7A1B31700B00343D58 /* TFPGCodeProgram.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		C9E59B6D1B316AF400343D58 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		C9E59B6E1B316AF400343D58 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		C9E59B701B316AF400343D58 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INSTALL_PATH = /;
+				PRODUCT_NAME = microprint;
+			};
+			name = Debug;
+		};
+		C9E59B711B316AF400343D58 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INSTALL_PATH = /;
+				PRODUCT_NAME = microprint;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C9E59B631B316AF400343D58 /* Build configuration list for PBXProject "microprint" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C9E59B6D1B316AF400343D58 /* Debug */,
+				C9E59B6E1B316AF400343D58 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C9E59B6F1B316AF400343D58 /* Build configuration list for PBXNativeTarget "microprint" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C9E59B701B316AF400343D58 /* Debug */,
+				C9E59B711B316AF400343D58 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C9E59B601B316AF400343D58 /* Project object */;
+}
