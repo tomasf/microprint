@@ -64,9 +64,9 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 - (void)sendGCode:(TFPGCode*)code {
 	__weak __typeof__(self) weakSelf = self;
 	
-	if(self.parameters.verbose) {
+//	if(self.parameters.verbose) {
 		TFLog(@"Sending %@", code);
-	}
+//	}
 	
 	uint64_t sendTime = TFNanosecondTime();
 	self.pendingRequestCount++;
