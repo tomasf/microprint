@@ -105,8 +105,10 @@
 			TFLog(@"No connected printer found!");
 			exit(EXIT_FAILURE);
 		}
+        			TFLog(@"M3D printer found!");
 		
 		[weakSelf.printer establishConnectionWithCompletionHandler:^(NSError *error) {
+            	TFLog(@"M3D printer connected!");
 			TFPPrinter *printer = weakSelf.printer;
 			if(!error) {
 				TFLog(@"Connected to printer %@ with firmware version %@.", printer.serialNumber, printer.firmwareVersion);

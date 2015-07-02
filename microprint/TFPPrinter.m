@@ -61,11 +61,12 @@
 	if(self.connectionFinished) {
 		completionHandler(nil);
 	} else {
-		if(!self.pendingConnection) {
-			[self.serialPort open];
-			self.pendingConnection = YES;
-		}
 		[self.establishBlocks addObject:[completionHandler copy]];
+        self.serialPort.delegate = self;
+        if(!self.pendingConnection) {
+			self.pendingConnection = YES;
+            [self.serialPort open];
+		}
 	}
 }
 
@@ -125,13 +126,12 @@
 
 
 - (void)sendGCode:(TFPGCode*)GCode responseHandler:(void(^)(BOOL success, NSString *value))block {
-	[self.serialPort sendData:GCode.repetierV2Representation];
-	
 	if([GCode hasField:'N']) {
 		self.numberedResponseListenerBlocks[@((NSUInteger)[GCode valueForField:'N'])] = [block copy];
 	}else{
 		[self.unnumberedResponseListenerBlocks addObject:[block copy]];
 	}
+    [self.serialPort sendData:GCode.repetierV2Representation];
 }
 
 
@@ -244,10 +244,23 @@
 		TFLog(@"* %@", incomingLine);
 	}
 	
-	if([scanner scanString:@"wait"]) {
-		// Do nothing
-		
-	}else if([scanner scanString:@"ok"]){
+	if([scanner scanString:@"wait"] || [scanner scanString:@"e1"]) {
+		if(self.serialNumber) {
+            // Do nothing, printer is telling us it's waiting (for movement)
+        } else {
+            // Bootloader? Who knows, just whack it with another M115
+            TFLog(@"* RE-SENDING M115");
+            TFPGCode *getCapabilities = [TFPGCode codeWithString:@"M115"];
+            [self.serialPort sendData:getCapabilities.repetierV2Representation];
+        }
+    } else if([scanner scanString:@"B004"]){
+        // Bootloader for sure, whack it with a Q then resend M115
+        TFLog(@"* SENDING Q and M115");
+        TFPGCode *getCapabilities = [TFPGCode codeWithString:@"Q"];
+        [self.serialPort sendData:getCapabilities.repetierV2Representation];
+        getCapabilities = [TFPGCode codeWithString:@"M115"];
+        [self.serialPort sendData:getCapabilities.repetierV2Representation];
+	} else if([scanner scanString:@"ok"]){
 		NSInteger lineNumber = -1;
 		
 		NSUInteger pos = scanner.location;
@@ -277,15 +290,15 @@
 			}
 		}
 		
-	}else if([scanner scanString:@"T:"]) {
+	} else if([scanner scanString:@"T:"]) {
 		double temperature = [[scanner scanToString:@"\n"] doubleValue];
 		[self processTemperatureUpdate:temperature];
 		
-	}else if([scanner scanString:@"Resend:"]) {
+	} else if([scanner scanString:@"Resend:"]) {
 		NSInteger lineNumber = [[scanner scanToString:@"\n"] integerValue];
 		[self handleResendRequest:lineNumber];
 	
-	}else{
+	} else {
 		TFLog(@"Unhandled input: %@", incomingLine);
 	}
 }
@@ -304,7 +317,9 @@
 	}
 }
 
-
+/*
+ * THis is where data from serial port gets handed to us.
+ */
 - (void)serialPort:(ORSSerialPort * __nonnull)serialPort didReceiveData:(NSData * __nonnull)data {
 	[self.incomingData appendData:data];
 	[self processIncomingData];

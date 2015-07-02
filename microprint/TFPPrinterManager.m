@@ -13,8 +13,8 @@
 #import "ORSSerialPortManager.h"
 
 
-static const uint16_t M3DMicroUSBVendorID = 0x03EB;
-static const uint16_t M3DMicroUSBProductID = 0x2404;
+//static const uint16_t M3DMicroUSBVendorID = 0x03EB;
+//static const uint16_t M3DMicroUSBProductID = 0x2404;
 
 
 @interface TFPPrinterManager ()
@@ -35,10 +35,11 @@ static const uint16_t M3DMicroUSBProductID = 0x2404;
 	if(!(self = [super init])) return nil;
 	
 	self.printers = [[[ORSSerialPortManager sharedSerialPortManager].availablePorts tf_selectWithBlock:^BOOL(ORSSerialPort *port) {
-		uint16_t vendorID, productID;
-		if([port getUSBVendorID:&vendorID productID:&productID]) {
-			return vendorID == M3DMicroUSBVendorID && productID == M3DMicroUSBProductID;
-		}else{
+
+        if([port.name hasPrefix: @"usbmodem"]) {
+            printf("Found Modem POrt: %s\n",[port.name UTF8String]);
+            return YES;
+		} else {
 			return NO;
 		}
 	}] tf_mapWithBlock:^TFPPrinter*(ORSSerialPort *serialPort) {
