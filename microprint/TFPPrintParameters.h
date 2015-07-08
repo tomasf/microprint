@@ -42,6 +42,7 @@ typedef struct {
 
 @property (readwrite) TFPBedLevelOffsets bedLevelOffsets;
 @property (readwrite) TFPBacklashValues backlashValues;
+@property (readwrite) double backlashCompensationSpeed;
 
 @property (readwrite) BOOL useWaveBonding;
 @property (readwrite) BOOL useBacklashCompensation;

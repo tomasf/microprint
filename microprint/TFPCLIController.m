@@ -54,7 +54,8 @@
 	
 	[factoryDefaults setBool:YES forKey:@"wavebonding"];
 	[factoryDefaults setBool:YES forKey:@"backlash"];
-	
+	[factoryDefaults setInteger:1200 forKey:@"backlashSpeed"];
+
 	[factoryDefaults setBool:NO forKey:@"dryrun"];
 	[factoryDefaults setBool:NO forKey:@"help"];
 	[factoryDefaults setBool:NO forKey:@"verbose"];
@@ -74,7 +75,8 @@
 	
 	[parser registerOption:@"wavebonding" shortcut:0 requirement:GBValueNone];
 	[parser registerOption:@"backlash" shortcut:0 requirement:GBValueNone];
-	
+	[parser registerOption:@"backlashSpeed" shortcut:0 requirement:GBValueOptional];
+
 	[parser registerSettings:settings];
 	if(![parser parseOptionsWithArguments:argv count:argc]) {
 		exit(EXIT_FAILURE);
@@ -132,7 +134,7 @@
 	TFLog(@"");
 	
 	TFLog(@"Commands:");
-	TFLog(@"  print <gcode-path> [--temperature 210] [--filament PLA] [--backlash] [--wavebonding]");
+	TFLog(@"  print <gcode-path> [--temperature 210] [--filament PLA] [--backlash] [--backlashSpeed 1200] [--wavebonding]");
 	TFLog(@"    Prints a G-code file.");
 	
 	TFLog(@"  preprocess <gcode-path> [--output path]");
@@ -158,6 +160,7 @@
 	TFLog(@"  --filament <string>: Filament type. Valid options are PLA, ABS, HIPS and Other. Affects behavior in some preprocessors. Also sets default temperature.");
 	TFLog(@"  --wavebonding: Use wave bonding. On by default. Turn off with --wavebonding=0");
 	TFLog(@"  --backlash: Use backlash compensation. On by default. Turn off with --backlash=0");
+	TFLog(@"  --backlashSpeed <number>: The 'F' speed to use for inserted backlash compensation codes. Default is currently 1200, which seems to produce better prints. Old M3D value is 2900.");
 }
 
 
@@ -168,6 +171,7 @@
 	params.verbose = [settings boolForKey:@"verbose"];
 	params.useWaveBonding = [settings boolForKey:@"wavebonding"];
 	params.useBacklashCompensation = [settings boolForKey:@"backlash"];
+	params.backlashCompensationSpeed = [settings floatForKey:@"backlashSpeed"];
 	
 	params.filamentType = [self parseFilamentType:[settings objectForKey:@"filament"]];
 	if(params.filamentType == TFPFilamentTypeUnknown) {
@@ -292,7 +296,7 @@
 		[printer fetchBacklashValuesWithCompletionHandler:^(BOOL success, TFPBacklashValues values) {
 			params.backlashValues = values;
 			
-			TFLog(@"Pre-processing using bed level %@ and backlash %@", params.bedLevelOffsetsAsString, params.backlashValuesAsString);
+			TFLog(@"Pre-processing using bed level %@ and backlash %@ (speed %.0f)", params.bedLevelOffsetsAsString, params.backlashValuesAsString, params.backlashCompensationSpeed);
 			
 			uint64_t start = TFNanosecondTime();
 			program = [weakSelf programByPreprocessingProgram:program usingParameters:params];

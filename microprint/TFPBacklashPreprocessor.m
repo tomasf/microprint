@@ -76,17 +76,15 @@ typedef NS_ENUM(NSUInteger, Direction) {
 
 				if (xDirection != lastXDirection && lastXDirection != DirectionNeither)
 				{
-					xAdjustment += ((xDirection != DirectionPositive) ? (-backlashX) : backlashX);
+					xAdjustment += (xDirection == DirectionPositive) ? backlashX : -backlashX;
 					adjustmentCode = [adjustmentCode codeBySettingField:'X' toValue:X + xAdjustment];
-					//adjustmentCode = [adjustmentCode codeBySettingField:'Y' toValue:Y + yAdjustment];
 				}
 				if (yDirection != lastYDirection && lastYDirection != DirectionNeither)
 				{
-					yAdjustment += ((yDirection != DirectionPositive) ? (-backlashY) : backlashY);
-					//adjustmentCode = [adjustmentCode codeBySettingField:'X' toValue:X + xAdjustment];
+					yAdjustment += (yDirection == DirectionPositive) ? backlashY : -backlashY;
 					adjustmentCode = [adjustmentCode codeBySettingField:'Y' toValue:Y + yAdjustment];
 				}
-				adjustmentCode = [adjustmentCode codeBySettingField:'F' toValue:2900];
+				adjustmentCode = [adjustmentCode codeBySettingField:'F' toValue:parameters.backlashCompensationSpeed];
 				didAddAdjustmentCode = true;
 				[output addObject:adjustmentCode];
 			}

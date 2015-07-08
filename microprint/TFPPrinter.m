@@ -60,7 +60,7 @@
 - (void)establishConnectionWithCompletionHandler:(void(^)(NSError *error))completionHandler {
 	if(self.connectionFinished) {
 		completionHandler(nil);
-	} else {
+	} else {		
 		if(!self.pendingConnection) {
 			[self.serialPort open];
 			self.pendingConnection = YES;
