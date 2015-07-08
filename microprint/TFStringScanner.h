@@ -23,10 +23,12 @@ typedef enum {
 
 - (unichar)scanCharacter;
 - (NSString*)scanForLength:(NSUInteger)length;
+- (NSString*)scanStringFromCharacterSet:(NSCharacterSet*)set;
 
 - (BOOL)scanString:(NSString*)substring;
 - (NSString*)scanToString:(NSString*)substring;
 - (BOOL)scanWhitespace;
+- (NSString*)scanToEnd;
 
 - (NSString*)scanToken;
 - (BOOL)scanToken:(NSString*)matchToken;

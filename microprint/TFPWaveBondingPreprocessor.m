@@ -35,6 +35,7 @@
 			}
 			*outLastTackPoint = currLine;
 			*cornercount = *cornercount + 1;
+			return result;
 		}
 		
 	} else if (*cornercount >= 1 && [self isSharpCornerFromLine:currLine toLine:*outLastTackPoint]) {

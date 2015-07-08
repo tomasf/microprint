@@ -61,11 +61,12 @@
 	if(self.connectionFinished) {
 		completionHandler(nil);
 	} else {		
-		if(!self.pendingConnection) {
-			[self.serialPort open];
-			self.pendingConnection = YES;
-		}
 		[self.establishBlocks addObject:[completionHandler copy]];
+
+		if(!self.pendingConnection) {
+			self.pendingConnection = YES;
+			[self.serialPort open];
+		}
 	}
 }
 
@@ -285,6 +286,15 @@
 		NSInteger lineNumber = [[scanner scanToString:@"\n"] integerValue];
 		[self handleResendRequest:lineNumber];
 	
+	}else if([scanner scanString:@"Error:"]) {
+		NSString *errorText = [scanner scanToEnd];
+		
+		if(self.unnumberedResponseListenerBlocks.count) {
+			void(^block)(BOOL, NSString*) = self.unnumberedResponseListenerBlocks.firstObject;
+			[self.unnumberedResponseListenerBlocks removeObjectAtIndex:0];
+			block(NO, errorText);
+		}
+		
 	}else{
 		TFLog(@"Unhandled input: %@", incomingLine);
 	}
@@ -392,6 +402,18 @@
 	[self sendGCode:code responseHandler:^(BOOL success, NSString *value) {
 		completionHandler(success);
 	}];
+}
+
+
+const double maxMMPerSecond = 60.001;
+
++ (double)convertFeedRate:(double)feedRate {
+	feedRate /= 60;
+	feedRate = MIN(feedRate, maxMMPerSecond);
+	
+	double factor = feedRate / maxMMPerSecond;
+	feedRate = 30 + (1 - factor) * 800;
+	return feedRate;
 }
 
 

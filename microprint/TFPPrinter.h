@@ -50,4 +50,6 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 
 @property (readonly) double heaterTemperature; // Observable
 @property BOOL verboseMode;
+
++ (double)convertFeedRate:(double)feedRate;
 @end

@@ -13,9 +13,7 @@
 
 #import "TFPFeedRateConversionPreprocessor.h"
 #import "TFPGCode.h"
-
-
-const double maxMMPerSecond = 60.001;
+#import "TFPPrinter.h"
 
 
 @implementation TFPFeedRateConversionPreprocessor
@@ -27,13 +25,7 @@ const double maxMMPerSecond = 60.001;
 	for(__strong TFPGCode *line in self.program.lines) {
 		if([line hasField:'G'] && [line hasField:'F']) {
 			double feedRate = line.feedRate;
-			
-			feedRate /= 60;
-			feedRate = MIN(feedRate, maxMMPerSecond);
-			
-			double factor = feedRate / maxMMPerSecond;
-			feedRate = 30 + (1 - factor) * 800;
-			
+			feedRate = [TFPPrinter convertFeedRate:feedRate];
 			line = [line codeBySettingField:'F' toValue:feedRate];
 		}
 		

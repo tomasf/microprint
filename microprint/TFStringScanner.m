@@ -150,6 +150,13 @@ static NSCharacterSet *digitCharacters, *alphaCharacters, *alphanumericCharacter
 }
 
 
+- (NSString*)scanToEnd {
+	NSString *string = [self.string substringFromIndex:self.location];
+	self.location = self.string.length;
+	return string;
+}
+
+
 - (NSString*)peekToken {
 	NSUInteger loc = self.location;
 	NSString *token = [self scanToken];

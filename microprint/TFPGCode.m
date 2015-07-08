@@ -7,6 +7,7 @@
 #import "TFPGCode.h"
 #import "Extras.h"
 #import "TFDataBuilder.h"
+#import "TFStringScanner.h"
 
 
 @interface TFPGCode ()
@@ -52,31 +53,37 @@ const char *canonicalFieldOrder = "NMGXYZE FTSP    IJRD";
 
 
 - (instancetype)initWithString:(NSString*)string {
-	NSUInteger commentStart = [string rangeOfString:@";"].location;
+	TFStringScanner *scanner = [TFStringScanner scannerWithString:string];
 	NSString *comment;
-
-	if(commentStart != NSNotFound) {
-		comment = [string substringFromIndex:commentStart+1];
-		string = [string substringToIndex:commentStart];
-	}
-	
-	/*
-	static NSRegularExpression *regex;
-	if(!regex) {
-		regex = [NSRegularExpression regularExpressionWithPattern:@"([A-Z]) (\\d)" options:0 error:NULL];
-	}
-	string = [regex stringByReplacingMatchesInString:string options:0 range:NSMakeRange(0, string.length) withTemplate:@"$1$2"];
-	*/
-	
-	NSArray *fieldStrings = [string componentsSeparatedByString:@" "];
-	fieldStrings = [fieldStrings filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"length > 0"]];
-	
 	NSMutableDictionary *fields = [NSMutableDictionary new];
-	for(NSString *fieldString in fieldStrings) {
-		char fieldType = [[fieldString substringToIndex:1] characterAtIndex:0];
+	
+	static NSCharacterSet *valueCharacterSet;
+	if(!valueCharacterSet) {
+		valueCharacterSet = [NSCharacterSet characterSetWithCharactersInString:@"0123456789.-+"];
+	}
+	
+	[scanner scanWhitespace];
+	
+	
+	while(!scanner.atEnd) {
+		unichar type = [scanner scanCharacter];
+		if(type == ';') {
+			comment = [scanner scanToEnd];
+			break;
+		}
 		
-		id value = fieldString.length > 1 ? @([fieldString substringFromIndex:1].doubleValue) : [NSNull null];
-		fields[@(fieldType)] = value;
+		if(type < 'A' || type > 'Z') {
+			return nil; // Parse error; invalid field type
+		}
+		
+		NSString *valueString = [scanner scanStringFromCharacterSet:valueCharacterSet];
+		BOOL ended = [scanner scanWhitespace] || scanner.isAtEnd;
+		
+		if(!ended) {
+			return nil; // Parse error; invalid value or garbage after value
+		}
+		
+		fields[@(type)] = valueString ? @(valueString.doubleValue) : [NSNull null];
 	}
 	
 	return [self initWithFields:fields comment:comment];
@@ -165,7 +172,7 @@ const char *canonicalFieldOrder = "NMGXYZE FTSP    IJRD";
 	for(NSUInteger i=0; i<strlen(canonicalFieldOrder); i++) {
 		char field = canonicalFieldOrder[i];
 		if([self hasField:field]) {
-			id value = self[field];
+			id value = self.fields[@(field)];
 			if(value == [NSNull null]) {
 				[items addObject:[NSString stringWithFormat:@"%c", field]];
 			}else{

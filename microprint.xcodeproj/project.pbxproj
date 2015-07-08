@@ -19,6 +19,7 @@
 		C94F60161B3815290074EC41 /* TFPPrintParameters.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60151B3815290074EC41 /* TFPPrintParameters.m */; };
 		C96590E11B3F5CAA009D028F /* TFPThermalBondingPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C96590E01B3F5CAA009D028F /* TFPThermalBondingPreprocessor.m */; };
 		C96590E41B3F6469009D028F /* TFPWaveBondingPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C96590E31B3F6469009D028F /* TFPWaveBondingPreprocessor.m */; };
+		C991C31D1B4DA676005846B9 /* TFPGCodeConsoleOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = C991C31C1B4DA676005846B9 /* TFPGCodeConsoleOperation.m */; };
 		C99E871F1B3AA56D0099E79E /* GBCommandLineParser.m in Sources */ = {isa = PBXBuildFile; fileRef = C99E87181B3AA56D0099E79E /* GBCommandLineParser.m */; };
 		C99E87201B3AA56D0099E79E /* GBOptionsHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = C99E871A1B3AA56D0099E79E /* GBOptionsHelper.m */; };
 		C99E87211B3AA56D0099E79E /* GBPrint.m in Sources */ = {isa = PBXBuildFile; fileRef = C99E871C1B3AA56D0099E79E /* GBPrint.m */; };
@@ -77,6 +78,8 @@
 		C96590E01B3F5CAA009D028F /* TFPThermalBondingPreprocessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPThermalBondingPreprocessor.m; sourceTree = "<group>"; };
 		C96590E21B3F6469009D028F /* TFPWaveBondingPreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPWaveBondingPreprocessor.h; sourceTree = "<group>"; };
 		C96590E31B3F6469009D028F /* TFPWaveBondingPreprocessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPWaveBondingPreprocessor.m; sourceTree = "<group>"; };
+		C991C31B1B4DA676005846B9 /* TFPGCodeConsoleOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPGCodeConsoleOperation.h; sourceTree = "<group>"; };
+		C991C31C1B4DA676005846B9 /* TFPGCodeConsoleOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPGCodeConsoleOperation.m; sourceTree = "<group>"; };
 		C99E87161B3AA56D0099E79E /* GBCli.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBCli.h; sourceTree = "<group>"; };
 		C99E87171B3AA56D0099E79E /* GBCommandLineParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBCommandLineParser.h; sourceTree = "<group>"; };
 		C99E87181B3AA56D0099E79E /* GBCommandLineParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GBCommandLineParser.m; sourceTree = "<group>"; };
@@ -187,6 +190,8 @@
 				C92B59E11B40252900F38FA7 /* TFPExtrusionOperation.m */,
 				C92B59E31B40272600F38FA7 /* TFPRaiseHeadOperation.h */,
 				C92B59E41B40272600F38FA7 /* TFPRaiseHeadOperation.m */,
+				C991C31B1B4DA676005846B9 /* TFPGCodeConsoleOperation.h */,
+				C991C31C1B4DA676005846B9 /* TFPGCodeConsoleOperation.m */,
 			);
 			name = Operations;
 			sourceTree = "<group>";
@@ -248,7 +253,6 @@
 				C96590DE1B3DAC56009D028F /* Other */,
 				C9FD1C5A1B39601900F98FF1 /* External */,
 			);
-			name = microprint;
 			path = microprint;
 			sourceTree = "<group>";
 		};
@@ -341,6 +345,7 @@
 				C9E59B741B316BE800343D58 /* TFPGCode.m in Sources */,
 				C9FD1C5D1B39602000F98FF1 /* MAKVONotificationCenter.m in Sources */,
 				C99E87281B3ACFD10099E79E /* TFPBacklashPreprocessor.m in Sources */,
+				C991C31D1B4DA676005846B9 /* TFPGCodeConsoleOperation.m in Sources */,
 				C94F60091B38061E0074EC41 /* TFPFeedRateConversionPreprocessor.m in Sources */,
 				C96590E41B3F6469009D028F /* TFPWaveBondingPreprocessor.m in Sources */,
 				C92B59DC1B4017DC00F38FA7 /* TFPRepeatingCommandSender.m in Sources */,

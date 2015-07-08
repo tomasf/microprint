@@ -25,6 +25,7 @@
 #import "TFPRepeatingCommandSender.h"
 #import "TFPExtrusionOperation.h"
 #import "TFPRaiseHeadOperation.h"
+#import "TFPGCodeConsoleOperation.h"
 
 #import "MAKVONotificationCenter.h"
 #import "GBCli.h"
@@ -36,6 +37,7 @@
 @property TFPPrintJob *printJob;
 @property TFPExtrusionOperation *extrusionOperation;
 @property TFPRaiseHeadOperation *raiseHeadOperation;
+@property TFPGCodeConsoleOperation *consoleOperation;
 @end
 
 
@@ -59,6 +61,7 @@
 	[factoryDefaults setBool:NO forKey:@"dryrun"];
 	[factoryDefaults setBool:NO forKey:@"help"];
 	[factoryDefaults setBool:NO forKey:@"verbose"];
+	[factoryDefaults setBool:NO forKey:@"rawFeedRates"];
 	
 	GBSettings *settings = [GBSettings settingsWithName:@"CmdLine" parent:factoryDefaults];
 	
@@ -72,6 +75,7 @@
 	[parser registerOption:@"dryrun" shortcut:0 requirement:GBValueNone];
 	[parser registerOption:@"help" shortcut:0 requirement:GBValueNone];
 	[parser registerOption:@"verbose" shortcut:0 requirement:GBValueNone];
+	[parser registerOption:@"rawFeedRates" shortcut:0 requirement:GBValueNone];
 	
 	[parser registerOption:@"wavebonding" shortcut:0 requirement:GBValueNone];
 	[parser registerOption:@"backlash" shortcut:0 requirement:GBValueNone];
@@ -139,6 +143,9 @@
 	
 	TFLog(@"  preprocess <gcode-path> [--output path]");
 	TFLog(@"    Applies pre-processing to a G-code file and writes it to a file or stdout. Also accepts same options as 'print'.");
+
+	TFLog(@"  console [--rawFeedRates]");
+	TFLog(@"    Starts an interactive console where you can send arbitrary G-codes to the printer.");
 	
 	TFLog(@"  off");
 	TFLog(@"    Turn off fan, heater and motors.");
@@ -161,6 +168,7 @@
 	TFLog(@"  --wavebonding: Use wave bonding. On by default. Turn off with --wavebonding=0");
 	TFLog(@"  --backlash: Use backlash compensation. On by default. Turn off with --backlash=0");
 	TFLog(@"  --backlashSpeed <number>: The 'F' speed to use for inserted backlash compensation codes. Default is currently 1200, which seems to produce better prints. Old M3D value is 2900.");
+	TFLog(@"  --rawFeedRates: For the console command, this turns off conversion of feed rates to M3D-style inverted feed rates.");
 }
 
 
@@ -211,6 +219,11 @@
 		self.raiseHeadOperation = [[TFPRaiseHeadOperation alloc] initWithPrinter:self.printer];
 		self.raiseHeadOperation.targetHeight = [settings floatForKey:@"height"];
 		[self.raiseHeadOperation start];
+		
+	}else if([command isEqual:@"console"]) {
+		self.consoleOperation = [[TFPGCodeConsoleOperation alloc] initWithPrinter:self.printer];
+		self.consoleOperation.convertFeedRates = ![settings boolForKey:@"rawFeedRates"];
+		[self.consoleOperation start];
 		
 	}else{
 		TFLog(@"Invalid command '%@'", command);
@@ -296,7 +309,7 @@
 		[printer fetchBacklashValuesWithCompletionHandler:^(BOOL success, TFPBacklashValues values) {
 			params.backlashValues = values;
 			
-			TFLog(@"Pre-processing using bed level %@ and backlash %@ (speed %.0f)", params.bedLevelOffsetsAsString, params.backlashValuesAsString, params.backlashCompensationSpeed);
+			TFLog(@"Pre-processing using bed level %@ and backlash %@ (F%.0f)", params.bedLevelOffsetsAsString, params.backlashValuesAsString, params.backlashCompensationSpeed);
 			
 			uint64_t start = TFNanosecondTime();
 			program = [weakSelf programByPreprocessingProgram:program usingParameters:params];
