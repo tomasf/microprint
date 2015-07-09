@@ -32,6 +32,11 @@ typedef struct {
 } TFPBacklashValues;
 
 
+
+extern NSString *TFPBedLevelOffsetsDescription(TFPBedLevelOffsets offsets);
+extern NSString *TFPBacklashValuesDescription(TFPBacklashValues values);
+
+
 @interface TFPPrintParameters : NSObject
 @property (readwrite) NSUInteger bufferSize;
 @property (readwrite) BOOL verbose;
@@ -46,7 +51,4 @@ typedef struct {
 
 @property (readwrite) BOOL useWaveBonding;
 @property (readwrite) BOOL useBacklashCompensation;
-
-@property (readonly) NSString *bedLevelOffsetsAsString;
-@property (readonly) NSString *backlashValuesAsString;
 @end

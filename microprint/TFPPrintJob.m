@@ -27,6 +27,9 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 @property NSUInteger lineNumber;
 @property uint64_t startTime;
 
+@property dispatch_source_t interruptSource;
+@property BOOL aborted;
+
 @property double targetTemperature;
 @property NSUInteger pendingRequestCount;
 @property NSUInteger completedRequests;
@@ -48,15 +51,28 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 }
 
 
-- (void)jobDidComplete {
-	NSTimeInterval duration = ((double)(TFNanosecondTime() - self.startTime)) / NSEC_PER_SEC;
-	
+- (void)jobEnded {
 	if(self.powerAssertionID != kIOPMNullAssertionID) {
 		IOPMAssertionRelease(self.powerAssertionID);
 	}
 	
+	if(self.interruptSource) {
+		dispatch_source_cancel(self.interruptSource);
+		self.interruptSource = nil;
+	}
+}
+
+
+- (NSTimeInterval)elapsedTime {
+	return ((double)(TFNanosecondTime() - self.startTime)) / NSEC_PER_SEC;
+}
+
+
+- (void)jobDidComplete {
+	[self jobEnded];
+	
 	if(self.completionBlock) {
-		self.completionBlock(duration);
+		self.completionBlock([self elapsedTime]);
 	}
 }
 
@@ -111,6 +127,10 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 
 
 - (void)sendMoreIfNeeded {
+	if(self.aborted) {
+		return;
+	}
+	
 	while(self.pendingRequestCount < self.parameters.bufferSize) {
 		TFPGCode *code = [self popNextLine];
 		if(!code) {
@@ -179,11 +199,52 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 		TFLog(@"Failed to assert kIOPMAssertionTypeNoIdleSleep!");
 		self.powerAssertionID = kIOPMNullAssertionID;
 	}
+	
+	
+	self.interruptSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_SIGNAL, SIGINT, 0, dispatch_get_main_queue());
+	dispatch_source_set_event_handler(self.interruptSource, ^{
+		[weakSelf abort];
+	});
+	dispatch_resume(self.interruptSource);
+
+	struct sigaction action = { 0 };
+	action.sa_handler = SIG_IGN;
+	sigaction(SIGINT, &action, NULL);
+}
+
+
+- (void)sendAbortSequenceWithCompletionHandler:(void(^)())completionHandler {
+	NSArray *codes = @[
+					   TGPGCODE(G91),
+					   TGPGCODE(G0 E-5 F450),
+					   TGPGCODE(G0 Z1 F200),
+					   TGPGCODE(G0 E-4 F450),
+					   TGPGCODE(G0 Z4 F200),
+					   TGPGCODE(G90),
+					   TGPGCODE(G0 Y84),
+					   TGPGCODE(M106 S0),
+					   TGPGCODE(M0)
+					   ];
+	
+	[self.printer sendGCodes:codes completionHandler:^(BOOL success) {
+		completionHandler();
+	}];
 }
 
 
 - (void)abort {
+	TFLog(@"");
+	TFLog(@"Cancelling print...");
 	
+	self.aborted = YES;
+	
+	[self sendAbortSequenceWithCompletionHandler:^{
+		[self jobEnded];
+		
+		if(self.abortionBlock) {
+			self.abortionBlock([self elapsedTime]);
+		}
+	}];
 }
 
 

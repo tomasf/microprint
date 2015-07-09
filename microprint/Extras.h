@@ -36,3 +36,5 @@ extern void TFLog(NSString *format, ...);
 extern uint64_t TFNanosecondTime(void);
 
 extern CGFloat TFPVectorDot(CGVector a, CGVector b);
+
+extern void TFPListenForInputLine(void(^block)(NSString *line));

@@ -170,3 +170,20 @@ uint64_t TFNanosecondTime(void) {
 CGFloat TFPVectorDot(CGVector a, CGVector b) {
 	return a.dx * b.dx + a.dy * b.dy;
 }
+
+
+void TFPListenForInputLine(void(^block)(NSString *line)) {
+	dispatch_source_t source = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, STDIN_FILENO, 0, dispatch_get_main_queue());
+	dispatch_source_set_event_handler(source, ^{
+		NSMutableData *data = [NSMutableData dataWithLength:1024];
+		size_t len = read(STDIN_FILENO, data.mutableBytes, data.length);
+		[data setLength:len];
+		
+		if([data tf_indexOfData:[NSData dataWithBytes:"\n" length:1]] != NSNotFound) {
+			dispatch_source_cancel(source);
+			NSString *string = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+			block(string);
+		}
+	});
+	dispatch_resume(source);
+}

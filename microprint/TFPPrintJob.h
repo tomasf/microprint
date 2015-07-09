@@ -17,6 +17,7 @@
 
 @property (copy) void(^progressBlock)(double progress);
 @property (copy) void(^completionBlock)(NSTimeInterval duration);
+@property (copy) void(^abortionBlock)(NSTimeInterval duration);
 @property (copy) void(^heatingProgressBlock)(double targetTemperature, double currentTemperature);
 
 - (void)start;

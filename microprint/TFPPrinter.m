@@ -136,6 +136,22 @@
 }
 
 
+- (void)sendGCodes:(NSArray*)codes completionHandler:(void(^)(BOOL success))completionHandler {
+	TFPGCode *code = codes.firstObject;
+	if(code) {
+		[self sendGCode:code responseHandler:^(BOOL success, NSString *value) {
+			if(success) {
+				[self sendGCodes:[codes subarrayWithRange:NSMakeRange(1, codes.count-1)] completionHandler:completionHandler];
+			}else{
+				completionHandler(NO);
+			}
+		}];
+	}else{
+		completionHandler(YES);
+	}
+}
+
+
 - (void)sendGCodeString:(NSString*)GCode responseHandler:(void(^)(BOOL success, NSString *value))block {
 	[self sendGCode:[TFPGCode codeWithString:GCode] responseHandler:block];
 }
@@ -296,7 +312,9 @@
 		}
 		
 	}else{
-		TFLog(@"Unhandled input: %@", incomingLine);
+		if(self.verboseMode) {
+			TFLog(@"Unhandled input: %@", incomingLine);
+		}
 	}
 }
 
@@ -341,6 +359,20 @@
 }
 
 
+- (void)setBedOffsets:(TFPBedLevelOffsets)offsets completionHandler:(void(^)(BOOL success))completionHandler {
+	TFPGCode *code = [TFPGCode codeWithString:@"M577"];
+	code = [code codeBySettingField:'X' toValue:offsets.backLeft];
+	code = [code codeBySettingField:'Y' toValue:offsets.backRight];
+	code = [code codeBySettingField:'Z' toValue:offsets.frontRight];
+	code = [code codeBySettingField:'E' toValue:offsets.frontLeft];
+	code = [code codeBySettingField:'F' toValue:offsets.common];
+	
+	[self sendGCode:code responseHandler:^(BOOL success, NSString *value) {
+		completionHandler(success);
+	}];
+}
+
+
 - (void)fetchBacklashValuesWithCompletionHandler:(void(^)(BOOL success, TFPBacklashValues values))completionHandler {
 	[self sendGCodeString:@"M572" responseHandler:^(BOOL success, NSString *value) {
 		TFPBacklashValues values;
@@ -370,6 +402,27 @@
 		}else{
 			completionHandler(NO, nil, 0);
 		}
+	}];
+}
+
+
+- (void)fillInOffsetAndBacklashValuesInPrintParameters:(TFPPrintParameters*)params completionHandler:(void(^)(BOOL success))completionHandler {
+	[self fetchBedOffsetsWithCompletionHandler:^(BOOL success, TFPBedLevelOffsets offsets) {
+		if(!success) {
+			completionHandler(NO);
+			return;
+		}
+		
+		params.bedLevelOffsets = offsets;
+		[self fetchBacklashValuesWithCompletionHandler:^(BOOL success, TFPBacklashValues values) {
+			if(!success) {
+				completionHandler(NO);
+				return;
+			}
+			
+			params.backlashValues = values;
+			completionHandler(YES);
+		}];
 	}];
 }
 

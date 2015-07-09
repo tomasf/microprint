@@ -26,6 +26,8 @@
 #import "TFPExtrusionOperation.h"
 #import "TFPRaiseHeadOperation.h"
 #import "TFPGCodeConsoleOperation.h"
+#import "TFPBedLevelCalibrationOperation.h"
+#import "TFPPreprocessing.h"
 
 #import "MAKVONotificationCenter.h"
 #import "GBCli.h"
@@ -38,11 +40,37 @@
 @property TFPExtrusionOperation *extrusionOperation;
 @property TFPRaiseHeadOperation *raiseHeadOperation;
 @property TFPGCodeConsoleOperation *consoleOperation;
+@property TFPBedLevelCalibrationOperation *bedLevelCalibrationOperation;
+
+@property NSNumberFormatter *shortPercentFormatter;
+@property NSNumberFormatter *longPercentFormatter;
+@property NSDateComponentsFormatter *durationFormatter;
 @end
 
 
 
 @implementation TFPCLIController
+
+
+- (instancetype)init {
+	if(!(self = [super init])) return nil;
+	
+	self.shortPercentFormatter = [NSNumberFormatter new];
+	self.shortPercentFormatter.minimumIntegerDigits = 1;
+	self.shortPercentFormatter.minimumFractionDigits = 0;
+	self.shortPercentFormatter.maximumFractionDigits = 0;
+	self.shortPercentFormatter.numberStyle = NSNumberFormatterPercentStyle;
+	
+	self.longPercentFormatter = [NSNumberFormatter new];
+	self.longPercentFormatter.minimumIntegerDigits = 1;
+	self.longPercentFormatter.minimumFractionDigits = 2;
+	self.longPercentFormatter.numberStyle = NSNumberFormatterPercentStyle;
+
+	self.durationFormatter = [NSDateComponentsFormatter new];
+	self.durationFormatter.unitsStyle = NSDateComponentsFormatterUnitsStyleShort;
+	
+	return self;
+}
 
 
 - (void)runWithArgumentCount:(int)argc arguments:(char **)argv {
@@ -147,6 +175,9 @@
 	TFLog(@"  console [--rawFeedRates]");
 	TFLog(@"    Starts an interactive console where you can send arbitrary G-codes to the printer.");
 	
+	TFLog(@"  bedlevel");
+	TFLog(@"    Prints a test border and prompts for measurements to automatically adjust bed level offsets.");
+	
 	TFLog(@"  off");
 	TFLog(@"    Turn off fan, heater and motors.");
 	
@@ -195,6 +226,8 @@
 
 
 - (void)performCommand:(NSString *)command withArgument:(NSString *)value usingSettings:(GBSettings *)settings {
+	command = [command lowercaseString];
+	
 	if([command isEqual:@"extrude"] || [command isEqual:@"retract"]) {
 		
 		double temperature = [settings floatForKey:@"temperature"];
@@ -211,6 +244,10 @@
 		
 	}else if([command isEqual:@"preprocess"]) {
 		[self preprocessGCodePath:value outputPath:[settings objectForKey:@"output"] usingParameters:[self printParametersForSettings:settings]];
+		
+	}else if([command isEqual:@"bedlevel"]) {
+		self.bedLevelCalibrationOperation = [[TFPBedLevelCalibrationOperation alloc] initWithPrinter:self.printer];
+		[self.bedLevelCalibrationOperation startWithPrintParameters:[self printParametersForSettings:settings]];
 		
 	}else if([command isEqualTo:@"off"]) {
 		[self turnOff];
@@ -249,21 +286,44 @@
 }
 
 
-- (TFPGCodeProgram *)programByPreprocessingProgram:(TFPGCodeProgram *)program usingParameters:(TFPPrintParameters *)params {
-	program = [[[TFPBasicPreparationPreprocessor alloc] initWithProgram:program] processUsingParameters:params];
-		
-	if(params.useWaveBonding) {
-		program = [[[TFPWaveBondingPreprocessor alloc] initWithProgram:program] processUsingParameters:params];
+- (TFPGCodeProgram*)readProgramAtPathAndLogInfo:(NSString*)path usingPrintParameters:(TFPPrintParameters*)params {
+	if(!path.length) {
+		TFLog(@"Missing G-code file path!");
+		return nil;
 	}
 	
-	program = [[[TFPThermalBondingPreprocessor alloc] initWithProgram:program] processUsingParameters:params];
-	program = [[[TFPBedCompensationPreprocessor alloc] initWithProgram:program] processUsingParameters:params];
+	NSURL *file = [NSURL fileURLWithPath:path];
 	
-	if(params.useBacklashCompensation) {
-		program = [[[TFPBacklashPreprocessor alloc] initWithProgram:program] processUsingParameters:params];
+	uint64_t start = TFNanosecondTime();
+	TFPGCodeProgram *program = [[TFPGCodeProgram alloc] initWithFileURL:file];
+	
+	if(!program) {
+		TFLog(@"Failed to read G-code program at path: %@", path);
+		return nil;
 	}
 	
-	program = [[[TFPFeedRateConversionPreprocessor alloc] initWithProgram:program] processUsingParameters:params];
+	NSTimeInterval readDuration = (double)(TFNanosecondTime()-start) / NSEC_PER_SEC;
+	TFLog(@"Input G-code program consists of %d lines.", readDuration, (int)program.lines.count, (int)(program.lines.count / readDuration));
+
+	TFP3DVector *size = [program measureSize];
+	TFLog(@"Print dimensions: X: %.02f mm, Y: %.02f mm, Z: %.02f mm", size.x.doubleValue, size.y.doubleValue, size.z.doubleValue);
+	params.maxZ = size.z.doubleValue;
+
+	return program;
+}
+
+
+- (TFPGCodeProgram*)preprocessProgramAndLogInfo:(TFPGCodeProgram*)program usingPrintParameters:(TFPPrintParameters*)params {
+	NSString *offsetsString = TFPBedLevelOffsetsDescription(params.bedLevelOffsets);
+	NSString *backlashString = TFPBacklashValuesDescription(params.backlashValues);
+	TFLog(@"Pre-processing using bed level %@ and backlash %@ (F%.0f)", offsetsString, backlashString, params.backlashCompensationSpeed);
+	
+	uint64_t start = TFNanosecondTime();
+	program = [TFPPreprocessing programByPreprocessingProgram:program usingParameters:params];
+	
+	NSTimeInterval duration = (double)(TFNanosecondTime()-start) / NSEC_PER_SEC;
+	TFLog(@"Pre-processed in %@, resulting in a total of %d G-code lines.", [self.durationFormatter stringFromTimeInterval:duration], (int)program.lines.count);
+	
 	return program;
 }
 
@@ -272,128 +332,69 @@
 	__weak TFPPrinter *printer = self.printer;
 	__weak __typeof__(self) weakSelf = self;
 	
-	if(!path.length) {
-		TFLog(@"Missing G-code file path!");
+	__block TFPGCodeProgram *program = [self readProgramAtPathAndLogInfo:path usingPrintParameters:params];
+	if(!program) {
 		exit(EXIT_FAILURE);
 	}
-	
-	NSURL *file = [NSURL fileURLWithPath:path];
-	
-	uint64_t start = TFNanosecondTime();
-	__block TFPGCodeProgram *program = [[TFPGCodeProgram alloc] initWithFileURL:file];
-	
-	NSTimeInterval readDuration = (double)(TFNanosecondTime()-start) / NSEC_PER_SEC;
-	TFLog(@"Input G-code program consists of %d lines.", readDuration, (int)program.lines.count, (int)(program.lines.count / readDuration));
-	
-	NSDateComponentsFormatter *durationFormatter = [NSDateComponentsFormatter new];
-	durationFormatter.unitsStyle = NSDateComponentsFormatterUnitsStyleShort;
-	
-	NSNumberFormatter *longPercentFormatter = [NSNumberFormatter new];
-	longPercentFormatter.minimumIntegerDigits = 1;
-	longPercentFormatter.minimumFractionDigits = 2;
-	longPercentFormatter.numberStyle = NSNumberFormatterPercentStyle;
-	
-	NSNumberFormatter *shortPercentFormatter = [NSNumberFormatter new];
-	shortPercentFormatter.minimumIntegerDigits = 1;
-	shortPercentFormatter.minimumFractionDigits = 0;
-	shortPercentFormatter.maximumFractionDigits = 0;
-	shortPercentFormatter.numberStyle = NSNumberFormatterPercentStyle;
-	
-	TFP3DVector *size = [program measureSize];
-	TFLog(@"Print dimensions: X: %.02f mm, Y: %.02f mm, Z: %.02f mm", size.x.doubleValue, size.y.doubleValue, size.z.doubleValue);
-	params.maxZ = size.z.doubleValue;
-	
-	
-	[printer fetchBedOffsetsWithCompletionHandler:^(BOOL success, TFPBedLevelOffsets offsets) {
-		params.bedLevelOffsets = offsets;
-		[printer fetchBacklashValuesWithCompletionHandler:^(BOOL success, TFPBacklashValues values) {
-			params.backlashValues = values;
-			
-			TFLog(@"Pre-processing using bed level %@ and backlash %@ (F%.0f)", params.bedLevelOffsetsAsString, params.backlashValuesAsString, params.backlashCompensationSpeed);
-			
-			uint64_t start = TFNanosecondTime();
-			program = [weakSelf programByPreprocessingProgram:program usingParameters:params];
-			
-			NSTimeInterval duration = (double)(TFNanosecondTime()-start) / NSEC_PER_SEC;
-			TFLog(@"Pre-processed in %@, resulting in a total of %d G-code lines.", [durationFormatter stringFromTimeInterval:duration], (int)program.lines.count);
-			
-			weakSelf.printJob = [[TFPPrintJob alloc] initWithProgram:program printer:printer printParameters:params];
-			
-			__block NSString *lastProgressString;
-			
-			weakSelf.printJob.progressBlock = ^(double progress) {
-				NSString *progressString = [longPercentFormatter stringFromNumber:@(progress)];
-				if(![progressString isEqual:lastProgressString]) {
-					TFLog(@"Printing: %@", progressString);
-					lastProgressString = progressString;
-				}
-			};
-			
-			weakSelf.printJob.heatingProgressBlock = ^(double targetTemperature, double currentTemperature) {
-				TFLog(@"Heating to %.0f°C: %@", targetTemperature, [shortPercentFormatter stringFromNumber:@(currentTemperature/targetTemperature)]);
-			};
-			
-			weakSelf.printJob.completionBlock = ^(NSTimeInterval duration) {
-				NSDateComponentsFormatter *formatter = [NSDateComponentsFormatter new];
-				formatter.unitsStyle = NSDateComponentsFormatterUnitsStyleShort;
-				
-				TFLog(@"Done! Print time: %@", [formatter stringFromTimeInterval:duration]);
-				exit(EXIT_SUCCESS);
-			};
-			
-			[weakSelf.printJob start];
-		}];
+
+	[self.printer fillInOffsetAndBacklashValuesInPrintParameters:params completionHandler:^(BOOL success) {
+		program = [weakSelf preprocessProgramAndLogInfo:program usingPrintParameters:params];
+		
+		weakSelf.printJob = [[TFPPrintJob alloc] initWithProgram:program printer:printer printParameters:params];
+		
+		__block NSString *lastProgressString;
+		
+		weakSelf.printJob.progressBlock = ^(double progress) {
+			NSString *progressString = [weakSelf.longPercentFormatter stringFromNumber:@(progress)];
+			if(![progressString isEqual:lastProgressString]) {
+				TFLog(@"Printing: %@", progressString);
+				lastProgressString = progressString;
+			}
+		};
+		
+		weakSelf.printJob.heatingProgressBlock = ^(double targetTemperature, double currentTemperature) {
+			TFLog(@"Heating to %.0f°C: %@", targetTemperature, [weakSelf.shortPercentFormatter stringFromNumber:@(currentTemperature/targetTemperature)]);
+		};
+		
+		weakSelf.printJob.abortionBlock = ^(NSTimeInterval duration) {
+			TFLog(@"Print cancelled after %@.", [weakSelf.durationFormatter stringFromTimeInterval:duration]);
+			exit(EXIT_SUCCESS);
+		};
+		
+		weakSelf.printJob.completionBlock = ^(NSTimeInterval duration) {
+			TFLog(@"Done! Print time: %@", [weakSelf.durationFormatter stringFromTimeInterval:duration]);
+			exit(EXIT_SUCCESS);
+		};
+		
+		[weakSelf.printJob start];
 	}];
 }
 
 
 - (void)preprocessGCodePath:(NSString *)sourcePath outputPath:(NSString *)destinationPath usingParameters:(TFPPrintParameters *)params {
-	NSURL *file = [NSURL fileURLWithPath:sourcePath];
-	__weak TFPPrinter *printer = self.printer;
 	__weak __typeof__(self) weakSelf = self;
 
-	if(!sourcePath.length) {
-		TFLog(@"Missing G-code file path!");
+	__block TFPGCodeProgram *program = [self readProgramAtPathAndLogInfo:sourcePath usingPrintParameters:params];
+	if(!program) {
 		exit(EXIT_FAILURE);
 	}
-
-	uint64_t start = TFNanosecondTime();
-	__block TFPGCodeProgram *program = [[TFPGCodeProgram alloc] initWithFileURL:file];
 	
-	NSTimeInterval readDuration = (double)(TFNanosecondTime()-start) / NSEC_PER_SEC;
-	TFLog(@"Input G-code program consists of %d lines.", readDuration, (int)program.lines.count, (int)(program.lines.count / readDuration));
-	
-	TFP3DVector *size = [program measureSize];
-	TFLog(@"Print dimensions: X: %.02f mm, Y: %.02f mm, Z: %.02f mm", size.x.doubleValue, size.y.doubleValue, size.z.doubleValue);
-	params.maxZ = size.z.doubleValue;
-	
-	
-	[printer fetchBedOffsetsWithCompletionHandler:^(BOOL success, TFPBedLevelOffsets offsets) {
-		params.bedLevelOffsets = offsets;
-		[printer fetchBacklashValuesWithCompletionHandler:^(BOOL success, TFPBacklashValues values) {
-			params.backlashValues = values;
-			
-			TFLog(@"Pre-processing using bed level %@ and backlash %@", params.bedLevelOffsetsAsString, params.backlashValuesAsString);
-			
-			uint64_t start = TFNanosecondTime();
-			program = [weakSelf programByPreprocessingProgram:program usingParameters:params];
-			
-			TFLog(@"Pre-processed in %.02f seconds, resulting in a total of %d G-code lines.", (double)(TFNanosecondTime()-start) / NSEC_PER_SEC, (int)program.lines.count);
-			
-			if(destinationPath) {
-				NSURL *destinationURL = [NSURL fileURLWithPath:destinationPath];
-				NSError *error;
-				if (![program writeToFileURL:destinationURL error:&error]) {
-					TFLog(@"Writing to file failed: %@", error);
-					exit(EXIT_FAILURE);
-				}
-			}else{
-				for(TFPGCode *code in program.lines) {
-					TFLog(@"%@", code.ASCIIRepresentation);
-				}
+	[self.printer fillInOffsetAndBacklashValuesInPrintParameters:params completionHandler:^(BOOL success) {
+		program = [weakSelf preprocessProgramAndLogInfo:program usingPrintParameters:params];
+		
+		if(destinationPath) {
+			NSURL *destinationURL = [NSURL fileURLWithPath:destinationPath];
+			NSError *error;
+			if (![program writeToFileURL:destinationURL error:&error]) {
+				TFLog(@"Writing to file failed: %@", error);
+				exit(EXIT_FAILURE);
 			}
-			exit(EXIT_SUCCESS);
-		}];
+		}else{
+			for(TFPGCode *code in program.lines) {
+				TFLog(@"%@", code.ASCIIRepresentation);
+			}
+		}
+		exit(EXIT_SUCCESS);
 	}];
 }
 

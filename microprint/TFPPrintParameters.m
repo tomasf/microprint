@@ -23,23 +23,23 @@ static const NSUInteger defaultBufferSize = 6;
 }
 
 
-- (NSString *)bedLevelOffsetsAsString {
-	return [NSString stringWithFormat:@"{ Z: %.02f, BL: %.02f, BR: %.02f, FL: %.02f, FR: %.02f }",
-			self.bedLevelOffsets.common,
-			self.bedLevelOffsets.backLeft,
-			self.bedLevelOffsets.backRight,
-			self.bedLevelOffsets.frontLeft,
-			self.bedLevelOffsets.frontRight
-			];
-}
-
-
-- (NSString *)backlashValuesAsString {
-	return [NSString stringWithFormat:@"{ X: %.02f, Y: %.02f }",
-			self.backlashValues.x,
-			self.backlashValues.y
-			];
-}
-
-
 @end
+
+
+NSString *TFPBedLevelOffsetsDescription(TFPBedLevelOffsets offsets) {
+	return [NSString stringWithFormat:@"{ Z: %.02f, BL: %.02f, BR: %.02f, FL: %.02f, FR: %.02f }",
+			offsets.common,
+			offsets.backLeft,
+			offsets.backRight,
+			offsets.frontLeft,
+			offsets.frontRight
+			];
+}
+
+
+NSString *TFPBacklashValuesDescription(TFPBacklashValues values) {
+	return [NSString stringWithFormat:@"{ X: %.02f, Y: %.02f }",
+			values.x,
+			values.y
+			];
+}

@@ -35,3 +35,6 @@
 @property (readonly) NSData *repetierV2Representation;
 @property (readonly) NSString *ASCIIRepresentation;
 @end
+
+
+#define TGPGCODE(x) [[TFPGCode alloc] initWithString:@"" # x]

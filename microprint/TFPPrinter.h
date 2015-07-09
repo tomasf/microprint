@@ -37,9 +37,13 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 + (NSString*)nameForPrinterColor:(TFPPrinterColor)color;
 
 - (void)sendGCode:(TFPGCode*)GCode responseHandler:(void(^)(BOOL success, NSString *value))block;
+- (void)sendGCodes:(NSArray*)codes completionHandler:(void(^)(BOOL success))completionHandler;
 
 - (void)fetchBedOffsetsWithCompletionHandler:(void(^)(BOOL success, TFPBedLevelOffsets offsets))completionHandler;
 - (void)fetchBacklashValuesWithCompletionHandler:(void(^)(BOOL success, TFPBacklashValues values))completionHandler;
+- (void)fillInOffsetAndBacklashValuesInPrintParameters:(TFPPrintParameters*)params completionHandler:(void(^)(BOOL success))completionHandler;
+
+- (void)setBedOffsets:(TFPBedLevelOffsets)offsets completionHandler:(void(^)(BOOL success))completionHandler;
 
 - (void)fetchPositionWithCompletionHandler:(void(^)(BOOL success, TFP3DVector *position, double E))completionHandler;
 

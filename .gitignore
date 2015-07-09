@@ -26,3 +26,4 @@ DerivedData
 #Pods/
 microprint.xcodeproj/project.xcworkspace/contents.xcworkspacedata
 .DS_Store
+microprint.xcodeproj/project.xcworkspace

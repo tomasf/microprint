@@ -16,11 +16,9 @@
 
 
 
-
 static double CGVectorDistance(CGVector a, CGVector b) {
 	return sqrt(pow(a.dx - b.dx, 2) + pow(a.dy - b.dy, 2));
 }
-
 
 
 @implementation TFPGCodePreprocessor
