@@ -18,7 +18,7 @@
 
 @implementation TFPRaiseHeadOperation
 
-static const double raiseStep = 2;
+static const double raiseStep = 1;
 
 
 - (void)start {
@@ -26,7 +26,9 @@ static const double raiseStep = 2;
 	__weak TFPPrinter *printer = self.printer;
 	double targetHeight = self.targetHeight;
 	
-	[printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, double E) {
+	printer.verboseMode = YES;
+	
+	[printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, NSNumber *E) {		
 		[printer setRelativeMode:NO completionHandler:^(BOOL success) {
 			__block double Z = position.z.doubleValue;
 			
@@ -55,7 +57,7 @@ static const double raiseStep = 2;
 				[weakSelf.repeatSender start];
 				
 			}else{
-				TFLog(@"Head is already at target height.");
+				TFLog(@"Head is already at or above target height.");
 				exit(EXIT_SUCCESS);
 			}
 		}];

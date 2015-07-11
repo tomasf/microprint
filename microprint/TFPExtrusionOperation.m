@@ -64,7 +64,7 @@ static const double extrudeFeedRate = 210;
 		}];
 		
 		[printer sendGCode:tempOn responseHandler:^(BOOL success, NSString *value) {
-			[printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, double E) {
+			[printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, NSNumber *E) {
 				void(^nextStep)() = ^{
 					TFLog(@"Heating to %.0f°C...", weakSelf.temperature);
 					

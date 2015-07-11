@@ -45,7 +45,7 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 
 - (void)setBedOffsets:(TFPBedLevelOffsets)offsets completionHandler:(void(^)(BOOL success))completionHandler;
 
-- (void)fetchPositionWithCompletionHandler:(void(^)(BOOL success, TFP3DVector *position, double E))completionHandler;
+- (void)fetchPositionWithCompletionHandler:(void(^)(BOOL success, TFP3DVector *position, NSNumber *E))completionHandler;
 
 - (void)setRelativeMode:(BOOL)relative completionHandler:(void(^)(BOOL success))completionHandler;
 - (void)moveToPosition:(TFP3DVector*)position EPosition:(NSNumber*)E usingFeedRate:(double)F completionHandler:(void(^)(BOOL success))completionHandler;

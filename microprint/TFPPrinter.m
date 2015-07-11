@@ -105,26 +105,6 @@
 }
 
 
-- (void)serialPortWasOpened:(ORSSerialPort * __nonnull)serialPort {
-	[self identifyWithCompletionHandler:^(BOOL success) {
-		if(success) {
-			self.connectionFinished = YES;
-			[self callEstablishBlocksWithError:nil];
-		}else{
-			// Hmm
-		}
-	}];
-}
-
-
-- (void)serialPort:(ORSSerialPort *)serialPort didEncounterError:(NSError *)error {
-	if(self.pendingConnection) {
-		[self callEstablishBlocksWithError:error];
-	}
-}
-
-
-
 - (void)sendGCode:(TFPGCode*)GCode responseHandler:(void(^)(BOOL success, NSString *value))block {
 	[self.serialPort sendData:GCode.repetierV2Representation];
 	
@@ -320,6 +300,14 @@
 
 
 - (void)processIncomingData {
+	if(self.pendingConnection && self.incomingData.length == 1 && *(char*)self.incomingData.bytes == '?') {
+		TFLog(@"Switching from bootloader to firmware mode...");
+
+		[self.incomingData setLength:0];
+		[self.serialPort sendData:[NSData dataWithBytes:"Q" length:1]];
+		return;
+	}
+	
 	NSData *linefeed = [NSData dataWithBytes:"\n" length:1];
 	NSUInteger linefeedIndex;
  
@@ -390,14 +378,18 @@
 }
 
 
-- (void)fetchPositionWithCompletionHandler:(void(^)(BOOL success, TFP3DVector *position, double E))completionHandler {
+- (void)fetchPositionWithCompletionHandler:(void(^)(BOOL success, TFP3DVector *position, NSNumber *E))completionHandler {
 	[self sendGCodeString:@"M114" responseHandler:^(BOOL success, NSString *value) {
 		if(success) {
 			NSDictionary *params = [self dictionaryFromResponseValueString:value];
 			
-			TFP3DVector *position = [TFP3DVector vectorWithX:@([params[@"X"] doubleValue]) Y:@([params[@"Y"] doubleValue]) Z:@([params[@"Z"] doubleValue])];
+			NSNumber *x = params[@"X"] ? @([params[@"X"] doubleValue]) : nil;
+			NSNumber *y = params[@"Y"] ? @([params[@"Y"] doubleValue]) : nil;
+			NSNumber *z = params[@"Z"] ? @([params[@"Z"] doubleValue]) : nil;
+			NSNumber *e = params[@"E"] ? @([params[@"E"] doubleValue]) : nil;
 			
-			completionHandler(YES, position, [params[@"E"] doubleValue]);
+			TFP3DVector *position = [TFP3DVector vectorWithX:x Y:y Z:z];
+			completionHandler(YES, position, e);
 			
 		}else{
 			completionHandler(NO, nil, 0);
@@ -470,6 +462,40 @@ const double maxMMPerSecond = 60.001;
 }
 
 
+
+#pragma mark - Serial port delegate
+
+
+- (void)serialPortWasOpened:(ORSSerialPort * __nonnull)serialPort {
+	[self identifyWithCompletionHandler:^(BOOL success) {
+		if(success) {
+			self.connectionFinished = YES;
+			[self callEstablishBlocksWithError:nil];
+		}else{
+			// Hmm
+		}
+	}];
+}
+
+
+- (void)serialPortWasClosed:(ORSSerialPort * __nonnull)serialPort {
+	self.incomingData = [NSMutableData new];
+	self.unnumberedResponseListenerBlocks = [NSMutableArray new];
+	self.numberedResponseListenerBlocks = [NSMutableDictionary new];
+
+	if(self.pendingConnection) {
+		dispatch_after(dispatch_time(0, 3 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+			[self.serialPort open];
+		});
+	}
+}
+
+
+- (void)serialPort:(ORSSerialPort *)serialPort didEncounterError:(NSError *)error {
+	if(self.pendingConnection) {
+		[self callEstablishBlocksWithError:error];
+	}
+}
+
+
 @end
-
-

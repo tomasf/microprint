@@ -248,6 +248,9 @@
 	}else if([command isEqualTo:@"off"]) {
 		[self turnOff];
 		
+	}else if([command isEqualTo:@"home"]) {
+		[self home];
+		
 	}else if([command isEqualTo:@"raise"]) {
 		TFPRaiseHeadOperation *raiseHeadOperation = [[TFPRaiseHeadOperation alloc] initWithPrinter:self.printer];
 		raiseHeadOperation.targetHeight = [settings floatForKey:@"height"];
@@ -264,6 +267,16 @@
 		TFLog(@"Invalid command '%@'", command);
 		exit(EXIT_FAILURE);
 	}
+}
+
+
+- (void)home {
+	[self.printer sendGCode:[TFPGCode codeWithString:@"G28"] responseHandler:^(BOOL success, NSString *value) {
+		[self.printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, NSNumber *E) {
+			TFLog(@"%@", position);
+			exit(EXIT_SUCCESS);
+		}];
+	}];
 }
 
 
