@@ -39,7 +39,7 @@
 	static TFPGCodeProgram *program;
 	if(!program) {
 		NSString *string = (@"M106 \n"
-							@"M109 S210 \n"
+							@"M109 S215 \n"
 							@"G90 \n"
 							@"G0 X1 Y9.5 Z0.15 F900 \n"
 							@"G0 Z0.4 E6 \n"

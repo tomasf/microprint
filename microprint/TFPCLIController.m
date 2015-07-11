@@ -166,7 +166,7 @@
 	TFLog(@"");
 	
 	TFLog(@"Commands:");
-	TFLog(@"  print <gcode-path> [--temperature 210] [--filament PLA] [--backlash] [--backlashSpeed 1200] [--wavebonding]");
+	TFLog(@"  print <gcode-path> [--temperature 215] [--filament PLA] [--backlash] [--backlashSpeed 1200] [--wavebonding]");
 	TFLog(@"    Prints a G-code file.");
 	
 	TFLog(@"  preprocess <gcode-path> [--output path]");
@@ -181,10 +181,10 @@
 	TFLog(@"  off");
 	TFLog(@"    Turn off fan, heater and motors.");
 	
-	TFLog(@"  extrude [--temperature 210]");
+	TFLog(@"  extrude [--temperature 215]");
 	TFLog(@"    Extrude filament. Useful for loading new filament.");
 	
-	TFLog(@"  retract [--temperature 210]");
+	TFLog(@"  retract [--temperature 215]");
 	TFLog(@"    \"Reverse extrude\" that feeds filament backwards. Useful for unloading filament.");
 	
 	TFLog(@"  raise [--height 70]");
@@ -194,7 +194,7 @@
 	TFLog(@"");
 	TFLog(@"Options:");
 	TFLog(@"  --dryrun: Don't connect to an actual printer; instead simulate a mock printer that echos sent G-codes.");
-	TFLog(@"  --temperature <number>: Heater temperature in degrees Celsius. Default is 210 for extrusion/retraction and varies depending on filament type for printing.");
+	TFLog(@"  --temperature <number>: Heater temperature in degrees Celsius. Default is 215 for extrusion/retraction and varies depending on filament type for printing.");
 	TFLog(@"  --filament <string>: Filament type. Valid options are PLA, ABS, HIPS and Other. Affects behavior in some preprocessors. Also sets default temperature.");
 	TFLog(@"  --wavebonding: Use wave bonding. On by default. Turn off with --wavebonding=0");
 	TFLog(@"  --backlash: Use backlash compensation. On by default. Turn off with --backlash=0");
@@ -212,14 +212,14 @@
 	params.useBacklashCompensation = [settings boolForKey:@"backlash"];
 	params.backlashCompensationSpeed = [settings floatForKey:@"backlashSpeed"];
 	
-	params.filamentType = [self parseFilamentType:[settings objectForKey:@"filament"]];
-	if(params.filamentType == TFPFilamentTypeUnknown) {
+	params.filament = [TFPFilament filamentForType:[TFPFilament typeForString:[settings objectForKey:@"filament"]]];
+	if(!params.filament) {
 		TFLog(@"Unknown filament type specified.");
 		exit(EXIT_FAILURE);
 	}
 	
 	double temperature = [settings floatForKey:@"temperature"];
-	params.idealTemperature = (temperature > 0) ? temperature : [self defaultTemperatureForFilament:params.filamentType];
+	params.idealTemperature = temperature;
 
 	return params;
 }
@@ -232,7 +232,7 @@
 		
 		double temperature = [settings floatForKey:@"temperature"];
 		if(temperature < 1) {
-			temperature = 210;
+			temperature = 215;
 		}
 		
 		self.extrusionOperation = [[TFPExtrusionOperation alloc] initWithPrinter:self.printer retraction:[command isEqual:@"retract"]];
@@ -398,28 +398,6 @@
 		}
 		exit(EXIT_SUCCESS);
 	}];
-}
-
-
-- (TFPFilamentType)parseFilamentType:(NSString *)string {
-	NSDictionary *names = @{
-							@"pla" : @(TFPFilamentTypePLA),
-							@"abs" : @(TFPFilamentTypeABS),
-							@"hips" : @(TFPFilamentTypeHIPS),
-							@"other" : @(TFPFilamentTypeOther),
-							};
-	NSNumber *type = names[string.lowercaseString];
-	return type ? type.integerValue : TFPFilamentTypeUnknown;
-}
-
-
-- (double)defaultTemperatureForFilament:(TFPFilamentType)type {
-	return [@{
-			  @(TFPFilamentTypePLA): @210,
-			  @(TFPFilamentTypeABS): @265,
-			  @(TFPFilamentTypeHIPS): @245,
-			  @(TFPFilamentTypeOther): @210,
-			  }[@(type)] doubleValue];
 }
 
 

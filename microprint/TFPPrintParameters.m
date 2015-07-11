@@ -16,10 +16,20 @@ static const NSUInteger defaultBufferSize = 6;
 - (instancetype)init {
 	if(!(self = [super init])) return nil;
 	
+	self.filament = [TFPFilament defaultFilament];
 	self.bufferSize = defaultBufferSize;
 	self.useWaveBonding = NO;
 	
 	return self;
+}
+
+
+- (double)idealTemperature {
+	if(_idealTemperature < DBL_EPSILON) {
+		return self.filament.defaultTemperature;
+	}else{
+		return _idealTemperature;
+	}
 }
 
 

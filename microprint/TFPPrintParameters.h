@@ -5,16 +5,8 @@
 //  Created by Tomas Franzén on Mon 2015-06-22.
 //
 
-#import <Foundation/Foundation.h>
-
-
-typedef NS_ENUM(NSUInteger, TFPFilamentType) {
-	TFPFilamentTypeUnknown,
-	TFPFilamentTypePLA,
-	TFPFilamentTypeABS,
-	TFPFilamentTypeHIPS,
-	TFPFilamentTypeOther,
-};
+@import Foundation;
+#import "TFPFilament.h"
 
 
 typedef struct {
@@ -32,7 +24,6 @@ typedef struct {
 } TFPBacklashValues;
 
 
-
 extern NSString *TFPBedLevelOffsetsDescription(TFPBedLevelOffsets offsets);
 extern NSString *TFPBacklashValuesDescription(TFPBacklashValues values);
 
@@ -41,8 +32,8 @@ extern NSString *TFPBacklashValuesDescription(TFPBacklashValues values);
 @property (readwrite) NSUInteger bufferSize;
 @property (readwrite) BOOL verbose;
 
-@property (readwrite) TFPFilamentType filamentType;
-@property (readwrite) double idealTemperature;
+@property (readwrite) TFPFilament *filament;
+@property (readwrite, nonatomic) double idealTemperature;
 @property (readwrite) double maxZ;
 
 @property (readwrite) TFPBedLevelOffsets bedLevelOffsets;

@@ -27,7 +27,7 @@
 	if(!(self = [super init])) return nil;
 	
 	self.printer = printer;
-	self.temperature = 210;
+	self.temperature = 215;
 	self.retract = retract;
 	
 	return self;
