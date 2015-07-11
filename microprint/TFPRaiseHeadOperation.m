@@ -25,10 +25,8 @@ static const double raiseStep = 1;
 	__weak __typeof__(self) weakSelf = self;
 	__weak TFPPrinter *printer = self.printer;
 	double targetHeight = self.targetHeight;
-	
-	printer.verboseMode = YES;
-	
-	[printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, NSNumber *E) {		
+		
+	[printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, NSNumber *E) {
 		[printer setRelativeMode:NO completionHandler:^(BOOL success) {
 			__block double Z = position.z.doubleValue;
 			

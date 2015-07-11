@@ -13,7 +13,7 @@
 @property (readwrite) TFPFilamentType type;
 @property (readwrite, copy) NSString *name;
 
-@property (readwrite) double temperature;
+@property (readwrite) double defaultTemperature;
 @end
 
 
@@ -78,7 +78,7 @@
 	
 	self.type = type;
 	self.name = spec[@"name"];
-	self.temperature = [spec[@"temperature"] doubleValue];
+	self.defaultTemperature = [spec[@"temperature"] doubleValue];
 	
 	return self;
 }
