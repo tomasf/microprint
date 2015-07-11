@@ -187,3 +187,8 @@ void TFPListenForInputLine(void(^block)(NSString *line)) {
 	});
 	dispatch_resume(source);
 }
+
+
+void TFPEraseLastLine() {
+	printf("\x1b[A\x1b[K");
+}

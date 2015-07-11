@@ -347,12 +347,14 @@
 		weakSelf.printJob.progressBlock = ^(double progress) {
 			NSString *progressString = [weakSelf.longPercentFormatter stringFromNumber:@(progress)];
 			if(![progressString isEqual:lastProgressString]) {
+				TFPEraseLastLine();
 				TFLog(@"Printing: %@", progressString);
 				lastProgressString = progressString;
 			}
 		};
 		
 		weakSelf.printJob.heatingProgressBlock = ^(double targetTemperature, double currentTemperature) {
+			TFPEraseLastLine();
 			TFLog(@"Heating to %.0f°C: %@", targetTemperature, [weakSelf.shortPercentFormatter stringFromNumber:@(currentTemperature/targetTemperature)]);
 		};
 		

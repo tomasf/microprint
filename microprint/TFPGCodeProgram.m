@@ -27,10 +27,20 @@
 
 - (instancetype)initWithString:(NSString*)string {
 	NSMutableArray *lines = [NSMutableArray new];
+	__block BOOL failed = NO;
 	[string enumerateLinesUsingBlock:^(NSString *lineString, BOOL *stop) {
 		TFPGCode *line = [[TFPGCode alloc] initWithString:lineString];
+		if(!line) {
+			*stop = YES;
+			failed = YES;
+			return;
+		}
 		[lines addObject:line];
 	}];
+	
+	if(failed) {
+		return nil;
+	}
 	
 	if(!(self = [self initWithLines:lines])) return nil;
 	
@@ -162,6 +172,83 @@
 	}
 	
 	return [TFP3DVector vectorWithX:@(maxX-minX) Y:@(maxY-minY) Z:@(maxZ-minZ)];
+}
+
+
+
+- (void)enumerateMovesWithBlock:(void(^)(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate))block {
+	BOOL relativeMode = NO;
+	TFPAbsolutePosition position = {0,0,0,0};
+	double feedRate = 0;
+	
+	for(TFPGCode *code in self.lines) {
+		if(![code hasField:'G']) {
+			continue;
+		}
+		
+		switch ((int)[code valueForField:'G']) {
+			case 0:
+			case 1: {
+				BOOL extruding = [code hasField:'E'] && !isnan([code valueForField:'E']);
+				TFPAbsolutePosition previous = position;
+				
+				if([code hasField:'F']) {
+					feedRate = [code valueForField:'F'];
+				}
+				
+				if(extruding) {
+					double thisE = [code valueForField:'E'];
+					if(relativeMode) {
+						position.e += thisE;
+					}else{
+						position.e = thisE;
+					}
+				}
+				
+				if([code hasField:'X']) {
+					double thisX = [code valueForField:'X'];
+					if(relativeMode) {
+						position.x += thisX;
+					}else{
+						position.x = thisX;
+					}
+				}
+				
+				if([code hasField:'Y']) {
+					double thisY = [code valueForField:'Y'];
+					if(relativeMode) {
+						position.y += thisY;
+					}else{
+						position.y = thisY;
+					}
+				}
+				
+				if([code hasField:'Z']) {
+					double thisZ = [code valueForField:'Z'];
+					if(relativeMode) {
+						position.z += thisZ;
+					}else{
+						position.z = thisZ;
+					}
+				}
+				
+				block(previous, position, feedRate);
+				break;
+			}
+    
+			case 90:
+				relativeMode = NO;
+				break;
+				
+			case 91:
+				relativeMode = YES;
+				break;
+				
+			case 92:
+				break;
+		}
+	}
+	
 }
 
 
