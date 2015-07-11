@@ -93,7 +93,7 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 		if(weakSelf.parameters.verbose) {
 			TFLog(@"%d of %d codes. Got response for %@ after %.03f s", (int)weakSelf.completedRequests, (int)weakSelf.program.lines.count, code, ((double)(TFNanosecondTime()-sendTime)) / NSEC_PER_SEC);
 		}
-		if(weakSelf.progressBlock) {
+		if(weakSelf.progressBlock && !self.aborted) {
 			weakSelf.progressBlock((double)weakSelf.completedRequests / self.program.lines.count);
 		}
 	}];
@@ -236,6 +236,11 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 	TFLog(@"Cancelling print...");
 	
 	self.aborted = YES;
+	
+	if(self.interruptSource) {
+		dispatch_source_cancel(self.interruptSource);
+		self.interruptSource = nil;
+	}
 	
 	[self sendAbortSequenceWithCompletionHandler:^{
 		[self jobEnded];
