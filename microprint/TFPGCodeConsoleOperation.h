@@ -7,11 +7,9 @@
 //
 
 @import Foundation;
-#import "TFPPrinter.h"
+#import "TFPOperation.h"
 
-
-@interface TFPGCodeConsoleOperation : NSObject
-- (instancetype)initWithPrinter:(TFPPrinter*)printer;
+@interface TFPGCodeConsoleOperation : TFPOperation
 - (void)start;
 
 @property BOOL convertFeedRates;

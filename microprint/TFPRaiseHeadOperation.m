@@ -12,22 +12,11 @@
 
 
 @interface TFPRaiseHeadOperation ()
-@property TFPPrinter *printer;
 @property TFPRepeatingCommandSender *repeatSender;
 @end
 
 
 @implementation TFPRaiseHeadOperation
-
-
-- (instancetype)initWithPrinter:(TFPPrinter*)printer {
-	if(!(self = [super init])) return nil;
-	
-	self.printer = printer;
-	
-	return self;
-}
-
 
 static const double raiseStep = 2;
 

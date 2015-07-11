@@ -29,6 +29,7 @@
 		C99E87281B3ACFD10099E79E /* TFPBacklashPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C99E87271B3ACFD10099E79E /* TFPBacklashPreprocessor.m */; };
 		C9C729C81B4E96CB00277F1F /* TFPPreprocessing.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C729C71B4E96CB00277F1F /* TFPPreprocessing.m */; };
 		C9C729E11B516DA900277F1F /* TFPFilament.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C729E01B516DA900277F1F /* TFPFilament.m */; };
+		C9C729E41B5177A700277F1F /* TFPOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C729E31B5177A700277F1F /* TFPOperation.m */; };
 		C9E59B6C1B316AF400343D58 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B6B1B316AF400343D58 /* main.m */; };
 		C9E59B741B316BE800343D58 /* TFPGCode.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B731B316BE800343D58 /* TFPGCode.m */; };
 		C9E59B771B316F0D00343D58 /* Extras.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B761B316F0D00343D58 /* Extras.m */; };
@@ -102,6 +103,8 @@
 		C9C729C71B4E96CB00277F1F /* TFPPreprocessing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPPreprocessing.m; sourceTree = "<group>"; };
 		C9C729DF1B516DA900277F1F /* TFPFilament.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPFilament.h; sourceTree = "<group>"; };
 		C9C729E01B516DA900277F1F /* TFPFilament.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPFilament.m; sourceTree = "<group>"; };
+		C9C729E21B5177A700277F1F /* TFPOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPOperation.h; sourceTree = "<group>"; };
+		C9C729E31B5177A700277F1F /* TFPOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPOperation.m; sourceTree = "<group>"; };
 		C9E59B681B316AF400343D58 /* microprint */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = microprint; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9E59B6B1B316AF400343D58 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		C9E59B721B316BE800343D58 /* TFPGCode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPGCode.h; sourceTree = "<group>"; };
@@ -195,6 +198,8 @@
 		C96590DD1B3DAB30009D028F /* Operations */ = {
 			isa = PBXGroup;
 			children = (
+				C9C729E21B5177A700277F1F /* TFPOperation.h */,
+				C9C729E31B5177A700277F1F /* TFPOperation.m */,
 				C90072AC1B3BF6660097594F /* TFPPrintJob.h */,
 				C90072AD1B3BF6660097594F /* TFPPrintJob.m */,
 				C92B59DA1B4017DC00F38FA7 /* TFPRepeatingCommandSender.h */,
@@ -375,6 +380,7 @@
 				C9E59B771B316F0D00343D58 /* Extras.m in Sources */,
 				C9FD1C601B39618300F98FF1 /* TFPPrinter.m in Sources */,
 				C99E87221B3AA56D0099E79E /* GBSettings.m in Sources */,
+				C9C729E41B5177A700277F1F /* TFPOperation.m in Sources */,
 				C9C729E11B516DA900277F1F /* TFPFilament.m in Sources */,
 				C9FD1C4B1B384ED400F98FF1 /* TFPBedCompensationPreprocessor.m in Sources */,
 				C9FD1C591B395FD000F98FF1 /* TFPPrinterManager.m in Sources */,

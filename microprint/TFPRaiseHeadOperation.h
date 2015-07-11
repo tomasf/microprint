@@ -7,12 +7,9 @@
 //
 
 @import Foundation;
-#import "TFPPrinter.h"
+#import "TFPOperation.h"
 
-@interface TFPRaiseHeadOperation : NSObject
-- (instancetype)initWithPrinter:(TFPPrinter*)printer;
-
+@interface TFPRaiseHeadOperation : TFPOperation
 @property double targetHeight;
-
 - (void)start;
 @end

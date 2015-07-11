@@ -12,7 +12,6 @@
 
 
 @interface TFPGCodeConsoleOperation ()
-@property TFPPrinter *printer;
 @end
 
 
@@ -21,9 +20,8 @@
 
 
 - (instancetype)initWithPrinter:(TFPPrinter*)printer {
-	if(!(self = [super init])) return nil;
+	if(!(self = [super initWithPrinter:printer])) return nil;
 	
-	self.printer = printer;
 	self.convertFeedRates = YES;
 	
 	return self;

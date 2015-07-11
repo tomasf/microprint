@@ -8,11 +8,11 @@
 
 #import <Foundation/Foundation.h>
 #import "TFPGCodeProgram.h"
-#import "TFPPrinter.h"
 #import "TFPPrintParameters.h"
+#import "TFPOperation.h"
 
-@interface TFPPrintJob : NSObject
 
+@interface TFPPrintJob : TFPOperation
 - (instancetype)initWithProgram:(TFPGCodeProgram*)program printer:(TFPPrinter*)printer printParameters:(TFPPrintParameters*)params;
 
 @property (copy) void(^progressBlock)(double progress);
@@ -22,5 +22,4 @@
 
 - (void)start;
 - (void)abort;
-
 @end

@@ -11,20 +11,11 @@
 
 
 @interface TFPRepeatingCommandSender ()
-@property TFPPrinter *printer;
 @property BOOL stopFlag;
 @end
 
 
 @implementation TFPRepeatingCommandSender
-
-- (instancetype)initWithPrinter:(TFPPrinter*)printer {
-	if(!(self = [super init])) return nil;
-	
-	self.printer = printer;
-	
-	return self;
-}
 
 
 - (void)repeat {

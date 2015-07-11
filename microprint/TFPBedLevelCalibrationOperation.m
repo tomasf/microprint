@@ -16,23 +16,12 @@
 
 
 @interface TFPBedLevelCalibrationOperation ()
-@property TFPPrinter *printer;
 @property TFPPrintParameters *parameters;
-
 @property TFPPrintJob *printJob;
 @end
 
 
 @implementation TFPBedLevelCalibrationOperation
-
-
-- (instancetype)initWithPrinter:(TFPPrinter*)printer {
-	if(!(self = [super init])) return nil;
-	
-	self.printer = printer;
-	
-	return self;
-}
 
 
 + (TFPGCodeProgram*)testBorderProgram {
@@ -108,7 +97,6 @@
 }
 
 
-
 - (void)promptForMeasurementsWithLabel:(NSString*)label completionHandler:(void(^)(double value))completionHandler {
 	__weak __typeof__(self) weakSelf = self;
 	setbuf(stdout, NULL);
@@ -172,10 +160,6 @@
 		
 	}];
 }
-
-
-
-
 
 
 - (void)startWithPrintParameters:(TFPPrintParameters*)params {

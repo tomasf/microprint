@@ -14,7 +14,6 @@
 
 
 @interface TFPExtrusionOperation ()
-@property TFPPrinter *printer;
 @property TFPRepeatingCommandSender *repeatSender;
 @property BOOL retract;
 @end
@@ -24,9 +23,8 @@
 
 
 - (instancetype)initWithPrinter:(TFPPrinter*)printer retraction:(BOOL)retract {
-	if(!(self = [super init])) return nil;
+	if(!(self = [super initWithPrinter:printer])) return nil;
 	
-	self.printer = printer;
 	self.temperature = 215;
 	self.retract = retract;
 	

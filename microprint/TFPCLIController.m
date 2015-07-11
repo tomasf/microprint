@@ -35,12 +35,7 @@
 
 @interface TFPCLIController ()
 @property TFPPrinter *printer;
-
-@property TFPPrintJob *printJob;
-@property TFPExtrusionOperation *extrusionOperation;
-@property TFPRaiseHeadOperation *raiseHeadOperation;
-@property TFPGCodeConsoleOperation *consoleOperation;
-@property TFPBedLevelCalibrationOperation *bedLevelCalibrationOperation;
+@property TFPOperation *operation;
 
 @property NSNumberFormatter *shortPercentFormatter;
 @property NSNumberFormatter *longPercentFormatter;
@@ -235,9 +230,9 @@
 			temperature = 215;
 		}
 		
-		self.extrusionOperation = [[TFPExtrusionOperation alloc] initWithPrinter:self.printer retraction:[command isEqual:@"retract"]];
-		[self.extrusionOperation start];
-		
+		TFPExtrusionOperation *extrusionOperation = [[TFPExtrusionOperation alloc] initWithPrinter:self.printer retraction:[command isEqual:@"retract"]];
+		[extrusionOperation start];
+		self.operation = extrusionOperation;
 		
 	}else if([command isEqual:@"print"]) {
 		[self printPath:value usingParameters:[self printParametersForSettings:settings]];
@@ -246,21 +241,24 @@
 		[self preprocessGCodePath:value outputPath:[settings objectForKey:@"output"] usingParameters:[self printParametersForSettings:settings]];
 		
 	}else if([command isEqual:@"bedlevel"]) {
-		self.bedLevelCalibrationOperation = [[TFPBedLevelCalibrationOperation alloc] initWithPrinter:self.printer];
-		[self.bedLevelCalibrationOperation startWithPrintParameters:[self printParametersForSettings:settings]];
+		TFPBedLevelCalibrationOperation *bedLevelCalibrationOperation = [[TFPBedLevelCalibrationOperation alloc] initWithPrinter:self.printer];
+		[bedLevelCalibrationOperation startWithPrintParameters:[self printParametersForSettings:settings]];
+		self.operation = bedLevelCalibrationOperation;
 		
 	}else if([command isEqualTo:@"off"]) {
 		[self turnOff];
 		
 	}else if([command isEqualTo:@"raise"]) {
-		self.raiseHeadOperation = [[TFPRaiseHeadOperation alloc] initWithPrinter:self.printer];
-		self.raiseHeadOperation.targetHeight = [settings floatForKey:@"height"];
-		[self.raiseHeadOperation start];
+		TFPRaiseHeadOperation *raiseHeadOperation = [[TFPRaiseHeadOperation alloc] initWithPrinter:self.printer];
+		raiseHeadOperation.targetHeight = [settings floatForKey:@"height"];
+		[raiseHeadOperation start];
+		self.operation = raiseHeadOperation;
 		
 	}else if([command isEqual:@"console"]) {
-		self.consoleOperation = [[TFPGCodeConsoleOperation alloc] initWithPrinter:self.printer];
-		self.consoleOperation.convertFeedRates = ![settings boolForKey:@"rawFeedRates"];
-		[self.consoleOperation start];
+		TFPGCodeConsoleOperation *consoleOperation = [[TFPGCodeConsoleOperation alloc] initWithPrinter:self.printer];
+		consoleOperation.convertFeedRates = ![settings boolForKey:@"rawFeedRates"];
+		[consoleOperation start];
+		self.operation = consoleOperation;
 		
 	}else{
 		TFLog(@"Invalid command '%@'", command);
@@ -340,11 +338,11 @@
 	[self.printer fillInOffsetAndBacklashValuesInPrintParameters:params completionHandler:^(BOOL success) {
 		program = [weakSelf preprocessProgramAndLogInfo:program usingPrintParameters:params];
 		
-		weakSelf.printJob = [[TFPPrintJob alloc] initWithProgram:program printer:printer printParameters:params];
+		TFPPrintJob *printJob = [[TFPPrintJob alloc] initWithProgram:program printer:printer printParameters:params];
 		
 		__block NSString *lastProgressString;
 		
-		weakSelf.printJob.progressBlock = ^(double progress) {
+		printJob.progressBlock = ^(double progress) {
 			NSString *progressString = [weakSelf.longPercentFormatter stringFromNumber:@(progress)];
 			if(![progressString isEqual:lastProgressString]) {
 				TFPEraseLastLine();
@@ -353,22 +351,23 @@
 			}
 		};
 		
-		weakSelf.printJob.heatingProgressBlock = ^(double targetTemperature, double currentTemperature) {
+		printJob.heatingProgressBlock = ^(double targetTemperature, double currentTemperature) {
 			TFPEraseLastLine();
 			TFLog(@"Heating to %.0f°C: %@", targetTemperature, [weakSelf.shortPercentFormatter stringFromNumber:@(currentTemperature/targetTemperature)]);
 		};
 		
-		weakSelf.printJob.abortionBlock = ^(NSTimeInterval duration) {
+		printJob.abortionBlock = ^(NSTimeInterval duration) {
 			TFLog(@"Print cancelled after %@.", [weakSelf.durationFormatter stringFromTimeInterval:duration]);
 			exit(EXIT_SUCCESS);
 		};
 		
-		weakSelf.printJob.completionBlock = ^(NSTimeInterval duration) {
+		printJob.completionBlock = ^(NSTimeInterval duration) {
 			TFLog(@"Done! Print time: %@", [weakSelf.durationFormatter stringFromTimeInterval:duration]);
 			exit(EXIT_SUCCESS);
 		};
 		
-		[weakSelf.printJob start];
+		[printJob start];
+		weakSelf.operation = printJob;
 	}];
 }
 

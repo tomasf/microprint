@@ -18,7 +18,6 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 
 
 @interface TFPPrintJob ()
-@property TFPPrinter *printer;
 @property TFPPrintParameters *parameters;
 @property TFPGCodeProgram *program;
 @property IOPMAssertionID powerAssertionID;
@@ -37,14 +36,14 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 @end
 
 
+
 @implementation TFPPrintJob
 
 
 - (instancetype)initWithProgram:(TFPGCodeProgram*)program printer:(TFPPrinter*)printer printParameters:(TFPPrintParameters*)params {
-	if(!(self = [super init])) return nil;
+	if(!(self = [super initWithPrinter:printer])) return nil;
 	
 	self.program = [program programByStrippingNonFieldCodes];
-	self.printer = printer;
 	self.parameters = params;
 	
 	return self;

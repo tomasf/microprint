@@ -6,11 +6,10 @@
 //  Copyright (c) 2015 Tomas Franzén. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import "TFPOperation.h"
 
-@class TFPPrinter, TFPPrintParameters;
+@class TFPPrintParameters;
 
-@interface TFPBedLevelCalibrationOperation : NSObject
-- (instancetype)initWithPrinter:(TFPPrinter*)printer;
+@interface TFPBedLevelCalibrationOperation : TFPOperation
 - (void)startWithPrintParameters:(TFPPrintParameters*)params;
 @end

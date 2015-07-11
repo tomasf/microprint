@@ -7,10 +7,10 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "TFPPrinter.h"
+#import "TFPOperation.h"
 
 
-@interface TFPExtrusionOperation : NSObject
+@interface TFPExtrusionOperation : TFPOperation
 - (instancetype)initWithPrinter:(TFPPrinter*)printer retraction:(BOOL)retract;
 
 @property double temperature;

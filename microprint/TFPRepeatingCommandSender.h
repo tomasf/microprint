@@ -7,11 +7,10 @@
 //
 
 @import Foundation;
-#import "TFPPrinter.h"
+#import "TFPOperation.h"
 
 
-@interface TFPRepeatingCommandSender : NSObject
-- (instancetype)initWithPrinter:(TFPPrinter*)printer;
+@interface TFPRepeatingCommandSender : TFPOperation
 - (void)start;
 
 @property (copy) TFPGCode*(^nextCodeBlock)();
