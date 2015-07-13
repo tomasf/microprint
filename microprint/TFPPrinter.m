@@ -11,6 +11,8 @@
 #import "TFPPrintParameters.h"
 #import "TFStringScanner.h"
 #import "TFP3DVector.h"
+#import "TFPGCodeProgram.h"
+#import "TFPGCodeHelpers.h"
 
 
 @interface TFPPrinter () <ORSSerialPortDelegate>
@@ -116,12 +118,12 @@
 }
 
 
-- (void)sendGCodes:(NSArray*)codes completionHandler:(void(^)(BOOL success))completionHandler {
-	TFPGCode *code = codes.firstObject;
-	if(code) {
+- (void)runGCodeProgram:(TFPGCodeProgram *)program offset:(NSUInteger)offset completionHandler:(void (^)(BOOL))completionHandler {
+	if(offset < program.lines.count) {
+		TFPGCode *code = program.lines[offset];
 		[self sendGCode:code responseHandler:^(BOOL success, NSString *value) {
 			if(success) {
-				[self sendGCodes:[codes subarrayWithRange:NSMakeRange(1, codes.count-1)] completionHandler:completionHandler];
+				[self runGCodeProgram:program offset:offset+1 completionHandler:completionHandler];
 			}else{
 				completionHandler(NO);
 			}
@@ -129,6 +131,11 @@
 	}else{
 		completionHandler(YES);
 	}
+}
+
+
+- (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success))completionHandler {
+	[self runGCodeProgram:program offset:0 completionHandler:completionHandler];
 }
 
 
@@ -426,7 +433,7 @@
 }
 
 
-- (void)moveToPosition:(TFP3DVector*)position EPosition:(NSNumber*)E usingFeedRate:(double)F completionHandler:(void(^)(BOOL success))completionHandler {
+- (void)moveToPosition:(TFP3DVector*)position usingFeedRate:(double)F completionHandler:(void(^)(BOOL success))completionHandler {
 	TFPGCode *code = [TFPGCode codeWithString:@"G0"];
 	if(position.x) {
 		code = [code codeBySettingField:'X' toValue:position.x.doubleValue];
@@ -437,30 +444,14 @@
 	if(position.z) {
 		code = [code codeBySettingField:'Z' toValue:position.z.doubleValue];
 	}
-	if(E) {
-		code = [code codeBySettingField:'E' toValue:E.doubleValue];
-	}
 	if(F >= 0) {
-		code = [code codeBySettingField:'F' toValue:F];
+		code = [code codeBySettingField:'F' toValue:[TFPGCode convertFeedRate:F]];
 	}
 
 	[self sendGCode:code responseHandler:^(BOOL success, NSString *value) {
 		completionHandler(success);
 	}];
 }
-
-
-const double maxMMPerSecond = 60.001;
-
-+ (double)convertFeedRate:(double)feedRate {
-	feedRate /= 60;
-	feedRate = MIN(feedRate, maxMMPerSecond);
-	
-	double factor = feedRate / maxMMPerSecond;
-	feedRate = 30 + (1 - factor) * 800;
-	return feedRate;
-}
-
 
 
 #pragma mark - Serial port delegate

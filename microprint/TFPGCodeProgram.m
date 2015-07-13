@@ -25,6 +25,11 @@
 }
 
 
++ (instancetype)programWithLines:(NSArray*)lines {
+	return [[self alloc] initWithLines:lines];
+}
+
+
 - (instancetype)initWithString:(NSString*)string {
 	NSMutableArray *lines = [NSMutableArray new];
 	__block BOOL failed = NO;

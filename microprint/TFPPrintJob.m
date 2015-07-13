@@ -225,7 +225,7 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 					   TGPGCODE(M0)
 					   ];
 	
-	[self.printer sendGCodes:codes completionHandler:^(BOOL success) {
+	[self.printer runGCodeProgram:[TFPGCodeProgram programWithLines:codes] completionHandler:^(BOOL success) {
 		completionHandler();
 	}];
 }

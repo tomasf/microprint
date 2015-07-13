@@ -9,6 +9,7 @@
 #import "ORSSerialPort.h"
 #import "TFPGCode.h"
 #import "TFPPrintParameters.h"
+#import "TFPGCodeProgram.h"
 
 
 typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
@@ -37,7 +38,7 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 + (NSString*)nameForPrinterColor:(TFPPrinterColor)color;
 
 - (void)sendGCode:(TFPGCode*)GCode responseHandler:(void(^)(BOOL success, NSString *value))block;
-- (void)sendGCodes:(NSArray*)codes completionHandler:(void(^)(BOOL success))completionHandler;
+- (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success))completionHandler;
 
 - (void)fetchBedOffsetsWithCompletionHandler:(void(^)(BOOL success, TFPBedLevelOffsets offsets))completionHandler;
 - (void)fetchBacklashValuesWithCompletionHandler:(void(^)(BOOL success, TFPBacklashValues values))completionHandler;
@@ -48,12 +49,10 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 - (void)fetchPositionWithCompletionHandler:(void(^)(BOOL success, TFP3DVector *position, NSNumber *E))completionHandler;
 
 - (void)setRelativeMode:(BOOL)relative completionHandler:(void(^)(BOOL success))completionHandler;
-- (void)moveToPosition:(TFP3DVector*)position EPosition:(NSNumber*)E usingFeedRate:(double)F completionHandler:(void(^)(BOOL success))completionHandler;
+- (void)moveToPosition:(TFP3DVector*)position usingFeedRate:(double)F completionHandler:(void(^)(BOOL success))completionHandler;
 
 @property (copy) void(^resendHandler)(NSUInteger lineNumber);
 
 @property (readonly) double heaterTemperature; // Observable
 @property BOOL verboseMode;
-
-+ (double)convertFeedRate:(double)feedRate;
 @end

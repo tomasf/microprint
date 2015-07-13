@@ -155,6 +155,10 @@
 			[weakSelf promptForValues];
 		};
 		
+		weakSelf.printJob.abortionBlock = ^(NSTimeInterval duration) {
+			exit(EXIT_SUCCESS);
+		};
+		
 		TFLog(@"Printing 0.4 mm test border...");
 		[weakSelf.printJob start];
 		

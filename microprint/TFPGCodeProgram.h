@@ -17,6 +17,7 @@ typedef struct {
 
 
 @interface TFPGCodeProgram : NSObject
++ (instancetype)programWithLines:(NSArray*)lines;
 - (instancetype)initWithLines:(NSArray*)lines;
 - (instancetype)initWithString:(NSString*)string;
 - (instancetype)initWithFileURL:(NSURL*)URL;

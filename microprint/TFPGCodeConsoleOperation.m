@@ -9,6 +9,7 @@
 #import "TFPGCodeConsoleOperation.h"
 #import "TFPPrinter.h"
 #import "Extras.h"
+#import "TFPGCodeHelpers.h"
 
 
 @interface TFPGCodeConsoleOperation ()
@@ -38,7 +39,7 @@
 			if(self.convertFeedRates) {
 				NSInteger G = [code valueForField:'G' fallback:-1];
 				if((G == 0 || G == 1) && [code hasField:'F']) {
-					code = [code codeBySettingField:'F' toValue:[TFPPrinter convertFeedRate:[code valueForField:'F']]];
+					code = [code codeBySettingField:'F' toValue:[TFPGCode convertFeedRate:[code valueForField:'F']]];
 				}
 			}
 			

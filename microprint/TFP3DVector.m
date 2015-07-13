@@ -44,6 +44,11 @@
 }
 
 
++ (instancetype)zVector:(double)z {
+	return [self vectorWithX:nil Y:nil Z:@(z)];
+}
+
+
 - (NSString *)description {
 	return [NSString stringWithFormat:@"[%@  %@  %@]", self.x ?: @"nil", self.y ?: @"nil", self.z ?: @"nil"];
 }

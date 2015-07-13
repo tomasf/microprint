@@ -189,6 +189,16 @@ void TFPListenForInputLine(void(^block)(NSString *line)) {
 }
 
 
+NSString *TFPGetInputLine() {
+	char *line = NULL;
+	size_t cap = 1024;
+	ssize_t length = getline(&line, &cap, stdin);
+	NSString *string = [[NSString alloc] initWithBytes:line length:length encoding:NSUTF8StringEncoding];
+	free(line);
+	return string;
+}
+
+
 void TFPEraseLastLine() {
 	printf("\x1b[A\x1b[K");
 }

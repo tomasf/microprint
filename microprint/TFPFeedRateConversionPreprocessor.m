@@ -14,6 +14,7 @@
 #import "TFPFeedRateConversionPreprocessor.h"
 #import "TFPGCode.h"
 #import "TFPPrinter.h"
+#import "TFPGCodeHelpers.h"
 
 
 @implementation TFPFeedRateConversionPreprocessor
@@ -25,7 +26,7 @@
 	for(__strong TFPGCode *line in self.program.lines) {
 		if([line hasField:'G'] && [line hasField:'F']) {
 			double feedRate = line.feedRate;
-			feedRate = [TFPPrinter convertFeedRate:feedRate];
+			feedRate = [TFPGCode convertFeedRate:feedRate];
 			line = [line codeBySettingField:'F' toValue:feedRate];
 		}
 		

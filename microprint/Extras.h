@@ -38,4 +38,5 @@ extern uint64_t TFNanosecondTime(void);
 extern CGFloat TFPVectorDot(CGVector a, CGVector b);
 
 extern void TFPListenForInputLine(void(^block)(NSString *line));
+extern NSString *TFPGetInputLine();
 extern void TFPEraseLastLine();

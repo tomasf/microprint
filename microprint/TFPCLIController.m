@@ -28,6 +28,7 @@
 #import "TFPGCodeConsoleOperation.h"
 #import "TFPBedLevelCalibrationOperation.h"
 #import "TFPPreprocessing.h"
+#import "TFPManualBedLevelCalibration.h"
 
 #import "MAKVONotificationCenter.h"
 #import "GBCli.h"
@@ -75,6 +76,8 @@
 	[factoryDefaults setInteger:0 forKey:@"temperature"];
 	[factoryDefaults setObject:@"PLA" forKey:@"filament"];
 	[factoryDefaults setInteger:70 forKey:@"height"];
+	[factoryDefaults setFloat:2 forKey:@"start"];
+	[factoryDefaults setFloat:0.3 forKey:@"target"];
 	[factoryDefaults setInteger:1 forKey:@"buffer"];
 	
 	[factoryDefaults setBool:YES forKey:@"wavebonding"];
@@ -93,6 +96,8 @@
 	[parser registerOption:@"filament" shortcut:0 requirement:GBValueOptional];
 	[parser registerOption:@"buffer" shortcut:0 requirement:GBValueOptional];
 	[parser registerOption:@"height" shortcut:0 requirement:GBValueOptional];
+	[parser registerOption:@"start" shortcut:0 requirement:GBValueOptional];
+	[parser registerOption:@"target" shortcut:0 requirement:GBValueOptional];
 	
 	[parser registerOption:@"output" shortcut:0 requirement:GBValueOptional];
 	[parser registerOption:@"dryrun" shortcut:0 requirement:GBValueNone];
@@ -170,7 +175,10 @@
 	TFLog(@"  console [--rawFeedRates]");
 	TFLog(@"    Starts an interactive console where you can send arbitrary G-codes to the printer.");
 	
-	TFLog(@"  bedlevel");
+	TFLog(@"  bedlevel [--start 2] [--target 0.3]");
+	TFLog(@"    Fast interactive calibration for bed level offsets by measuring the distance between nozzle and bed. The 'start' parameter is the Z level to start from in mm. Using 'target' changes the target thickness.");
+	
+	TFLog(@"  testborder");
 	TFLog(@"    Prints a test border and prompts for measurements to automatically adjust bed level offsets.");
 	
 	TFLog(@"  off");
@@ -240,9 +248,16 @@
 	}else if([command isEqual:@"preprocess"]) {
 		[self preprocessGCodePath:value outputPath:[settings objectForKey:@"output"] usingParameters:[self printParametersForSettings:settings]];
 		
-	}else if([command isEqual:@"bedlevel"]) {
+	}else if([command isEqual:@"testborder"]) {
 		TFPBedLevelCalibrationOperation *bedLevelCalibrationOperation = [[TFPBedLevelCalibrationOperation alloc] initWithPrinter:self.printer];
 		[bedLevelCalibrationOperation startWithPrintParameters:[self printParametersForSettings:settings]];
+		self.operation = bedLevelCalibrationOperation;
+
+	}else if([command isEqual:@"bedlevel"]) {
+		TFPManualBedLevelCalibration *bedLevelCalibrationOperation = [[TFPManualBedLevelCalibration alloc] initWithPrinter:self.printer];
+		bedLevelCalibrationOperation.heightTarget = [settings floatForKey:@"target"];
+		bedLevelCalibrationOperation.startZ = [settings floatForKey:@"start"];
+		[bedLevelCalibrationOperation start];
 		self.operation = bedLevelCalibrationOperation;
 		
 	}else if([command isEqualTo:@"off"]) {

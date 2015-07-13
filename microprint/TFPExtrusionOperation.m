@@ -106,7 +106,7 @@ static const double extrudeFeedRate = 210;
 				
 				if(position.z.doubleValue < minZ) {
 					[printer setRelativeMode:NO completionHandler:^(BOOL success) {
-						[printer moveToPosition:[TFP3DVector vectorWithX:nil Y:nil Z:@(minZ)] EPosition:nil usingFeedRate:-1 completionHandler:^(BOOL success) {
+						[printer moveToPosition:[TFP3DVector vectorWithX:nil Y:nil Z:@(minZ)] usingFeedRate:-1 completionHandler:^(BOOL success) {
 							nextStep();
 						}];
 					}];
