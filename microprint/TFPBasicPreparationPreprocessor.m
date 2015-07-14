@@ -27,7 +27,7 @@
 	[output addObject:[TFPGCode codeWithString:@"M18"]]; // Disable motors
 	[output addObject:[[TFPGCode codeWithString:@"M109"] codeBySettingField:'S' toValue:parameters.idealTemperature]]; // Wait for temperature
 	
-	[output addObject:[TFPGCode codeWithString:@"G4 S10"]]; // Wait 10 seconds
+	//[output addObject:[TFPGCode codeWithString:@"G4 S10"]]; // Wait 10 seconds
 	
 	[output addObject:[TFPGCode codeWithString:@"M17"]]; // Enable motors
 	[output addObject:[TFPGCode codeWithString:@"G91"]]; // Relative mode
