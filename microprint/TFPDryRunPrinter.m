@@ -32,4 +32,11 @@
 }
 
 
+- (void)fetchBacklashValuesWithCompletionHandler:(void(^)(BOOL success, TFPBacklashValues values))completionHandler {
+	dispatch_after(dispatch_time(0, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+		completionHandler(YES, (TFPBacklashValues){0.33, 0.69});
+	});
+}
+
+
 @end
