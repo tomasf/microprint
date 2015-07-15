@@ -16,7 +16,7 @@
 #import "MAKVONotificationCenter.h"
 
 
-static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
+static const uint16_t lineNumberWrapAround = 100;
 
 
 @interface TFPPrintJob ()
@@ -28,7 +28,6 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 @property NSUInteger lineNumber;
 @property uint64_t startTime;
 
-@property dispatch_source_t interruptSource;
 @property BOOL aborted;
 
 @property double targetTemperature;
@@ -58,11 +57,6 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 	if(self.powerAssertionID != kIOPMNullAssertionID) {
 		IOPMAssertionRelease(self.powerAssertionID);
 	}
-	
-	if(self.interruptSource) {
-		dispatch_source_cancel(self.interruptSource);
-		self.interruptSource = nil;
-	}
 }
 
 
@@ -79,7 +73,7 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 	[self jobEnded];
 	
 	if(self.completionBlock) {
-		self.completionBlock([self elapsedTime]);
+		self.completionBlock();
 	}
 }
 
@@ -114,7 +108,7 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 			TFLog(@"%d of %d codes. Got response for %@ after %.03f s", (int)weakSelf.completedRequests, (int)weakSelf.program.lines.count, code, ((double)(TFNanosecondTime()-sendTime)) / NSEC_PER_SEC);
 		}
 		if(weakSelf.progressBlock && !self.aborted) {
-			weakSelf.progressBlock(weakSelf.completedRequests);
+			weakSelf.progressBlock();
 		}
 	}];
 	
@@ -212,25 +206,11 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 	};
 	
 	
-	IOReturn asserted = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoIdleSleep,
-													kIOPMAssertionLevelOn,
-													CFSTR("MicroPrint print job"),
-													&(self->_powerAssertionID));
+	IOReturn asserted = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoIdleSleep, kIOPMAssertionLevelOn, CFSTR("MicroPrint print job"), &(self->_powerAssertionID));
 	if (asserted != kIOReturnSuccess) {
 		TFLog(@"Failed to assert kIOPMAssertionTypeNoIdleSleep!");
 		self.powerAssertionID = kIOPMNullAssertionID;
 	}
-	
-	
-	self.interruptSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_SIGNAL, SIGINT, 0, dispatch_get_main_queue());
-	dispatch_source_set_event_handler(self.interruptSource, ^{
-		[weakSelf abort];
-	});
-	dispatch_resume(self.interruptSource);
-
-	struct sigaction action = { 0 };
-	action.sa_handler = SIG_IGN;
-	sigaction(SIGINT, &action, NULL);
 }
 
 
@@ -257,22 +237,14 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 }
 
 
-- (void)abort {
-	TFLog(@"");
-	TFLog(@"Cancelling print...");
-	
+- (void)abort {	
 	self.aborted = YES;
-	
-	if(self.interruptSource) {
-		dispatch_source_cancel(self.interruptSource);
-		self.interruptSource = nil;
-	}
 	
 	[self sendAbortSequenceWithCompletionHandler:^{
 		[self jobEnded];
 		
 		if(self.abortionBlock) {
-			self.abortionBlock([self elapsedTime]);
+			self.abortionBlock();
 		}
 	}];
 }

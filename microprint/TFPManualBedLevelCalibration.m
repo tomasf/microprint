@@ -64,26 +64,29 @@ const double fineMoveFeedRate = 1000;
 
 
 
-- (void)promptForZFromPositions:(NSArray*)vectors completionHandler:(void(^)(NSArray *zValues))completionHandler {
+- (void)promptForZFromPositions:(NSArray*)vectors zOffset:(double)zOffset completionHandler:(void(^)(NSArray *zValues))completionHandler {
 	TFP3DVector *position = vectors.firstObject;
+	TFP3DVector *offsetPosition = [position vectorByAdjustingZ:zOffset];
 	
-	[self.printer moveToPosition:position usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
-		TFLog(@"");
-		TFLog(@"* Press Return to lower the print head 0.05 mm, enter \"up\" (u) to go back up and \"next\" (n) to %@.", (vectors.count == 1) ? @"finish calibration" : @"go to the next corner");
-		
-		[self promptForNewZLevelWithCurrent:position.z.doubleValue completionHandler:^(double newZ){
+	[self.printer moveToPosition:offsetPosition usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
+		[self.printer moveToPosition:position usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
+			TFLog(@"");
+			TFLog(@"* Press Return to lower the print head 0.05 mm, enter \"up\" (u) to go back up and \"next\" (n) to %@.", (vectors.count == 1) ? @"finish calibration" : @"go to the next corner");
 			
-			NSArray *remainingPositions = [vectors subarrayWithRange:NSMakeRange(1, vectors.count-1)];
-			if(remainingPositions.count) {
-				[self promptForZFromPositions:remainingPositions completionHandler:^(NSArray *zValues) {
-					NSMutableArray *values = [@[@(newZ)] mutableCopy];
-					[values addObjectsFromArray:zValues];
-					completionHandler(values);
-				}];
+			[self promptForNewZLevelWithCurrent:position.z.doubleValue completionHandler:^(double newZ){
 				
-			}else{
-				completionHandler(@[@(newZ)]);
-			}
+				NSArray *remainingPositions = [vectors subarrayWithRange:NSMakeRange(1, vectors.count-1)];
+				if(remainingPositions.count) {
+					[self promptForZFromPositions:remainingPositions zOffset:zOffset completionHandler:^(NSArray *zValues) {
+						NSMutableArray *values = [@[@(newZ)] mutableCopy];
+						[values addObjectsFromArray:zValues];
+						completionHandler(values);
+					}];
+					
+				}else{
+					completionHandler(@[@(newZ)]);
+				}
+			}];
 		}];
 	}];
 }
@@ -107,7 +110,6 @@ const double fineMoveFeedRate = 1000;
 	TFPGCodeProgram *preparation = [TFPGCodeProgram programWithLines:@[
 																	   [TFPGCode moveHomeCode],
 																	   [TFPGCode absoluteModeCode],
-																	   [TFPGCode moveWithPosition:[TFP3DVector zVector:raiseLevel] withFeedRate:moveFeedRate],
 																	   ]];
 	
 	[self.printer runGCodeProgram:preparation completionHandler:^(BOOL success) {
@@ -116,7 +118,7 @@ const double fineMoveFeedRate = 1000;
 		TFLog(@"We're going to calibrate the height of each of the four corners of your print bed. For each corner, you'll be asked to lower the print head until it reaches a known level above the bed.");
 		TFLog(@"Take three sheets of regular paper (or something else that is 0.3 mm thick) and put them between the nozzle and the print bed. Move your sheets around while you lower the print head until you feel resistance. When you feel resistance when trying to move the sheets, we're at the correct height, and you can continue to the next corner.");
 		
-		[self promptForZFromPositions:positions completionHandler:^(NSArray *zValues) {
+		[self promptForZFromPositions:positions zOffset:raiseLevel completionHandler:^(NSArray *zValues) {
 			NSAssert(zValues.count == positions.count, @"Invalid prompt position response");
 			
 			TFPBedLevelOffsets offsets = {.common = -targetOffset};

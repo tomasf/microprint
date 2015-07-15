@@ -22,4 +22,5 @@
 
 - (double)distanceToPoint:(TFP3DVector*)point;
 - (TFP3DVector*)vectorByDefaultingToValues:(TFP3DVector*)defaults;
+- (TFP3DVector*)vectorByAdjustingZ:(double)delta;
 @end

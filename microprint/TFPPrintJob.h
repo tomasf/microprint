@@ -20,9 +20,9 @@
 @property (readonly) NSUInteger completedRequests; //Observable
 @property (readonly) NSTimeInterval elapsedTime;
 
-@property (copy) void(^progressBlock)();
-@property (copy) void(^completionBlock)();
-@property (copy) void(^abortionBlock)();
+@property (copy) void(^progressBlock)(void);
+@property (copy) void(^completionBlock)(void);
+@property (copy) void(^abortionBlock)(void);
 @property (copy) void(^heatingProgressBlock)(double targetTemperature, double currentTemperature);
 
 - (void)start;

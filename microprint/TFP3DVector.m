@@ -69,6 +69,11 @@
 }
 
 
+- (TFP3DVector*)vectorByAdjustingZ:(double)delta {
+	return [TFP3DVector vectorWithX:self.x Y:self.y Z:self.z ? @(self.z.doubleValue + delta) : nil];
+}
+
+
 - (double)distanceToPoint:(TFP3DVector*)point {
 	point = [point vectorByDefaultingToValues:self];
 	

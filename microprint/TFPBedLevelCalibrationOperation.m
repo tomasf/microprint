@@ -151,11 +151,11 @@
 		TFPGCodeProgram *program = [TFPPreprocessing programByPreprocessingProgram:[self.class testBorderProgram] usingParameters:self.parameters];
 		weakSelf.printJob = [[TFPPrintJob alloc] initWithProgram:program printer:weakSelf.printer printParameters:weakSelf.parameters];
 
-		weakSelf.printJob.completionBlock = ^(NSTimeInterval duration) {
+		weakSelf.printJob.completionBlock = ^ {
 			[weakSelf promptForValues];
 		};
 		
-		weakSelf.printJob.abortionBlock = ^(NSTimeInterval duration) {
+		weakSelf.printJob.abortionBlock = ^ {
 			exit(EXIT_SUCCESS);
 		};
 		

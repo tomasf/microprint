@@ -37,6 +37,7 @@
 @interface TFPCLIController ()
 @property TFPPrinter *printer;
 @property TFPOperation *operation;
+@property dispatch_source_t interruptSource;
 
 @property NSNumberFormatter *shortPercentFormatter;
 @property NSNumberFormatter *longPercentFormatter;
@@ -367,10 +368,11 @@
 		program = [weakSelf preprocessProgramAndLogInfo:program usingPrintParameters:params];
 		
 		TFPPrintJob *printJob = [[TFPPrintJob alloc] initWithProgram:program printer:printer printParameters:params];
-		
+		__weak TFPPrintJob *weakPrintJob = printJob;
 		__block NSString *lastProgressString;
 		
-		printJob.progressBlock = ^(double progress) {
+		printJob.progressBlock = ^() {
+			double progress = (double)weakPrintJob.completedRequests / weakPrintJob.program.lines.count;
 			NSString *progressString = [weakSelf.longPercentFormatter stringFromNumber:@(progress)];
 			if(![progressString isEqual:lastProgressString]) {
 				TFPEraseLastLine();
@@ -384,15 +386,29 @@
 			TFLog(@"Heating to %.0f°C: %@", targetTemperature, [weakSelf.shortPercentFormatter stringFromNumber:@(currentTemperature/targetTemperature)]);
 		};
 		
-		printJob.abortionBlock = ^(NSTimeInterval duration) {
+		printJob.abortionBlock = ^ {
+			NSTimeInterval duration = weakPrintJob.elapsedTime;
 			TFLog(@"Print cancelled after %@.", [weakSelf.durationFormatter stringFromTimeInterval:duration]);
 			exit(EXIT_SUCCESS);
 		};
 		
-		printJob.completionBlock = ^(NSTimeInterval duration) {
+		printJob.completionBlock = ^ {
+			NSTimeInterval duration = weakPrintJob.elapsedTime;
 			TFLog(@"Done! Print time: %@", [weakSelf.durationFormatter stringFromTimeInterval:duration]);
 			exit(EXIT_SUCCESS);
 		};
+		
+		
+		weakSelf.interruptSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_SIGNAL, SIGINT, 0, dispatch_get_main_queue());
+		dispatch_source_set_event_handler(weakSelf.interruptSource, ^{
+			TFLog(@"Cancelling print...");
+			[weakPrintJob abort];
+		});
+		dispatch_resume(weakSelf.interruptSource);
+		
+		struct sigaction action = { 0 };
+		action.sa_handler = SIG_IGN;
+		sigaction(SIGINT, &action, NULL);
 		
 		[printJob start];
 		weakSelf.operation = printJob;
