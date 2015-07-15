@@ -9,7 +9,9 @@
 @interface TFP3DVector : NSObject
 + (instancetype)vectorWithX:(NSNumber*)x Y:(NSNumber*)Y Z:(NSNumber*)Z;
 
++ (instancetype)xyVectorWithX:(double)x y:(double)y;
 + (instancetype)zVector:(double)z;
++ (instancetype)yVector:(double)y;
 
 + (instancetype)zeroVector;
 + (instancetype)emptyVector;

@@ -11,10 +11,34 @@
 @interface TFPGCode (TFPHelpers)
 + (double)convertFeedRate:(double)feedRate;
 
-+ (instancetype)moveToOriginCode;
++ (instancetype)codeForSettingLineNumber:(uint16_t)lineNumber;
+- (instancetype)codeBySettingLineNumber:(uint16_t)lineNumber;
+
++ (instancetype)stopCode;
+
++ (instancetype)waitCodeWithDuration:(NSUInteger)seconds;
+
++ (instancetype)moveHomeCode;
++ (instancetype)turnOnMotorsCode;
 + (instancetype)turnOffMotorsCode;
+
++ (instancetype)codeForSettingPosition:(TFP3DVector*)position E:(NSNumber*)E;
++ (instancetype)resetExtrusionCode;
+
++ (instancetype)codeForSettingFeedRate:(double)feedRate raw:(BOOL)raw;
+
++ (instancetype)moveWithPosition:(TFP3DVector*)position withRawFeedRate:(double)F;
 + (instancetype)moveWithPosition:(TFP3DVector*)position withFeedRate:(double)feedRate;
+
++ (instancetype)codeForExtrusion:(double)E withRawFeedRate:(double)feedRate;
++ (instancetype)codeForExtrusion:(double)E withFeedRate:(double)feedRate;
 
 + (instancetype)absoluteModeCode;
 + (instancetype)relativeModeCode;
+
++ (instancetype)codeForHeaterTemperature:(double)temperature waitUntilDone:(BOOL)wait;
++ (instancetype)codeForTurningOffHeater;
+
++ (instancetype)codeForSettingFanSpeed:(double)speed;
++ (instancetype)turnOffFanCode;
 @end

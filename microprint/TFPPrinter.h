@@ -11,6 +11,8 @@
 #import "TFPPrintParameters.h"
 #import "TFPGCodeProgram.h"
 
+@class TFPOperation;
+
 
 typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 	TFPPrinterColorUndetermined,
@@ -27,6 +29,10 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 
 @interface TFPPrinter : NSObject
 - (instancetype)initWithSerialPort:(ORSSerialPort*)serialPort;
+@property (readonly) ORSSerialPort *serialPort;
+
+@property TFPOperation *currentOperation;
+
 - (void)establishConnectionWithCompletionHandler:(void(^)(NSError *error))completionHandler;
 
 // These properties are available after a connection has been established
@@ -55,4 +61,5 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 
 @property (readonly) double heaterTemperature; // Observable
 @property BOOL verboseMode;
+@property (readonly) BOOL shouldBeAutomaticallyRemoved;
 @end

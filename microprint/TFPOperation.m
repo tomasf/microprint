@@ -9,7 +9,7 @@
 #import "TFPOperation.h"
 
 @interface TFPOperation ()
-@property (readwrite) TFPPrinter *printer;
+@property (readwrite, weak) TFPPrinter *printer;
 @end
 
 
@@ -22,6 +22,21 @@
 	self.printer = printer;
 
 	return self;
+}
+
+
+- (NSString *)activityDescription {
+	return @"Doing stuff";
+}
+
+
+- (void)start {
+	self.printer.currentOperation = self;
+}
+
+
+- (void)ended {
+	self.printer.currentOperation = nil;
 }
 
 

@@ -15,9 +15,14 @@
 @interface TFPPrintJob : TFPOperation
 - (instancetype)initWithProgram:(TFPGCodeProgram*)program printer:(TFPPrinter*)printer printParameters:(TFPPrintParameters*)params;
 
-@property (copy) void(^progressBlock)(double progress);
-@property (copy) void(^completionBlock)(NSTimeInterval duration);
-@property (copy) void(^abortionBlock)(NSTimeInterval duration);
+@property (readonly) TFPGCodeProgram *program;
+
+@property (readonly) NSUInteger completedRequests; //Observable
+@property (readonly) NSTimeInterval elapsedTime;
+
+@property (copy) void(^progressBlock)();
+@property (copy) void(^completionBlock)();
+@property (copy) void(^abortionBlock)();
 @property (copy) void(^heatingProgressBlock)(double targetTemperature, double currentTemperature);
 
 - (void)start;

@@ -24,9 +24,17 @@ const double maxMMPerSecond = 60.001;
 }
 
 
+- (instancetype)codeBySettingLineNumber:(uint16_t)lineNumber {
+	return [self codeBySettingField:'N' toValue:lineNumber];
+}
 
 
-+ (instancetype)moveToOriginCode {
++ (instancetype)codeForSettingLineNumber:(uint16_t)lineNumber {
+	return [[self codeWithField:'M' value:110] codeBySettingLineNumber:lineNumber];
+}
+
+
++ (instancetype)moveHomeCode {
 	return [self codeWithString:@"G28"];
 }
 
@@ -36,8 +44,17 @@ const double maxMMPerSecond = 60.001;
 }
 
 
++ (instancetype)turnOnMotorsCode {
+	return [self codeWithString:@"M17"];
+}
 
-+ (instancetype)moveWithPosition:(TFP3DVector*)position withFeedRate:(double)F {
+
++ (instancetype)waitCodeWithDuration:(NSUInteger)seconds {
+	return [[TFPGCode codeWithField:'G' value:4] codeBySettingField:'S' toValue:seconds];
+}
+
+
++ (instancetype)moveWithPosition:(TFP3DVector*)position withRawFeedRate:(double)F {
 	TFPGCode *code = [TFPGCode codeWithString:@"G0"];
 	
 	if(position.x) {
@@ -50,10 +67,16 @@ const double maxMMPerSecond = 60.001;
 		code = [code codeBySettingField:'Z' toValue:position.z.doubleValue];
 	}
 	if(F >= 0) {
-		code = [code codeBySettingField:'F' toValue:[self convertFeedRate:F]];
+		code = [code codeBySettingField:'F' toValue:F];
 	}
 	
 	return code;
+}
+
+
++ (instancetype)moveWithPosition:(TFP3DVector*)position withFeedRate:(double)F {
+	F = (F > 0) ? [self convertFeedRate:F] : 0;
+	return [self moveWithPosition:position withRawFeedRate:F];
 }
 
 
@@ -65,5 +88,80 @@ const double maxMMPerSecond = 60.001;
 + (instancetype)relativeModeCode {
 	return [self codeWithString:@"G91"];
 }
+
+
+
++ (instancetype)codeForHeaterTemperature:(double)temperature waitUntilDone:(BOOL)wait {
+	return [[TFPGCode codeWithField:'M' value:(wait ? 109 : 104)] codeBySettingField:'S' toValue:temperature];
+}
+
+
++ (instancetype)codeForTurningOffHeater {
+	return [self codeForHeaterTemperature:0 waitUntilDone:NO];
+}
+
+
++ (instancetype)codeForExtrusion:(double)E withRawFeedRate:(double)feedRate {
+	TFPGCode *code = [[TFPGCode codeWithField:'G' value:0] codeBySettingField:'E' toValue:E];
+	if(feedRate > 0) {
+		code = [code codeBySettingField:'F' toValue:feedRate];
+	}
+	return code;
+}
+
+
++ (instancetype)codeForExtrusion:(double)E withFeedRate:(double)feedRate {
+	feedRate = (feedRate > 0) ? [self convertFeedRate:feedRate] : 0;
+	return [self codeForExtrusion:E withRawFeedRate:feedRate];
+}
+
+
++ (instancetype)codeForSettingFanSpeed:(double)speed {
+	return [[TFPGCode codeWithField:'M' value:106] codeBySettingField:'S' toValue:speed];
+}
+
+
++ (instancetype)turnOffFanCode {
+	return [TFPGCode codeWithField:'M' value:107];
+}
+
+
++ (instancetype)stopCode {
+	return [TFPGCode codeWithField:'M' value:0];
+}
+
+
++ (instancetype)codeForSettingPosition:(TFP3DVector*)position E:(NSNumber*)E {
+	TFPGCode *code = [TFPGCode codeWithString:@"G92"];
+	
+	if(position.x) {
+		code = [code codeBySettingField:'X' toValue:position.x.doubleValue];
+	}
+	if(position.y) {
+		code = [code codeBySettingField:'Y' toValue:position.y.doubleValue];
+	}
+	if(position.z) {
+		code = [code codeBySettingField:'Z' toValue:position.z.doubleValue];
+	}
+	if(E) {
+		code = [code codeBySettingField:'E' toValue:E.doubleValue];
+	}
+	
+	return code;
+}
+
+
++ (instancetype)resetExtrusionCode {
+	return [self codeForSettingPosition:nil E:@0];
+}
+
+
++ (instancetype)codeForSettingFeedRate:(double)feedRate raw:(BOOL)raw {
+	if(!raw) {
+		feedRate = [self convertFeedRate:feedRate];
+	}
+	return [[TFPGCode codeWithField:'G' value:0] codeBySettingField:'F' toValue:feedRate];
+}
+
 
 @end

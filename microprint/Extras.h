@@ -12,6 +12,8 @@
 @interface NSArray (TFExtras)
 - (NSArray*)tf_mapWithBlock:(id(^)(id object))function;
 - (NSArray*)tf_selectWithBlock:(BOOL(^)(id object))function;
+- (NSArray*)tf_rejectWithBlock:(BOOL(^)(id object))function;
+- (NSSet*)tf_set;
 @end
 
 

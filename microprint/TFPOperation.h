@@ -12,5 +12,9 @@
 @interface TFPOperation : NSObject
 - (instancetype)initWithPrinter:(TFPPrinter*)printer;
 
-@property (readonly) TFPPrinter *printer;
+@property (readonly, weak) TFPPrinter *printer;
+@property (readonly) NSString *activityDescription;
+
+- (void)start;
+- (void)ended;
 @end

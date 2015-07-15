@@ -16,7 +16,7 @@
 
 
 @interface TFPPrinter () <ORSSerialPortDelegate>
-@property ORSSerialPort *serialPort;
+@property (readwrite) ORSSerialPort *serialPort;
 @property (readwrite, copy) NSString *identifier;
 
 @property BOOL connectionFinished;
@@ -62,8 +62,10 @@
 - (void)establishConnectionWithCompletionHandler:(void(^)(NSError *error))completionHandler {
 	if(self.connectionFinished) {
 		completionHandler(nil);
-	} else {		
-		[self.establishBlocks addObject:[completionHandler copy]];
+	} else {
+		if(completionHandler) {
+			[self.establishBlocks addObject:[completionHandler copy]];
+		}
 
 		if(!self.pendingConnection) {
 			self.pendingConnection = YES;
@@ -452,6 +454,12 @@
 		completionHandler(success);
 	}];
 }
+
+
+- (BOOL)shouldBeAutomaticallyRemoved {
+	return !self.pendingConnection;
+}
+
 
 
 #pragma mark - Serial port delegate

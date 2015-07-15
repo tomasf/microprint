@@ -105,7 +105,7 @@ const double fineMoveFeedRate = 1000;
 	TFP3DVector *moveAwayPosition = [TFP3DVector vectorWithX:@(maxX) Y:@(maxY) Z:@30];
 	
 	TFPGCodeProgram *preparation = [TFPGCodeProgram programWithLines:@[
-																	   [TFPGCode moveToOriginCode],
+																	   [TFPGCode moveHomeCode],
 																	   [TFPGCode absoluteModeCode],
 																	   [TFPGCode moveWithPosition:[TFP3DVector zVector:raiseLevel] withFeedRate:moveFeedRate],
 																	   ]];

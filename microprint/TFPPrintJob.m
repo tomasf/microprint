@@ -9,6 +9,8 @@
 #import "TFPPrintJob.h"
 #import "TFPGCode.h"
 #import "Extras.h"
+#import "TFPGCodeHelpers.h"
+
 
 @import IOKit.pwr_mgt;
 #import "MAKVONotificationCenter.h"
@@ -19,7 +21,7 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 
 @interface TFPPrintJob ()
 @property TFPPrintParameters *parameters;
-@property TFPGCodeProgram *program;
+@property (readwrite) TFPGCodeProgram *program;
 @property IOPMAssertionID powerAssertionID;
 
 @property NSInteger codeOffset;
@@ -31,7 +33,7 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 
 @property double targetTemperature;
 @property NSUInteger pendingRequestCount;
-@property NSUInteger completedRequests;
+@property (readwrite) NSUInteger completedRequests;
 @property NSMutableDictionary *sentCodeRegistry;
 @end
 
@@ -43,7 +45,7 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 - (instancetype)initWithProgram:(TFPGCodeProgram*)program printer:(TFPPrinter*)printer printParameters:(TFPPrintParameters*)params {
 	if(!(self = [super initWithPrinter:printer])) return nil;
 	
-	self.program = [program programByStrippingNonFieldCodes];
+	self.program = program;
 	self.parameters = params;
 	
 	return self;
@@ -51,6 +53,8 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 
 
 - (void)jobEnded {
+	[self ended];
+	
 	if(self.powerAssertionID != kIOPMNullAssertionID) {
 		IOPMAssertionRelease(self.powerAssertionID);
 	}
@@ -63,7 +67,11 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 
 
 - (NSTimeInterval)elapsedTime {
-	return ((double)(TFNanosecondTime() - self.startTime)) / NSEC_PER_SEC;
+	if(self.startTime == 0) {
+		return 0;
+	}else{
+		return ((double)(TFNanosecondTime() - self.startTime)) / NSEC_PER_SEC;
+	}
 }
 
 
@@ -76,6 +84,18 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 }
 
 
+- (void)sendCode:(TFPGCode*)code completionHandler:(void(^)())completionHandler {
+	if(code.hasFields) {
+		[self.printer sendGCode:code responseHandler:^(BOOL success, NSString *value) {
+			completionHandler();
+		}];
+	}else{
+		completionHandler();
+	}
+}
+
+
+
 - (void)sendGCode:(TFPGCode*)code {
 	__weak __typeof__(self) weakSelf = self;
 	
@@ -86,7 +106,7 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 	uint64_t sendTime = TFNanosecondTime();
 	self.pendingRequestCount++;
 	
-	[self.printer sendGCode:code responseHandler:^(BOOL success, NSString *value) {
+	[self sendCode:code completionHandler:^{
 		weakSelf.pendingRequestCount--;
 		weakSelf.completedRequests++;
 		[weakSelf sendMoreIfNeeded];
@@ -94,11 +114,11 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 			TFLog(@"%d of %d codes. Got response for %@ after %.03f s", (int)weakSelf.completedRequests, (int)weakSelf.program.lines.count, code, ((double)(TFNanosecondTime()-sendTime)) / NSEC_PER_SEC);
 		}
 		if(weakSelf.progressBlock && !self.aborted) {
-			weakSelf.progressBlock((double)weakSelf.completedRequests / self.program.lines.count);
+			weakSelf.progressBlock(weakSelf.completedRequests);
 		}
 	}];
 	
-	NSUInteger M = [code valueForField:'M'];
+	NSInteger M = [code valueForField:'M' fallback:-1];
 	if(M == 104 || M == 109) {
 		self.targetTemperature = [code valueForField:'S'];
 	}
@@ -117,7 +137,7 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 	TFPGCode *code = self.program.lines[self.codeOffset];
 	self.codeOffset++;
 	
-	code = [code codeBySettingField:'N' toValue:self.lineNumber];
+	code = [code codeBySettingLineNumber:self.lineNumber];
 	self.sentCodeRegistry[@(self.lineNumber)] = code;
 	self.lineNumber++;
 	
@@ -145,7 +165,8 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 
 
 - (void)sendLineNumberReset {
-	TFPGCode *reset = [TFPGCode codeWithString:@"N0 M110"];
+	TFPGCode *reset = [TFPGCode codeForSettingLineNumber:0];
+	
 	[self.printer sendGCode:reset responseHandler:^(BOOL success, NSString *value) {
 	}];
 	self.lineNumber = 1;
@@ -154,6 +175,7 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 
 
 - (void)start {
+	[super start];
 	__weak __typeof__(self) weakSelf = self;
 	
 	self.codeOffset = 0;
@@ -213,16 +235,20 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 
 
 - (void)sendAbortSequenceWithCompletionHandler:(void(^)())completionHandler {
+	const double retractFeedRate = 1995;
+	const double raiseFeedRate = 870;
+	
 	NSArray *codes = @[
-					   TGPGCODE(G91),
-					   TGPGCODE(G0 E-5 F450),
-					   TGPGCODE(G0 Z1 F200),
-					   TGPGCODE(G0 E-4 F450),
-					   TGPGCODE(G0 Z4 F200),
-					   TGPGCODE(G90),
-					   TGPGCODE(G0 Y84),
-					   TGPGCODE(M106 S0),
-					   TGPGCODE(M0)
+					   [TFPGCode relativeModeCode],
+					   [TFPGCode codeForExtrusion:-5 withFeedRate:retractFeedRate],
+					   [TFPGCode moveWithPosition:[TFP3DVector zVector:1] withFeedRate:raiseFeedRate],
+					   [TFPGCode codeForExtrusion:-4 withFeedRate:retractFeedRate],
+					   [TFPGCode moveWithPosition:[TFP3DVector zVector:4] withFeedRate:raiseFeedRate],
+					   [TFPGCode absoluteModeCode],
+					   
+					   [TFPGCode moveWithPosition:[TFP3DVector yVector:84] withFeedRate:-1],
+					   [TFPGCode turnOffFanCode],
+					   [TFPGCode stopCode],
 					   ];
 	
 	[self.printer runGCodeProgram:[TFPGCodeProgram programWithLines:codes] completionHandler:^(BOOL success) {
@@ -249,6 +275,11 @@ static const uint16_t lineNumberWrapAround = 100; // UINT16_MAX
 			self.abortionBlock([self elapsedTime]);
 		}
 	}];
+}
+
+
+- (NSString *)activityDescription {
+	return @"Printing";
 }
 
 

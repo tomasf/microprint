@@ -32,6 +32,19 @@
 	return array;
 }
 
+
+- (NSArray*)tf_rejectWithBlock:(BOOL(^)(id object))function {
+	return [self tf_selectWithBlock:^BOOL(id object) {
+		return !function(object);
+	}];
+}
+
+
+- (NSSet*)tf_set {
+	return [NSSet setWithArray:self];
+}
+
+
 @end
 
 

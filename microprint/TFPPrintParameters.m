@@ -7,7 +7,8 @@
 
 #import "TFPPrintParameters.h"
 
-static const NSUInteger defaultBufferSize = 6;
+static const NSUInteger defaultBufferSize = 1;
+static const double defaultBacklashSpeed = 1500;
 
 
 @implementation TFPPrintParameters
@@ -19,6 +20,8 @@ static const NSUInteger defaultBufferSize = 6;
 	self.filament = [TFPFilament defaultFilament];
 	self.bufferSize = defaultBufferSize;
 	self.useWaveBonding = NO;
+	self.backlashCompensationSpeed = defaultBacklashSpeed;
+	self.useBacklashCompensation = YES;
 	
 	return self;
 }

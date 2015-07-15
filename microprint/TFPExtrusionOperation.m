@@ -9,13 +9,21 @@
 #import "TFPExtrusionOperation.h"
 #import "Extras.h"
 #import "TFPRepeatingCommandSender.h"
+#import "TFPGCodeHelpers.h"
 
 #import "MAKVONotificationCenter.h"
+
+
+static const double extrudeStepLength = 10;
+static const double extrudeFeedRate = 210;
+static const double minimumZLevelForOperation = 25;
+
 
 
 @interface TFPExtrusionOperation ()
 @property TFPRepeatingCommandSender *repeatSender;
 @property BOOL retract;
+@property BOOL stopped;
 @end
 
 
@@ -32,91 +40,108 @@
 }
 
 
-static const double extrudeStepLength = 10;
-static const double extrudeFeedRate = 210;
+- (void)extrudeStep {
+	__weak __typeof__(self) weakSelf = self;
+	double extrusionLength = self.retract ? -extrudeStepLength : extrudeStepLength;
+	
+	[self.printer sendGCode:[TFPGCode codeForExtrusion:extrusionLength withFeedRate:extrudeFeedRate] responseHandler:^(BOOL success, NSString *value) {
+		if(weakSelf.stopped) {
+			[weakSelf runEndCode];
+		} else {
+			[weakSelf extrudeStep];
+		}
+	}];
+}
+
+
+- (void)stop {
+	self.stopped = YES;
+}
+	 
+
+- (void)runEndCode {
+	__weak __typeof__(self) weakSelf = self;
+	
+	TFPGCodeProgram *end = [TFPGCodeProgram programWithLines:@[
+																[TFPGCode absoluteModeCode],
+																[TFPGCode codeForTurningOffHeater],
+																[TFPGCode turnOffFanCode],
+																[TFPGCode turnOffMotorsCode],
+																]];
+	
+	[self.printer runGCodeProgram:end completionHandler:^(BOOL success) {
+		if(weakSelf.extrusionStoppedBlock) {
+			weakSelf.extrusionStoppedBlock();
+		}
+		[self ended];
+	}];
+}
+
 
 
 - (void)start {
+	[super start];
+	
 	__weak TFPPrinter *printer = self.printer;
 	__weak __typeof__(self) weakSelf = self;
 	
-	TFPGCode *fansOn = [TFPGCode codeWithString:@"M106 S255"];
-	TFPGCode *fansOff = [TFPGCode codeWithString:@"M107"];
+	id<MAKVOObservation> token = [printer addObserver:nil keyPath:@"heaterTemperature" options:0 block:^(MAKVONotification *notification) {
+		if(printer.heaterTemperature > 0 && weakSelf.heatingProgressBlock) {
+			weakSelf.heatingProgressBlock(printer.heaterTemperature);
+		}
+	}];
 	
-	const double minZ = 25;
+	TFPGCodeProgram *prep = [TFPGCodeProgram programWithLines:@[
+																[TFPGCode codeForSettingFanSpeed:255],
+																[TFPGCode codeForHeaterTemperature:self.temperature waitUntilDone:NO],
+																[TFPGCode absoluteModeCode],
+																]];
 	
-	TFPGCode *tempOn = [[TFPGCode codeWithString:@"M104"] codeBySettingField:'S' toValue:self.temperature];
-	TFPGCode *tempAndWait = [[TFPGCode codeWithString:@"M109"] codeBySettingField:'S' toValue:self.temperature];
-	TFPGCode *tempOff = [TFPGCode codeWithString:@"M104 S0"];
-	
-	TFPGCode *motorsOff = [TFPGCode codeWithString:@"M18"];
-	
-	double extrusionLength = self.retract ? -extrudeStepLength : extrudeStepLength;
-	TFPGCode *command = [[[TFPGCode codeWithString:@"G0"] codeBySettingField:'E' toValue:extrusionLength] codeBySettingField:'F' toValue:extrudeFeedRate];
+	TFPGCodeProgram *heatAndWait = [TFPGCodeProgram programWithLines:@[
+																	   [TFPGCode codeForHeaterTemperature:self.temperature waitUntilDone:YES],
+																	   [TFPGCode relativeModeCode],
+																	   ]];
 	
 	
-	[printer sendGCode:fansOn responseHandler:^(BOOL success, NSString *value) {
-		
-		id<MAKVOObservation> token = [printer addObserver:nil keyPath:@"heaterTemperature" options:0 block:^(MAKVONotification *notification) {
-			if(printer.heaterTemperature > 0) {
-				TFLog(@"* %.0f°C", printer.heaterTemperature);
+	[printer runGCodeProgram:prep completionHandler:^(BOOL success) {
+		[printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, NSNumber *E) {
+			TFP3DVector *raisedPosition = [TFP3DVector zVector:MAX(position.z.doubleValue, minimumZLevelForOperation)];
+			
+			if(weakSelf.movingStartedBlock) {
+				weakSelf.movingStartedBlock();
 			}
-		}];
-		
-		[printer sendGCode:tempOn responseHandler:^(BOOL success, NSString *value) {
-			[printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, NSNumber *E) {
-				void(^nextStep)() = ^{
-					TFLog(@"Heating to %.0f°C...", weakSelf.temperature);
-					
-					[printer sendGCode:tempAndWait responseHandler:^(BOOL success, NSString *value) {
-						[token remove];
-						
-						[printer setRelativeMode:YES completionHandler:^(BOOL success) {
-							TFLog(@"%@. Press Return to stop.", (weakSelf.retract ? @"Retracting" : @"Extruding"));
-							
-							weakSelf.repeatSender = [[TFPRepeatingCommandSender alloc] initWithPrinter:printer];
-							
-							weakSelf.repeatSender.nextCodeBlock = ^{
-								return command;
-							};
-							
-							weakSelf.repeatSender.stoppingBlock = ^{
-								TFLog(@"Stopping...");
-							};
-							
-							
-							weakSelf.repeatSender.endedBlock = ^{
-								TFLog(@"Switching back to absolute mode and turning off heater, fan and motors...");
-								[printer setRelativeMode:NO completionHandler:^(BOOL success) {
-									
-									[printer sendGCode:tempOff responseHandler:^(BOOL success, NSString *value) {
-										[printer sendGCode:fansOff responseHandler:^(BOOL success, NSString *value) {
-											[printer sendGCode:motorsOff responseHandler:^(BOOL success, NSString *value) {
-												exit(EXIT_SUCCESS);
-											}];
-										}];
-									}];
-								}];
-							};
-							
-							[weakSelf.repeatSender start];
-						}];
-					}];
-				};
-				
-				if(position.z.doubleValue < minZ) {
-					[printer setRelativeMode:NO completionHandler:^(BOOL success) {
-						[printer moveToPosition:[TFP3DVector vectorWithX:nil Y:nil Z:@(minZ)] usingFeedRate:-1 completionHandler:^(BOOL success) {
-							nextStep();
-						}];
-					}];
-				}else{
-					nextStep();
+			
+			[printer moveToPosition:raisedPosition usingFeedRate:3000 completionHandler:^(BOOL success) {
+				if(weakSelf.stopped) {
+					[weakSelf runEndCode];
+					return;
 				}
+				
+				if(weakSelf.heatingStartedBlock) {
+					weakSelf.heatingStartedBlock();
+				}
+				
+				[printer runGCodeProgram:heatAndWait completionHandler:^(BOOL success) {
+					[token remove];
+					if(weakSelf.stopped) {
+						[weakSelf runEndCode];
+						return;
+					}
+
+					if(weakSelf.extrusionStartedBlock) {
+						weakSelf.extrusionStartedBlock();
+					}
+					
+					[weakSelf extrudeStep];
+				}];
 			}];
 		}];
 	}];
+}
 
+
+- (NSString *)activityDescription {
+	return self.retract ? @"Retracting" : @"Extruding";
 }
 
 

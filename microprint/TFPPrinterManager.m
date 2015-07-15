@@ -30,11 +30,17 @@ static const uint16_t M3DMicroUSBProductID = 0x2404;
 	return singleton ?: (singleton = [self new]);
 }
 
+- (void)identifyPrinters {
+	for(TFPPrinter *printer in self.printers) {
+		if(!printer.serialNumber) {
+			[printer establishConnectionWithCompletionHandler:nil];
+		}
+	}
+}
 
-- (instancetype)init {
-	if(!(self = [super init])) return nil;
-	
-	self.printers = [[[ORSSerialPortManager sharedSerialPortManager].availablePorts tf_selectWithBlock:^BOOL(ORSSerialPort *port) {
+
+- (NSArray*)printersForSerialPorts:(NSArray*)serialPorts {
+	return [[serialPorts tf_selectWithBlock:^BOOL(ORSSerialPort *port) {
 		uint16_t vendorID, productID;
 		if([port getUSBVendorID:&vendorID productID:&productID]) {
 			return vendorID == M3DMicroUSBVendorID && productID == M3DMicroUSBProductID;
@@ -44,10 +50,28 @@ static const uint16_t M3DMicroUSBProductID = 0x2404;
 	}] tf_mapWithBlock:^TFPPrinter*(ORSSerialPort *serialPort) {
 		return [[TFPPrinter alloc] initWithSerialPort:serialPort];
 	}];
+}
+
+
+- (instancetype)init {
+	if(!(self = [super init])) return nil;
+	__weak __typeof__(self) weakSelf = self;
 	
+	self.printers = [self printersForSerialPorts:[ORSSerialPortManager sharedSerialPortManager].availablePorts];
+	[self identifyPrinters];
 	
 	[[ORSSerialPortManager sharedSerialPortManager] addObserver:self keyPath:@"availablePorts" options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld block:^(MAKVONotification *notification) {
-		// TBI
+		NSMutableArray *printers = [weakSelf mutableArrayValueForKey:@"printers"];
+		
+		if(notification.kind == NSKeyValueChangeRemoval) {
+			NSPredicate *wasRemovedPredicate = [NSPredicate predicateWithFormat:@"serialPort IN %@ && shouldBeAutomaticallyRemoved", notification.oldValue];
+			
+			[printers removeObjectsInArray:[weakSelf.printers filteredArrayUsingPredicate:wasRemovedPredicate]];
+		
+		}else{
+			[printers addObjectsFromArray:[weakSelf printersForSerialPorts:notification.newValue]];
+			[weakSelf identifyPrinters];
+		}
 	}];
 	
 	return self;

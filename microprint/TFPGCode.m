@@ -42,6 +42,11 @@ const char *canonicalFieldOrder = "NMGXYZE FTSP    IJRD";
 }
 
 
++ (instancetype)codeWithComment:(NSString*)string {
+	return [[self alloc] initWithFields:@{} comment:string];
+}
+
+
 + (instancetype)codeWithField:(char)field value:(double)value {
 	return [[self new] codeBySettingField:field toValue:value];
 }

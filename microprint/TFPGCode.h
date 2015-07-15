@@ -12,6 +12,7 @@
 - (instancetype)initWithString:(NSString*)string;
 
 + (instancetype)codeWithField:(char)field value:(double)value;
++ (instancetype)codeWithComment:(NSString*)string;
 
 - (TFPGCode*)codeBySettingField:(char)field toValue:(double)value;
 - (TFPGCode*)codeByAdjustingField:(char)field offset:(double)offset;
@@ -35,6 +36,3 @@
 @property (readonly) NSData *repetierV2Representation;
 @property (readonly) NSString *ASCIIRepresentation;
 @end
-
-
-#define TGPGCODE(x) [[TFPGCode alloc] initWithString:@"" # x]

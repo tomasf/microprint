@@ -8,60 +8,74 @@
 #import "TFPBasicPreparationPreprocessor.h"
 #import "TFPGCode.h"
 #import "Extras.h"
+#import "TFPGCodeHelpers.h"
 
 
 @implementation TFPBasicPreparationPreprocessor
 
 
 - (TFPGCodeProgram*)processUsingParameters:(TFPPrintParameters*)parameters {
-	NSMutableArray *output = [NSMutableArray new];
+	NSArray *preamble =
+	@[
+	  [TFPGCode codeForSettingFanSpeed:parameters.filament.fanSpeed],
+	  [TFPGCode codeForHeaterTemperature:parameters.idealTemperature waitUntilDone:NO],
+	  
+	  [TFPGCode absoluteModeCode],
+	  //[TFPGCode turnOnMotorsCode],
+	  [TFPGCode moveWithPosition:[TFP3DVector zVector:5] withRawFeedRate:2900],
+	  [TFPGCode moveHomeCode],
+	  //[TFPGCode turnOffMotorsCode],
+	  [TFPGCode codeForHeaterTemperature:parameters.idealTemperature waitUntilDone:YES],
+	  //[TFPGCode waitCodeWithDuration:10],
+	  
+	  //[TFPGCode turnOnMotorsCode],
+	  [TFPGCode relativeModeCode],
+	  [TFPGCode codeForExtrusion:7.5 withRawFeedRate:2000],
+	  [TFPGCode resetExtrusionCode],
+	  [TFPGCode absoluteModeCode],
+	  [TFPGCode codeForSettingFeedRate:2400 raw:YES],
+	];
 	
-	TFPGCode *fanLine = [[TFPGCode codeWithString:@"M106"] codeBySettingField:'S' toValue:parameters.filament.fanSpeed];
-	[output addObject:fanLine];
-	
-	[output addObject:[TFPGCode codeWithString:@"M17"]]; // Enable motors
-	[output addObject:[TFPGCode codeWithString:@"G90"]]; // Absolute mode
-	[output addObject:[[TFPGCode codeWithString:@"M104"] codeBySettingField:'S' toValue:parameters.idealTemperature]]; // Temperature
-	[output addObject:[TFPGCode codeWithString:@"G0 Z5 F2900"]]; // Move to 5mm Z?
-	[output addObject:[TFPGCode codeWithString:@"G28"]]; // Move to home
-	[output addObject:[TFPGCode codeWithString:@"M18"]]; // Disable motors
-	[output addObject:[[TFPGCode codeWithString:@"M109"] codeBySettingField:'S' toValue:parameters.idealTemperature]]; // Wait for temperature
-	
-	//[output addObject:[TFPGCode codeWithString:@"G4 S10"]]; // Wait 10 seconds
-	
-	[output addObject:[TFPGCode codeWithString:@"M17"]]; // Enable motors
-	[output addObject:[TFPGCode codeWithString:@"G91"]]; // Relative mode
-	[output addObject:[TFPGCode codeWithString:@"G0 E7.5 F2000"]]; // "Prime the nozzle"
-	[output addObject:[TFPGCode codeWithString:@"G92 E0"]]; // Reset E to 0
-	[output addObject:[TFPGCode codeWithString:@"G90"]]; // Absolute mode
-	[output addObject:[TFPGCode codeWithString:@"G0 F2400"]]; // Feed rate 2400
-
-	// Add program lines, filtering out those who try to control extruder temperature or fan speed
-	[output addObjectsFromArray:[self.program.lines tf_selectWithBlock:^BOOL(TFPGCode *line) {
-		NSInteger M = [line valueForField:'M' fallback:-1];
-		return (M != 104 && M != 106 && M != 107 && M != 109);
-	}]];
-	
-	[output addObject:[TFPGCode codeWithString:@"G91"]]; // Relative mode
-	[output addObject:[TFPGCode codeWithString:@"G0 E-1 F2000"]]; // Retract
-	[output addObject:[TFPGCode codeWithString:@"G0 X5 Y5 F2000"]]; // Retract
-	[output addObject:[TFPGCode codeWithString:@"G0 E-8 F2000"]]; // Retract
-	[output addObject:[TFPGCode codeWithString:@"M104 S0"]]; // Heater off
-	
-	if (parameters.maxZ > 60) {
-		if (parameters.maxZ < 110) {
-			[output addObject:[TFPGCode codeWithString:@"G0 Z3 F2900"]]; // Move up
-		}
-		[output addObject:[TFPGCode codeWithString:@"G90"]]; // Absolute mode
-		[output addObject:[TFPGCode codeWithString:@"G0 X90 Y84"]]; // Move to the back right a safe distance
-	} else {
-		[output addObject:[TFPGCode codeWithString:@"G0 Z3 F2900"]]; // Move up
-		[output addObject:[TFPGCode codeWithString:@"G90"]]; // Absolute mode
-		[output addObject:[TFPGCode codeWithString:@"G0 X95 Y95"]]; // Move to the back right a safe distance
+	double raiseHeight;
+	if(parameters.maxZ >= 110) {
+		raiseHeight = 0;
+	}else if(parameters.maxZ >= 25) {
+		raiseHeight = 3;
+	}else{
+		raiseHeight = 25 + 3 - parameters.maxZ;
 	}
 	
-	[output addObject:[TFPGCode codeWithString:@"M107"]]; // Fan off
-	[output addObject:[TFPGCode codeWithString:@"M18"]]; // Motors off
+	TFP3DVector *backPosition = (parameters.maxZ > 60) ? [TFP3DVector xyVectorWithX:90 y:84] : [TFP3DVector xyVectorWithX:95 y:95];
+	
+	NSArray *postamble =
+	@[
+	  [TFPGCode codeWithComment:@"POSTAMBLE"],
+	  
+	  [TFPGCode relativeModeCode],
+	  [TFPGCode codeForExtrusion:-1 withRawFeedRate:2000],
+	  [TFPGCode moveWithPosition:[TFP3DVector xyVectorWithX:5 y:5] withRawFeedRate:2000],
+	  [TFPGCode codeForExtrusion:-8 withRawFeedRate:2000],
+	  [TFPGCode codeForTurningOffHeater],
+
+	  [TFPGCode moveWithPosition:[TFP3DVector zVector:raiseHeight] withRawFeedRate:2900],
+	  [TFPGCode absoluteModeCode],
+	  [TFPGCode moveWithPosition:backPosition withRawFeedRate:-1],
+	  
+	  [TFPGCode turnOffFanCode],
+	  [TFPGCode turnOffMotorsCode],
+	  [TFPGCode codeWithComment:@"END"],
+	  ];
+	
+	
+	BOOL(^setsTemperatureOrFanSpeed)(TFPGCode*) = ^BOOL(TFPGCode *line) {
+		NSInteger M = [line valueForField:'M' fallback:-1];
+		return (M == 104 || M == 106 || M == 107 || M == 109);
+	};
+	
+	NSMutableArray *output = [NSMutableArray new];
+	[output addObjectsFromArray:preamble];
+	[output addObjectsFromArray:[self.program.lines tf_rejectWithBlock:setsTemperatureOrFanSpeed]];
+	[output addObjectsFromArray:postamble];
 	
 	return [[TFPGCodeProgram alloc] initWithLines:output];
 }

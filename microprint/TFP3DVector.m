@@ -49,6 +49,16 @@
 }
 
 
++ (instancetype)yVector:(double)y {
+	return [self vectorWithX:nil Y:@(y) Z:nil];
+}
+
+
++ (instancetype)xyVectorWithX:(double)x y:(double)y {
+	return [self vectorWithX:@(x) Y:@(y) Z:nil];
+}
+
+
 - (NSString *)description {
 	return [NSString stringWithFormat:@"[%@  %@  %@]", self.x ?: @"nil", self.y ?: @"nil", self.z ?: @"nil"];
 }
