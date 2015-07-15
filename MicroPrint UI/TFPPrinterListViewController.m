@@ -27,7 +27,7 @@
 	
 	self.printerManager = [TFPPrinterManager sharedManager];
 	
-	[self.printerManager setValue:@[[TFPDryRunPrinter new]] forKey:@"printers"];
+	//[self.printerManager startDryRunMode];
 }
 
 @end

@@ -120,6 +120,11 @@ static const uint16_t lineNumberWrapAround = 100;
 
 
 - (TFPGCode*)popNextLine {
+	while(self.codeOffset < self.program.lines.count && ![self.program.lines[self.codeOffset] hasFields]) {
+		self.codeOffset++;
+		self.completedRequests++;
+	}
+	
 	if(self.codeOffset >= self.program.lines.count) {
 		return nil;
 	}

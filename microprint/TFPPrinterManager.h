@@ -12,5 +12,7 @@
 
 + (instancetype)sharedManager;
 
+- (void)startDryRunMode;
+
 @property (readonly) NSArray *printers; // Observable
 @end

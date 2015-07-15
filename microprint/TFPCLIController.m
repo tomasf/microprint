@@ -29,6 +29,7 @@
 #import "TFPBedLevelCalibrationOperation.h"
 #import "TFPPreprocessing.h"
 #import "TFPManualBedLevelCalibration.h"
+#import "TFPGCodeHelpers.h"
 
 #import "MAKVONotificationCenter.h"
 #import "GBCli.h"

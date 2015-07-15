@@ -30,7 +30,9 @@
 
 @property TFPPrintJob *printJob;
 @property TFPPrintStatusController *printStatusController;
+@property BOOL aborted;
 @end
+
 
 
 @implementation TFPPrintingProgressViewController
@@ -59,21 +61,6 @@
 	return self;
 }
 
-/*
-- (void)updateProgress {
-	NSTimeInterval elapsedTime = (double)(TFNanosecondTime()-self.startTime) / NSEC_PER_SEC;
-	NSTimeInterval fullTime = elapsedTime / self.progress;
-	NSTimeInterval remainingTime = (1-self.progress) * fullTime;
-	
-	self.progressIndicator.doubleValue = self.progress;
-	self.elapsedTimeLabel.stringValue = [self.durationFormatter stringFromTimeInterval:elapsedTime];
-	self.remainingTimeLabel.stringValue = [self.approximateDurationFormatter stringFromTimeInterval:remainingTime];
-	
-	self.parentWindow.dockTile.badgeLabel = [self.percentFormatter stringFromNumber:@(self.progress)];
-	[self.parentWindow.dockTile display];
-}
-*/
-
 
 - (void)configurePrintJob {
 	__weak __typeof__(self) weakSelf = self;
@@ -82,8 +69,7 @@
 	};
 	
 	self.printJob.heatingProgressBlock = ^(double targetTemperature, double currentTemperature) {
-		//weakSelf.statusLabel.stringValue = [NSString stringWithFormat:@"Heating to %.0f: %d%%",
-											//targetTemperature, (int)((currentTemperature/targetTemperature)*100)];
+		weakSelf.statusLabel.stringValue = [NSString stringWithFormat:@"Heating to %.0f: %d%%", targetTemperature, (int)((currentTemperature/targetTemperature)*100)];
 	};
 	
 	self.printJob.abortionBlock = ^{
@@ -119,7 +105,10 @@
 		TFPGCodeProgram *newProgram = [TFPPreprocessing programByPreprocessingProgram:program usingParameters:params];
 		
 		dispatch_async(dispatch_get_main_queue(), ^{
-			weakSelf.printJob = [[TFPPrintJob alloc] initWithProgram:newProgram printer:self.printer printParameters:params];
+			if(weakSelf.aborted) {
+				return;
+			}
+			weakSelf.printJob = [[TFPPrintJob alloc] initWithProgram:newProgram printer:weakSelf.printer printParameters:params];
 			
 			[weakSelf configurePrintJob];
 		});
@@ -128,6 +117,12 @@
 
 
 - (IBAction)abort:(id)sender {
+	if(!self.printJob) {
+		self.aborted = YES;
+		[self.parentWindow endSheet:self.view.window];
+		return;
+	}
+	
 	NSAlert *alert = [NSAlert new];
 	alert.messageText = @"Are you sure you want to abort the print?";
 	[alert addButtonWithTitle:@"Don't Abort"];

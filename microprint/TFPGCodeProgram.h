@@ -15,20 +15,14 @@ typedef struct {
 } TFPAbsolutePosition;
 
 
-
 @interface TFPGCodeProgram : NSObject
 + (instancetype)programWithLines:(NSArray*)lines;
 - (instancetype)initWithLines:(NSArray*)lines;
 - (instancetype)initWithString:(NSString*)string;
 - (instancetype)initWithFileURL:(NSURL*)URL;
 
+@property (copy, readonly) NSArray *lines;
+
 - (BOOL)writeToFileURL:(NSURL*)URL error:(NSError**)outError;
 - (NSString *)ASCIIRepresentation;
-
-- (TFPGCodeProgram*)programByStrippingNonFieldCodes;
-- (TFP3DVector*)measureSize;
-
-- (void)enumerateMovesWithBlock:(void(^)(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate))block;
-
-@property (copy, readonly) NSArray *lines;
 @end

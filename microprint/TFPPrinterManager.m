@@ -8,6 +8,7 @@
 #import "TFPPrinterManager.h"
 #import "TFPPrinter.h"
 #import "Extras.h"
+#import "TFPDryRunPrinter.h"
 
 #import "MAKVONotificationCenter.h"
 #import "ORSSerialPortManager.h"
@@ -29,6 +30,13 @@ static const uint16_t M3DMicroUSBProductID = 0x2404;
 	static TFPPrinterManager *singleton;
 	return singleton ?: (singleton = [self new]);
 }
+
+
+- (void)startDryRunMode {
+	self.printers = @[[TFPDryRunPrinter new]];
+	[self identifyPrinters];
+}
+
 
 - (void)identifyPrinters {
 	for(TFPPrinter *printer in self.printers) {
@@ -64,7 +72,7 @@ static const uint16_t M3DMicroUSBProductID = 0x2404;
 		NSMutableArray *printers = [weakSelf mutableArrayValueForKey:@"printers"];
 		
 		if(notification.kind == NSKeyValueChangeRemoval) {
-			NSPredicate *wasRemovedPredicate = [NSPredicate predicateWithFormat:@"serialPort IN %@ && shouldBeAutomaticallyRemoved", notification.oldValue];
+			NSPredicate *wasRemovedPredicate = [NSPredicate predicateWithFormat:@"serialPort IN %@ && pendingConnection = NO", notification.oldValue];
 			
 			[printers removeObjectsInArray:[weakSelf.printers filteredArrayUsingPredicate:wasRemovedPredicate]];
 		

@@ -7,6 +7,8 @@
 //
 
 #import "TFPGCode.h"
+#import "TFPGCodeProgram.h"
+
 
 @interface TFPGCode (TFPHelpers)
 + (double)convertFeedRate:(double)feedRate;
@@ -41,4 +43,13 @@
 
 + (instancetype)codeForSettingFanSpeed:(double)speed;
 + (instancetype)turnOffFanCode;
+@end
+
+
+
+@interface TFPGCodeProgram (TFPHelpers)
+
+- (TFP3DVector*)measureSize;
+- (void)enumerateMovesWithBlock:(void(^)(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate))block;
+
 @end

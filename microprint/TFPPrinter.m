@@ -20,7 +20,7 @@
 @property (readwrite, copy) NSString *identifier;
 
 @property BOOL connectionFinished;
-@property BOOL pendingConnection;
+@property (readwrite) BOOL pendingConnection;
 
 @property (readwrite) TFPPrinterColor color;
 @property (readwrite, copy) NSString *serialNumber;
@@ -453,11 +453,6 @@
 	[self sendGCode:code responseHandler:^(BOOL success, NSString *value) {
 		completionHandler(success);
 	}];
-}
-
-
-- (BOOL)shouldBeAutomaticallyRemoved {
-	return !self.pendingConnection;
 }
 
 

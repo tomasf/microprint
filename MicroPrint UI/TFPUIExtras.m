@@ -8,6 +8,7 @@
 
 #import "TFPUIExtras.h"
 #import "TFPOperation.h"
+#import "Extras.h"
 @import AppKit;
 
 
@@ -55,12 +56,30 @@
 
 
 - (NSString*)activityString {
-	return self.currentOperation.activityDescription ?: @"Idle";
+	if(self.currentOperation) {
+		return self.currentOperation.activityDescription;
+		
+	}else if(self.pendingConnection) {
+		return @"Connecting…";
+		
+	}else{
+		return @"Idle";
+	}
 }
 
 
 + (NSSet *)keyPathsForValuesAffectingActivityString {
-	return [NSSet setWithObject:@"currentOperation.activityDescription"];
+	return @[@"currentOperation.activityDescription", @"pendingConnection"].tf_set;
+}
+
+
+- (NSString*)displayName {
+	return self.serialNumber ?: @"Printer";
+}
+
+
++ (NSSet *)keyPathsForValuesAffectingDisplayName {
+	return @[@"serialNumber"].tf_set;
 }
 
 

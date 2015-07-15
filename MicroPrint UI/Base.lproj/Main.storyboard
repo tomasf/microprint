@@ -645,7 +645,7 @@
         <scene sceneID="R2V-B0-nI4">
             <objects>
                 <windowController id="B8D-0N-5wS" sceneMemberID="viewController">
-                    <window key="window" title="Printers" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="IQv-IB-iLA">
+                    <window key="window" title="Printers" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="PrinterList" animationBehavior="default" id="IQv-IB-iLA">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="196" y="240" width="480" height="270"/>
@@ -782,18 +782,18 @@
                                 </connections>
                             </imageView>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="eed-Wx-7lZ">
-                                <rect key="frame" x="82" y="53" width="165" height="17"/>
+                                <rect key="frame" x="82" y="48" width="165" height="17"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="GR-15-04-30-01-050-049" id="iQE-eO-7gf">
                                     <font key="font" metaFont="systemBold"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                                 <connections>
-                                    <binding destination="bpn-zK-R5E" name="value" keyPath="representedObject.serialNumber" id="WL5-F9-JCq"/>
+                                    <binding destination="bpn-zK-R5E" name="value" keyPath="representedObject.displayName" id="gum-PS-vNC"/>
                                 </connections>
                             </textField>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="oQT-wp-bzT">
-                                <rect key="frame" x="82" y="33" width="24" height="14"/>
+                                <rect key="frame" x="82" y="30" width="24" height="14"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Idle" id="3L0-TN-ttb">
                                     <font key="font" metaFont="smallSystem"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -820,17 +820,25 @@
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
                             </button>
+                            <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="nWe-6w-BDX">
+                                <rect key="frame" x="108" y="29" width="16" height="16"/>
+                                <connections>
+                                    <binding destination="bpn-zK-R5E" name="animate" keyPath="representedObject.pendingConnection" id="Jdb-mp-6DW"/>
+                                </connections>
+                            </progressIndicator>
                         </subviews>
                         <constraints>
-                            <constraint firstItem="oQT-wp-bzT" firstAttribute="top" secondItem="eed-Wx-7lZ" secondAttribute="bottom" constant="6" id="2C7-Cy-kq9"/>
-                            <constraint firstItem="eed-Wx-7lZ" firstAttribute="top" secondItem="nAD-xB-aed" secondAttribute="top" constant="2" id="32k-Lu-2L3"/>
+                            <constraint firstItem="oQT-wp-bzT" firstAttribute="top" secondItem="eed-Wx-7lZ" secondAttribute="bottom" constant="4" id="2C7-Cy-kq9"/>
+                            <constraint firstItem="eed-Wx-7lZ" firstAttribute="top" secondItem="nAD-xB-aed" secondAttribute="top" constant="7" id="32k-Lu-2L3"/>
                             <constraint firstItem="Se4-6Q-m1i" firstAttribute="top" secondItem="nvq-9U-B9C" secondAttribute="top" constant="20" id="3iB-jX-67X"/>
                             <constraint firstAttribute="trailing" secondItem="Se4-6Q-m1i" secondAttribute="trailing" constant="20" id="3tI-gj-Y02"/>
                             <constraint firstItem="eed-Wx-7lZ" firstAttribute="leading" secondItem="oQT-wp-bzT" secondAttribute="leading" id="88s-EX-XhX"/>
                             <constraint firstItem="hKC-Vy-DiZ" firstAttribute="top" secondItem="Se4-6Q-m1i" secondAttribute="bottom" constant="10" id="Nst-uH-GGu"/>
                             <constraint firstItem="eed-Wx-7lZ" firstAttribute="leading" secondItem="nAD-xB-aed" secondAttribute="trailing" constant="16" id="P9E-Jm-QJt"/>
                             <constraint firstAttribute="trailing" secondItem="hKC-Vy-DiZ" secondAttribute="trailing" constant="20" id="YNf-CP-wqI"/>
+                            <constraint firstItem="nWe-6w-BDX" firstAttribute="leading" secondItem="oQT-wp-bzT" secondAttribute="trailing" constant="4" id="gkh-JL-0sd"/>
                             <constraint firstItem="nAD-xB-aed" firstAttribute="top" secondItem="nvq-9U-B9C" secondAttribute="top" constant="20" id="ifD-Vx-ehh"/>
+                            <constraint firstItem="nWe-6w-BDX" firstAttribute="centerY" secondItem="oQT-wp-bzT" secondAttribute="centerY" id="lek-Uo-TEK"/>
                             <constraint firstAttribute="bottom" secondItem="nAD-xB-aed" secondAttribute="bottom" constant="20" id="o3X-56-j8a"/>
                             <constraint firstItem="nAD-xB-aed" firstAttribute="leading" secondItem="nvq-9U-B9C" secondAttribute="leading" constant="20" id="ua0-um-kTF"/>
                         </constraints>
@@ -1086,7 +1094,7 @@ DQ
         <scene sceneID="rgs-fM-vme">
             <objects>
                 <windowController storyboardIdentifier="printingProgressWindowController" id="H3W-cR-E7k" sceneMemberID="viewController">
-                    <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="ZR7-GC-2Yj">
+                    <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="PrintingProgress" animationBehavior="default" id="ZR7-GC-2Yj">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="2854" y="313" width="480" height="270"/>

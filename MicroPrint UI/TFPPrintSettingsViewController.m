@@ -14,6 +14,7 @@
 #import "TFPPreprocessing.h"
 #import "TFPGCodeDocument.h"
 #import "TFPPrintingProgressViewController.h"
+#import "TFPGCodeHelpers.h"
 
 
 @interface TFPPrintSettingsViewController () <NSMenuDelegate>
