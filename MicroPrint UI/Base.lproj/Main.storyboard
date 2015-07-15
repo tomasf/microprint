@@ -621,6 +621,12 @@
                                                 <action selector="arrangeInFront:" target="Ady-hI-5gd" id="DRN-fu-gQh"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="Q39-5G-n2w"/>
+                                        <menuItem title="Printers" keyEquivalent="1" id="pLd-fd-0C0">
+                                            <connections>
+                                                <action selector="openMainWindow:" target="Voe-Tx-rLC" id="mbt-14-neA"/>
+                                            </connections>
+                                        </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>
@@ -630,7 +636,7 @@
                         <outlet property="delegate" destination="Voe-Tx-rLC" id="PrD-fu-P6m"/>
                     </connections>
                 </application>
-                <customObject id="Voe-Tx-rLC" customClass="AppDelegate"/>
+                <customObject id="Voe-Tx-rLC" customClass="TFPApplicationDelegate"/>
                 <customObject id="Ady-hI-5gd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="75" y="0.0"/>
@@ -660,29 +666,54 @@
             <objects>
                 <windowController storyboardIdentifier="PrintWindowController" id="9Eq-35-5Ub" sceneMemberID="viewController">
                     <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" restorable="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="yv0-u3-ihG">
-                        <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+                        <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
                         <rect key="contentRect" x="245" y="301" width="480" height="270"/>
                         <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
                     </window>
                     <connections>
-                        <segue destination="QEg-b8-EU3" kind="relationship" relationship="window.shadowedContentViewController" id="ykK-Xh-3HH"/>
+                        <segue destination="gsM-aq-D1g" kind="relationship" relationship="window.shadowedContentViewController" id="dsS-Mg-Bw4"/>
                     </connections>
                 </windowController>
                 <customObject id="vFH-CX-8hr" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="757" y="250"/>
         </scene>
+        <!--Loading View Controller-->
+        <scene sceneID="wLt-DV-1Qw">
+            <objects>
+                <viewController id="gsM-aq-D1g" customClass="TFPLoadingViewController" sceneMemberID="viewController">
+                    <view key="view" id="Bn3-8c-wbt">
+                        <rect key="frame" x="0.0" y="0.0" width="450" height="190"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="dvA-0u-7s9">
+                                <rect key="frame" x="209" y="79" width="32" height="32"/>
+                            </progressIndicator>
+                        </subviews>
+                        <constraints>
+                            <constraint firstAttribute="centerX" secondItem="dvA-0u-7s9" secondAttribute="centerX" id="Ei8-c5-hVr"/>
+                            <constraint firstAttribute="centerY" secondItem="dvA-0u-7s9" secondAttribute="centerY" id="lvz-J9-qOH"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="progressIndicator" destination="dvA-0u-7s9" id="f2C-Ot-c4d"/>
+                    </connections>
+                </viewController>
+                <customObject id="9hS-u8-2ba" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="657" y="635"/>
+        </scene>
         <!--Printer List View Controller-->
         <scene sceneID="hIz-AP-VOD">
             <objects>
                 <viewController id="XfG-lQ-9wD" customClass="TFPPrinterListViewController" sceneMemberID="viewController">
                     <view key="view" id="m2S-Jp-Qdl">
-                        <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
+                        <rect key="frame" x="0.0" y="0.0" width="500" height="270"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <scrollView autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HdE-UT-Agt">
-                                <rect key="frame" x="0.0" y="61" width="480" height="209"/>
+                                <rect key="frame" x="0.0" y="61" width="500" height="209"/>
                                 <clipView key="contentView" id="kMY-RO-p78">
                                     <rect key="frame" x="1" y="1" width="248" height="158"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -733,7 +764,7 @@
                 </viewController>
                 <customObject id="rPt-NT-nkU" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="75" y="655"/>
+            <point key="canvasLocation" x="65" y="655"/>
         </scene>
         <!--Printer Collection View Item-->
         <scene sceneID="B6U-jz-k6P">
@@ -812,13 +843,13 @@
         <!--Print Settings View Controller-->
         <scene sceneID="hmT-nt-bSF">
             <objects>
-                <viewController id="QEg-b8-EU3" customClass="TFPPrintSettingsViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="printSettingsViewController" id="QEg-b8-EU3" customClass="TFPPrintSettingsViewController" sceneMemberID="viewController">
                     <view key="view" id="Vqx-Mz-eWP">
-                        <rect key="frame" x="0.0" y="0.0" width="450" height="259"/>
+                        <rect key="frame" x="0.0" y="0.0" width="450" height="275"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <button translatesAutoresizingMaskIntoConstraints="NO" id="fBg-K6-PCT">
-                                <rect key="frame" x="198" y="99" width="140" height="18"/>
+                                <rect key="frame" x="198" y="105" width="140" height="18"/>
                                 <buttonCell key="cell" type="check" title="Use Wave Bonding" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="8Vi-W5-aDw">
                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -828,7 +859,7 @@
                                 </connections>
                             </button>
                             <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="hyh-Gr-D9e">
-                                <rect key="frame" x="198" y="154" width="85" height="26"/>
+                                <rect key="frame" x="198" y="160" width="85" height="26"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="80" id="E7s-64-AVo"/>
                                 </constraints>
@@ -849,7 +880,7 @@
                                 </connections>
                             </popUpButton>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gU0-qB-TaV">
-                                <rect key="frame" x="102" y="160" width="92" height="17"/>
+                                <rect key="frame" x="102" y="166" width="92" height="17"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Filament type:" id="jhc-w1-aUZ">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -857,7 +888,7 @@
                                 </textFieldCell>
                             </textField>
                             <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Nwq-zy-Rb2">
-                                <rect key="frame" x="198" y="67" width="235" height="26"/>
+                                <rect key="frame" x="198" y="63" width="235" height="26"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="230" id="8Nn-Xk-E0B"/>
                                 </constraints>
@@ -877,7 +908,7 @@
                                 </connections>
                             </popUpButton>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="BCH-il-VZP">
-                                <rect key="frame" x="145" y="73" width="49" height="17"/>
+                                <rect key="frame" x="145" y="69" width="49" height="17"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Printer:" id="3ml-tb-bPb">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -885,7 +916,7 @@
                                 </textFieldCell>
                             </textField>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="08a-F2-mHB">
-                                <rect key="frame" x="200" y="125" width="40" height="22"/>
+                                <rect key="frame" x="200" y="131" width="40" height="22"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="40" id="yxV-Sz-C4O"/>
                                 </constraints>
@@ -903,7 +934,7 @@
                                 </connections>
                             </textField>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="yaE-Hy-kFO">
-                                <rect key="frame" x="82" y="127" width="112" height="17"/>
+                                <rect key="frame" x="82" y="133" width="112" height="17"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Temperature (°C):" id="Jcp-GA-rhA">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -911,7 +942,7 @@
                                 </textFieldCell>
                             </textField>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="jgs-Wh-0u2">
-                                <rect key="frame" x="114" y="222" width="80" height="17"/>
+                                <rect key="frame" x="114" y="238" width="80" height="17"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Dimensions:" id="zu8-Gb-PPQ">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -919,7 +950,7 @@
                                 </textFieldCell>
                             </textField>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ewd-U6-wxW">
-                                <rect key="frame" x="198" y="188" width="81" height="51"/>
+                                <rect key="frame" x="198" y="204" width="81" height="51"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" id="Y6b-dw-Duq">
                                     <font key="font" metaFont="system"/>
                                     <string key="title">X: 23.8 mm
@@ -953,7 +984,7 @@ DQ
                             <constraint firstItem="jgs-Wh-0u2" firstAttribute="baseline" secondItem="Ewd-U6-wxW" secondAttribute="baseline" id="HQS-ei-yRz"/>
                             <constraint firstItem="fBg-K6-PCT" firstAttribute="leading" secondItem="Ewd-U6-wxW" secondAttribute="leading" id="LL6-Tb-LKQ"/>
                             <constraint firstItem="jgs-Wh-0u2" firstAttribute="trailing" secondItem="BCH-il-VZP" secondAttribute="trailing" id="Maq-js-tVk"/>
-                            <constraint firstItem="Nwq-zy-Rb2" firstAttribute="top" secondItem="fBg-K6-PCT" secondAttribute="bottom" constant="10" id="OeE-L3-Fpk"/>
+                            <constraint firstItem="Nwq-zy-Rb2" firstAttribute="top" secondItem="fBg-K6-PCT" secondAttribute="bottom" constant="20" id="OeE-L3-Fpk"/>
                             <constraint firstItem="fBg-K6-PCT" firstAttribute="leading" secondItem="Nwq-zy-Rb2" secondAttribute="leading" id="Pbd-hK-DoL"/>
                             <constraint firstItem="Ewd-U6-wxW" firstAttribute="top" secondItem="Vqx-Mz-eWP" secondAttribute="top" constant="20" id="Psk-ov-dY0"/>
                             <constraint firstItem="Ewd-U6-wxW" firstAttribute="leading" secondItem="jgs-Wh-0u2" secondAttribute="trailing" constant="8" id="RkY-zE-JLk"/>
@@ -962,7 +993,7 @@ DQ
                             <constraint firstItem="fBg-K6-PCT" firstAttribute="top" secondItem="08a-F2-mHB" secondAttribute="bottom" constant="10" id="aTx-6n-lc2"/>
                             <constraint firstAttribute="bottom" secondItem="he4-MQ-0gM" secondAttribute="bottom" constant="20" id="fYU-RI-7ni"/>
                             <constraint firstAttribute="centerX" secondItem="he4-MQ-0gM" secondAttribute="centerX" id="i9x-xF-ygF"/>
-                            <constraint firstItem="hyh-Gr-D9e" firstAttribute="top" secondItem="Ewd-U6-wxW" secondAttribute="bottom" constant="10" id="m5f-Vh-2Zn"/>
+                            <constraint firstItem="hyh-Gr-D9e" firstAttribute="top" secondItem="Ewd-U6-wxW" secondAttribute="bottom" constant="20" id="m5f-Vh-2Zn"/>
                             <constraint firstItem="yaE-Hy-kFO" firstAttribute="baseline" secondItem="08a-F2-mHB" secondAttribute="baseline" id="qdG-VQ-ed8"/>
                             <constraint firstItem="08a-F2-mHB" firstAttribute="top" secondItem="hyh-Gr-D9e" secondAttribute="bottom" constant="10" id="r7X-c3-x9A"/>
                             <constraint firstItem="fBg-K6-PCT" firstAttribute="leading" secondItem="hyh-Gr-D9e" secondAttribute="leading" id="tCl-mx-01k"/>
@@ -970,6 +1001,7 @@ DQ
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="dimensionsLabel" destination="Ewd-U6-wxW" id="kDL-4q-grz"/>
                         <outlet property="printerMenuButton" destination="Nwq-zy-Rb2" id="uOS-JO-XSc"/>
                         <outlet property="temperatureTextField" destination="08a-F2-mHB" id="CX5-jz-118"/>
                     </connections>
@@ -977,7 +1009,7 @@ DQ
                 <customObject id="8ig-ds-s5R" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <userDefaultsController representsSharedInstance="YES" id="DVH-aO-vnd"/>
             </objects>
-            <point key="canvasLocation" x="712" y="649.5"/>
+            <point key="canvasLocation" x="1227" y="682.5"/>
         </scene>
         <!--Filament Operations View Controller-->
         <scene sceneID="4Dt-n4-U8A">
@@ -1048,7 +1080,7 @@ DQ
                 </viewController>
                 <customObject id="BDb-ih-ONj" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="584" y="888.5"/>
+            <point key="canvasLocation" x="205" y="1059.5"/>
         </scene>
         <!--Window Controller-->
         <scene sceneID="rgs-fM-vme">
@@ -1066,7 +1098,7 @@ DQ
                 </windowController>
                 <customObject id="9x3-ok-sMm" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1387" y="250"/>
+            <point key="canvasLocation" x="1768" y="250"/>
         </scene>
         <!--Printing Progress View Controller-->
         <scene sceneID="gSv-o8-Dyf">
@@ -1172,7 +1204,7 @@ DQ
                 <customObject id="u1l-Px-QeO" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
                 <userDefaultsController id="XiZ-Of-bBS"/>
             </objects>
-            <point key="canvasLocation" x="1391" y="690"/>
+            <point key="canvasLocation" x="1772" y="660"/>
         </scene>
     </scenes>
     <resources>

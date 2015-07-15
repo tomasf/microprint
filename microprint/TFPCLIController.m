@@ -133,6 +133,7 @@
 	
 	if([settings boolForKey:@"dryrun"]) {
 		self.printer = [TFPDryRunPrinter new];
+		TFLog(@"Using dry-run simulated printer.");
 		[self performCommand:command withArgument:valueString usingSettings:settings];
 		
 	}else{
@@ -229,19 +230,47 @@
 }
 
 
+- (void)extrudeOrRetract:(BOOL)retract temperature:(double)temperature {
+	TFPExtrusionOperation *extrusionOperation = [[TFPExtrusionOperation alloc] initWithPrinter:self.printer retraction:retract];
+	extrusionOperation.temperature = temperature;
+	__weak TFPExtrusionOperation *weakOperation = extrusionOperation;
+	
+	extrusionOperation.movingStartedBlock = ^{
+		TFLog(@"Raising print head...");
+	};
+	
+	extrusionOperation.heatingStartedBlock = ^{
+		TFLog(@"Heating to %.0f°C...", weakOperation.temperature);
+	};
+	
+	extrusionOperation.extrusionStartedBlock = ^{
+		TFLog(@"%@. Press Return to stop.", (retract ? @"Retracting" : @"Extruding"));
+	};
+	
+	extrusionOperation.extrusionStoppedBlock = ^{
+		exit(EXIT_SUCCESS);
+	};
+	
+	[extrusionOperation start];
+	self.operation = extrusionOperation;
+	
+	TFPListenForInputLine(^(NSString *line) {
+		TFLog(@"Stopping...");
+		[weakOperation stop];
+	});
+}
+
+
+
 - (void)performCommand:(NSString *)command withArgument:(NSString *)value usingSettings:(GBSettings *)settings {
 	command = [command lowercaseString];
 	
 	if([command isEqual:@"extrude"] || [command isEqual:@"retract"]) {
-		
 		double temperature = [settings floatForKey:@"temperature"];
 		if(temperature < 1) {
 			temperature = 215;
 		}
-		
-		TFPExtrusionOperation *extrusionOperation = [[TFPExtrusionOperation alloc] initWithPrinter:self.printer retraction:[command isEqual:@"retract"]];
-		[extrusionOperation start];
-		self.operation = extrusionOperation;
+		[self extrudeOrRetract:[command isEqual:@"retract"] temperature:temperature];
 		
 	}else if([command isEqual:@"print"]) {
 		[self printPath:value usingParameters:[self printParametersForSettings:settings]];

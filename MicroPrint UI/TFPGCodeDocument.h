@@ -10,5 +10,5 @@
 @class TFPGCodeProgram;
 
 @interface TFPGCodeDocument : NSDocument
-@property TFPGCodeProgram *program;
+@property NSData *data;
 @end

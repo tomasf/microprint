@@ -86,11 +86,11 @@
 											//targetTemperature, (int)((currentTemperature/targetTemperature)*100)];
 	};
 	
-	self.printJob.abortionBlock = ^(NSTimeInterval duration) {
+	self.printJob.abortionBlock = ^{
 		[weakSelf.parentWindow endSheet:weakSelf.view.window];
 	};
 	
-	self.printJob.completionBlock = ^(NSTimeInterval duration){
+	self.printJob.completionBlock = ^{
 		[weakSelf.parentWindow endSheet:weakSelf.view.window];
 	};
 	

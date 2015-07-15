@@ -24,9 +24,7 @@
 
 
 - (BOOL)readFromData:(NSData *)data ofType:(NSString *)typeName error:(NSError **)outError {
-	NSString *string = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-	self.program = [[TFPGCodeProgram alloc] initWithString:string];
-	
+	self.data = data;
 	return YES;
 }
 

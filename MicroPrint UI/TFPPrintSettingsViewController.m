@@ -19,6 +19,7 @@
 @interface TFPPrintSettingsViewController () <NSMenuDelegate>
 @property IBOutlet NSPopUpButton *printerMenuButton;
 @property IBOutlet NSTextField *temperatureTextField;
+@property IBOutlet NSTextField *dimensionsLabel;
 
 @property TFPPrinterManager *printerManager;
 
@@ -57,13 +58,25 @@
 		[weakSelf updateTemperaturePlaceholder];
 	}];
 	
-	/*
-	TFPGCodeProgram *program = self.document.program;
+	weakSelf.dimensionsLabel.stringValue = @"Measuring…\n\n";
+	
+	TFPGCodeProgram *program = self.program;
 	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
 		TFP3DVector *size = [program measureSize];
-		NSLog(@"%@", size);
+		
+		dispatch_async(dispatch_get_main_queue(), ^{
+			NSNumberFormatter *formatter = [NSNumberFormatter new];
+			formatter.positiveSuffix = @" mm";
+			formatter.minimumFractionDigits = 2;
+			formatter.maximumFractionDigits = 2;
+			formatter.minimumIntegerDigits = 1;
+			
+			weakSelf.dimensionsLabel.stringValue = [NSString stringWithFormat:@"X:  %@\nY:  %@\nZ:  %@",
+													[formatter stringFromNumber:size.x],
+													[formatter stringFromNumber:size.y],
+													[formatter stringFromNumber:size.z]];
+		});
 	});
-	 */
 }
 
 
@@ -115,7 +128,7 @@
 		
 		TFPPrintingProgressViewController *viewController = (TFPPrintingProgressViewController*)printingProgressWindowController.window.contentViewController;
 		viewController.printer = self.selectedPrinter;
-		viewController.program = self.document.program;
+		viewController.program = self.program;
 		viewController.printParameters = params;
 		
 		viewController.parentWindow = self.view.window;
