@@ -84,7 +84,6 @@
 	
 	[factoryDefaults setBool:YES forKey:@"wavebonding"];
 	[factoryDefaults setBool:YES forKey:@"backlash"];
-	[factoryDefaults setInteger:1200 forKey:@"backlashSpeed"];
 
 	[factoryDefaults setBool:NO forKey:@"dryrun"];
 	[factoryDefaults setBool:NO forKey:@"help"];
@@ -109,7 +108,6 @@
 	
 	[parser registerOption:@"wavebonding" shortcut:0 requirement:GBValueNone];
 	[parser registerOption:@"backlash" shortcut:0 requirement:GBValueNone];
-	[parser registerOption:@"backlashSpeed" shortcut:0 requirement:GBValueOptional];
 
 	[parser registerSettings:settings];
 	if(![parser parseOptionsWithArguments:argv count:argc]) {
@@ -204,7 +202,6 @@
 	TFLog(@"  --filament <string>: Filament type. Valid options are PLA, ABS, HIPS and Other. Affects behavior in some preprocessors. Also sets default temperature.");
 	TFLog(@"  --wavebonding: Use wave bonding. On by default. Turn off with --wavebonding=0");
 	TFLog(@"  --backlash: Use backlash compensation. On by default. Turn off with --backlash=0");
-	TFLog(@"  --backlashSpeed <number>: The 'F' speed to use for inserted backlash compensation codes. Default is currently 1200, which seems to produce better prints. Old M3D value is 2900.");
 	TFLog(@"  --rawFeedRates: For the console command, this turns off conversion of feed rates to M3D-style inverted feed rates.");
 }
 
@@ -216,7 +213,6 @@
 	params.verbose = [settings boolForKey:@"verbose"];
 	params.useWaveBonding = [settings boolForKey:@"wavebonding"];
 	params.useBacklashCompensation = [settings boolForKey:@"backlash"];
-	params.backlashCompensationSpeed = [settings floatForKey:@"backlashSpeed"];
 	
 	params.filament = [TFPFilament filamentForType:[TFPFilament typeForString:[settings objectForKey:@"filament"]]];
 	if(!params.filament) {
@@ -308,6 +304,15 @@
 		consoleOperation.convertFeedRates = ![settings boolForKey:@"rawFeedRates"];
 		[consoleOperation start];
 		self.operation = consoleOperation;
+		
+	}else if([command isEqual:@"values"]) {
+		TFPPrintParameters *params = [TFPPrintParameters new];
+		[self.printer fillInOffsetAndBacklashValuesInPrintParameters:params completionHandler:^(BOOL success) {
+			TFLog(@"Bed level: %@", TFPBedLevelOffsetsDescription(params.bedLevelOffsets));
+			TFLog(@"Backlash values: %@", TFPBacklashValuesDescription(params.backlashValues));
+			TFLog(@"Backlash speed: %.02f", params.backlashCompensationSpeed);
+			exit(EXIT_SUCCESS);
+		}];
 		
 	}else{
 		TFLog(@"Invalid command '%@'", command);

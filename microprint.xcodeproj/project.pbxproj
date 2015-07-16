@@ -80,6 +80,8 @@
 		C9C729E41B5177A700277F1F /* TFPOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C729E31B5177A700277F1F /* TFPOperation.m */; };
 		C9C729E71B51D08800277F1F /* TFPManualBedLevelCalibration.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C729E61B51D08800277F1F /* TFPManualBedLevelCalibration.m */; };
 		C9C729F11B53BEA900277F1F /* TFPGCodeHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C729F01B53BEA900277F1F /* TFPGCodeHelpers.m */; };
+		C9C871A61B57B1270063FACB /* TFPPrinter+VirtualEEPROM.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C871A51B57B1270063FACB /* TFPPrinter+VirtualEEPROM.m */; };
+		C9C871A71B57B1270063FACB /* TFPPrinter+VirtualEEPROM.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C871A51B57B1270063FACB /* TFPPrinter+VirtualEEPROM.m */; };
 		C9E59B6C1B316AF400343D58 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B6B1B316AF400343D58 /* main.m */; };
 		C9E59B741B316BE800343D58 /* TFPGCode.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B731B316BE800343D58 /* TFPGCode.m */; };
 		C9E59B771B316F0D00343D58 /* Extras.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B761B316F0D00343D58 /* Extras.m */; };
@@ -186,6 +188,8 @@
 		C9C729E61B51D08800277F1F /* TFPManualBedLevelCalibration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPManualBedLevelCalibration.m; sourceTree = "<group>"; };
 		C9C729EF1B53BEA900277F1F /* TFPGCodeHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPGCodeHelpers.h; sourceTree = "<group>"; };
 		C9C729F01B53BEA900277F1F /* TFPGCodeHelpers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPGCodeHelpers.m; sourceTree = "<group>"; };
+		C9C871A41B57B1270063FACB /* TFPPrinter+VirtualEEPROM.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "TFPPrinter+VirtualEEPROM.h"; sourceTree = "<group>"; };
+		C9C871A51B57B1270063FACB /* TFPPrinter+VirtualEEPROM.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "TFPPrinter+VirtualEEPROM.m"; sourceTree = "<group>"; };
 		C9E59B681B316AF400343D58 /* microprint */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = microprint; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9E59B6B1B316AF400343D58 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		C9E59B721B316BE800343D58 /* TFPGCode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPGCode.h; sourceTree = "<group>"; };
@@ -291,6 +295,8 @@
 			children = (
 				C9FD1C5E1B39618300F98FF1 /* TFPPrinter.h */,
 				C9FD1C5F1B39618300F98FF1 /* TFPPrinter.m */,
+				C9C871A41B57B1270063FACB /* TFPPrinter+VirtualEEPROM.h */,
+				C9C871A51B57B1270063FACB /* TFPPrinter+VirtualEEPROM.m */,
 				C99E87231B3AB4CD0099E79E /* TFPDryRunPrinter.h */,
 				C99E87241B3AB4CD0099E79E /* TFPDryRunPrinter.m */,
 				C9FD1C571B395FD000F98FF1 /* TFPPrinterManager.h */,
@@ -565,6 +571,7 @@
 				C95F111F1B5536D200F396B6 /* TFPPrinterCollectionViewItem.m in Sources */,
 				C95F11071B54107500F396B6 /* TFPPreprocessing.m in Sources */,
 				C95F11101B54108400F396B6 /* TFPPrintJob.m in Sources */,
+				C9C871A71B57B1270063FACB /* TFPPrinter+VirtualEEPROM.m in Sources */,
 				C95F10C01B53EBC400F396B6 /* TFPPrinterManager.m in Sources */,
 				C95F10A71B53E3E200F396B6 /* TFPPrinterListViewController.m in Sources */,
 				C95F110C1B54107500F396B6 /* TFPFeedRateConversionPreprocessor.m in Sources */,
@@ -610,6 +617,7 @@
 				C9E59B741B316BE800343D58 /* TFPGCode.m in Sources */,
 				C9FD1C5D1B39602000F98FF1 /* MAKVONotificationCenter.m in Sources */,
 				C99E87281B3ACFD10099E79E /* TFPBacklashPreprocessor.m in Sources */,
+				C9C871A61B57B1270063FACB /* TFPPrinter+VirtualEEPROM.m in Sources */,
 				C991C31D1B4DA676005846B9 /* TFPGCodeConsoleOperation.m in Sources */,
 				C94F60091B38061E0074EC41 /* TFPFeedRateConversionPreprocessor.m in Sources */,
 				C96590E41B3F6469009D028F /* TFPWaveBondingPreprocessor.m in Sources */,

@@ -13,6 +13,7 @@
 #import "TFP3DVector.h"
 #import "TFPGCodeProgram.h"
 #import "TFPGCodeHelpers.h"
+#import "TFPPrinter+VirtualEEPROM.h"
 
 
 @interface TFPPrinter () <ORSSerialPortDelegate>
@@ -202,24 +203,8 @@
 }
 
 
-- (NSDictionary*)dictionaryFromResponseValueString:(NSString*)string {
-	NSMutableDictionary *dictionary = [NSMutableDictionary new];
-	NSArray *parts = [string componentsSeparatedByString:@" "];
-	
-	for(NSString *part in parts) {
-		NSUInteger colonIndex = [part rangeOfString:@":"].location;
-		if(colonIndex != NSNotFound) {
-			NSString *key = [part substringToIndex:colonIndex];
-			NSString *value = [part substringFromIndex:colonIndex+1];
-			dictionary[key] = value;
-		}
-	}
-	return dictionary;
-}
-
-
 - (void)processCapabilities:(NSString*)string {
-	NSDictionary *dictionary = [self dictionaryFromResponseValueString:string];
+	NSDictionary *dictionary = [TFPGCode dictionaryFromResponseValueString:string];
 	
 	for(NSString *key in dictionary) {
 		[self processCapability:key value:dictionary[key]];
@@ -336,52 +321,66 @@
 }
 
 
-- (void)fetchBedOffsetsWithCompletionHandler:(void(^)(BOOL success, TFPBedLevelOffsets offsets))completionHandler {
-	[self sendGCodeString:@"M578" responseHandler:^(BOOL success, NSString *value) {
-		TFPBedLevelOffsets offsets;
-		if(success) {
-			NSDictionary *offsetData = [self dictionaryFromResponseValueString:value];
-			offsets.backRight = [offsetData[@"BRO"] doubleValue];
-			offsets.backLeft = [offsetData[@"BLO"] doubleValue];
-			offsets.frontRight = [offsetData[@"FRO"] doubleValue];
-			offsets.frontLeft = [offsetData[@"FLO"] doubleValue];
-			offsets.common = [offsetData[@"ZO"] doubleValue];
+- (void)fetchBacklashCompensationSpeedWithCompletionHandler:(void(^)(BOOL success, float speed))completionHandler {
+	[self readVirtualEEPROMFloatValueAtIndex:VirtualEEPROMIndexBacklashCompensationSpeed completionHandler:^(BOOL success, float value) {
+		completionHandler(success, value);
+	}];
+}
 
-			completionHandler(YES, offsets);
-			
-		}else{
+
+- (void)fetchBedOffsetsWithCompletionHandler:(void(^)(BOOL success, TFPBedLevelOffsets offsets))completionHandler {
+	NSArray *indexes = @[@(VirtualEEPROMIndexBedOffsetBackLeft),
+						 @(VirtualEEPROMIndexBedOffsetBackRight),
+						 @(VirtualEEPROMIndexBedOffsetFrontRight),
+						 @(VirtualEEPROMIndexBedOffsetFrontLeft),
+						 @(VirtualEEPROMIndexBedOffsetCommon)];
+	
+	[self readVirtualEEPROMFloatValuesAtIndexes:indexes completionHandler:^(BOOL success, NSArray *values) {
+		TFPBedLevelOffsets offsets;
+		
+		if(!success) {
 			completionHandler(NO, offsets);
 		}
+		
+		offsets.backLeft = [values[0] floatValue];
+		offsets.backRight = [values[1] floatValue];
+		offsets.frontRight = [values[2] floatValue];
+		offsets.frontLeft = [values[3] floatValue];
+		offsets.common = [values[4] floatValue];
+		
+		completionHandler(YES, offsets);
 	}];
 }
 
 
 - (void)setBedOffsets:(TFPBedLevelOffsets)offsets completionHandler:(void(^)(BOOL success))completionHandler {
-	TFPGCode *code = [TFPGCode codeWithString:@"M577"];
-	code = [code codeBySettingField:'X' toValue:offsets.backLeft];
-	code = [code codeBySettingField:'Y' toValue:offsets.backRight];
-	code = [code codeBySettingField:'Z' toValue:offsets.frontRight];
-	code = [code codeBySettingField:'E' toValue:offsets.frontLeft];
-	code = [code codeBySettingField:'F' toValue:offsets.common];
+	NSDictionary *EEPROMValues = @{
+								   @(VirtualEEPROMIndexBedOffsetBackLeft): @(offsets.backLeft),
+								   @(VirtualEEPROMIndexBedOffsetBackRight): @(offsets.backRight),
+								   @(VirtualEEPROMIndexBedOffsetFrontRight): @(offsets.frontRight),
+								   @(VirtualEEPROMIndexBedOffsetFrontLeft): @(offsets.frontLeft),
+								   @(VirtualEEPROMIndexBedOffsetCommon): @(offsets.common),
+								   };
 	
-	[self sendGCode:code responseHandler:^(BOOL success, NSString *value) {
+	
+	[self writeVirtualEEPROMFloatValues:EEPROMValues completionHandler:^(BOOL success) {
 		completionHandler(success);
 	}];
 }
 
 
 - (void)fetchBacklashValuesWithCompletionHandler:(void(^)(BOOL success, TFPBacklashValues values))completionHandler {
-	[self sendGCodeString:@"M572" responseHandler:^(BOOL success, NSString *value) {
-		TFPBacklashValues values;
+	NSArray *indexes = @[@(VirtualEEPROMIndexBacklashCompensationX), @(VirtualEEPROMIndexBacklashCompensationY)];
+	
+	[self readVirtualEEPROMFloatValuesAtIndexes:indexes completionHandler:^(BOOL success, NSArray *values) {
+		TFPBacklashValues backlash;
 		if(success) {
-			NSDictionary *backlashData = [self dictionaryFromResponseValueString:value];
-			values.x = [backlashData[@"BX"] doubleValue];
-			values.y = [backlashData[@"BY"] doubleValue];
+			backlash.x = [values[0] floatValue];
+			backlash.y = [values[1] floatValue];
 			
-			completionHandler(YES, values);
-			
+			completionHandler(YES, backlash);
 		}else{
-			completionHandler(NO, values);
+			completionHandler(NO, backlash);
 		}
 	}];
 }
@@ -390,7 +389,7 @@
 - (void)fetchPositionWithCompletionHandler:(void(^)(BOOL success, TFP3DVector *position, NSNumber *E))completionHandler {
 	[self sendGCodeString:@"M114" responseHandler:^(BOOL success, NSString *value) {
 		if(success) {
-			NSDictionary *params = [self dictionaryFromResponseValueString:value];
+			NSDictionary *params = [TFPGCode dictionaryFromResponseValueString:value];
 			
 			NSNumber *x = params[@"X"] ? @([params[@"X"] doubleValue]) : nil;
 			NSNumber *y = params[@"Y"] ? @([params[@"Y"] doubleValue]) : nil;
@@ -420,9 +419,12 @@
 				completionHandler(NO);
 				return;
 			}
-			
 			params.backlashValues = values;
-			completionHandler(YES);
+
+			[self fetchBacklashCompensationSpeedWithCompletionHandler:^(BOOL success, float speed) {
+				params.backlashCompensationSpeed = speed;
+				completionHandler(YES);
+			}];
 		}];
 	}];
 }

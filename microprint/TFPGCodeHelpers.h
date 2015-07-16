@@ -12,6 +12,7 @@
 
 @interface TFPGCode (TFPHelpers)
 + (double)convertFeedRate:(double)feedRate;
++ (NSDictionary*)dictionaryFromResponseValueString:(NSString*)string;
 
 + (instancetype)codeForSettingLineNumber:(uint16_t)lineNumber;
 - (instancetype)codeBySettingLineNumber:(uint16_t)lineNumber;
@@ -43,6 +44,9 @@
 
 + (instancetype)codeForSettingFanSpeed:(double)speed;
 + (instancetype)turnOffFanCode;
+
++ (instancetype)codeForReadingVirtualEEPROMAtIndex:(NSUInteger)valueIndex;
++ (instancetype)codeForWritingVirtualEEPROMAtIndex:(NSUInteger)valueIndex value:(int32_t)value;
 @end
 
 

@@ -24,6 +24,23 @@ const double maxMMPerSecond = 60.001;
 }
 
 
++ (NSDictionary*)dictionaryFromResponseValueString:(NSString*)string {
+	NSMutableDictionary *dictionary = [NSMutableDictionary new];
+	NSArray *parts = [string componentsSeparatedByString:@" "];
+	
+	for(NSString *part in parts) {
+		NSUInteger colonIndex = [part rangeOfString:@":"].location;
+		if(colonIndex != NSNotFound) {
+			NSString *key = [part substringToIndex:colonIndex];
+			NSString *value = [part substringFromIndex:colonIndex+1];
+			dictionary[key] = value;
+		}
+	}
+	return dictionary;
+}
+
+
+
 - (instancetype)codeBySettingLineNumber:(uint16_t)lineNumber {
 	return [self codeBySettingField:'N' toValue:lineNumber];
 }
@@ -161,6 +178,16 @@ const double maxMMPerSecond = 60.001;
 		feedRate = [self convertFeedRate:feedRate];
 	}
 	return [[TFPGCode codeWithField:'G' value:0] codeBySettingField:'F' toValue:feedRate];
+}
+
+
++ (instancetype)codeForReadingVirtualEEPROMAtIndex:(NSUInteger)valueIndex {
+	return [[TFPGCode codeWithField:'M' value:619] codeBySettingField:'S' toValue:valueIndex];
+}
+
+
++ (instancetype)codeForWritingVirtualEEPROMAtIndex:(NSUInteger)valueIndex value:(int32_t)value {
+	return [[[TFPGCode codeWithField:'M' value:618] codeBySettingField:'S' toValue:valueIndex] codeBySettingField:'P' toValue:value];
 }
 
 

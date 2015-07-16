@@ -42,6 +42,13 @@
 }
 
 
+- (void)fetchBedOffsetsWithCompletionHandler:(void (^)(BOOL, TFPBedLevelOffsets))completionHandler {
+	dispatch_after(dispatch_time(0, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+		completionHandler(YES, (TFPBedLevelOffsets){-0.30, -0.4, -0.65, -1, -0.95});
+	});
+}
+
+
 - (void)establishConnectionWithCompletionHandler:(void(^)(NSError *error))completionHandler {
 	self.pendingConnection = YES;
 	dispatch_after(dispatch_time(0, 1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
