@@ -15,6 +15,7 @@
 #import "TFPGCodeDocument.h"
 #import "TFPPrintingProgressViewController.h"
 #import "TFPGCodeHelpers.h"
+#import "Extras.h"
 
 
 @interface TFPPrintSettingsViewController () <NSMenuDelegate>
@@ -28,6 +29,8 @@
 @property TFPFilamentType filamentType;
 @property NSNumber *temperature;
 @property BOOL useWaveBonding;
+
+@property TFP3DVector *printSize;
 @end
 
 
@@ -59,25 +62,38 @@
 		[weakSelf updateTemperaturePlaceholder];
 	}];
 	
-	weakSelf.dimensionsLabel.stringValue = @"Measuring…\n\n";
-	
 	TFPGCodeProgram *program = self.program;
 	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
 		TFP3DVector *size = [program measureSize];
 		
 		dispatch_async(dispatch_get_main_queue(), ^{
-			NSNumberFormatter *formatter = [NSNumberFormatter new];
-			formatter.positiveSuffix = @" mm";
-			formatter.minimumFractionDigits = 2;
-			formatter.maximumFractionDigits = 2;
-			formatter.minimumIntegerDigits = 1;
-			
-			weakSelf.dimensionsLabel.stringValue = [NSString stringWithFormat:@"X:  %@\nY:  %@\nZ:  %@",
-													[formatter stringFromNumber:size.x],
-													[formatter stringFromNumber:size.y],
-													[formatter stringFromNumber:size.z]];
+			weakSelf.printSize = size;
 		});
 	});
+}
+
+
+- (NSString*)printDimensionsString {
+	if(self.printSize) {
+		NSNumberFormatter *formatter = [NSNumberFormatter new];
+		formatter.positiveSuffix = @" mm";
+		formatter.minimumFractionDigits = 2;
+		formatter.maximumFractionDigits = 2;
+		formatter.minimumIntegerDigits = 1;
+		
+		return [NSString stringWithFormat:@"X:  %@\nY:  %@\nZ:  %@",
+				[formatter stringFromNumber:self.printSize.x],
+				[formatter stringFromNumber:self.printSize.y],
+				[formatter stringFromNumber:self.printSize.z]];
+		
+	}else{
+		return @"Measuring…\n\n";;
+	}
+}
+
+
++ (NSSet *)keyPathsForValuesAffectingPrintDimensionsString {
+	return @[@"printSize"].tf_set;
 }
 
 
@@ -112,6 +128,8 @@
 
 - (TFPPrintParameters*)printParameters {
 	TFPPrintParameters *parameters = [TFPPrintParameters new];
+	parameters.maxZ = self.printSize.z.doubleValue;
+	
 	parameters.filament = [TFPFilament filamentForType:self.filamentType];
 	if(self.temperature) {
 		parameters.idealTemperature = self.temperature.doubleValue;

@@ -967,6 +967,9 @@ Z: 18.2 mm</string>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
+                                <connections>
+                                    <binding destination="QEg-b8-EU3" name="value" keyPath="printDimensionsString" id="zoO-Zf-WkF"/>
+                                </connections>
                             </textField>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="he4-MQ-0gM">
                                 <rect key="frame" x="191" y="13" width="69" height="32"/>
@@ -979,6 +982,11 @@ DQ
                                 </buttonCell>
                                 <connections>
                                     <action selector="print:" target="QEg-b8-EU3" id="WAg-jB-3ph"/>
+                                    <binding destination="QEg-b8-EU3" name="enabled" keyPath="printSize" id="zb5-zh-b5S">
+                                        <dictionary key="options">
+                                            <string key="NSValueTransformerName">NSIsNotNil</string>
+                                        </dictionary>
+                                    </binding>
                                 </connections>
                             </button>
                         </subviews>
@@ -1024,7 +1032,7 @@ DQ
             <objects>
                 <viewController storyboardIdentifier="extrusionViewController" id="ayc-Bv-sK5" customClass="TFPPrinterOperationsViewController" sceneMemberID="viewController">
                     <view key="view" id="qAH-BV-hsl">
-                        <rect key="frame" x="0.0" y="0.0" width="173" height="163"/>
+                        <rect key="frame" x="0.0" y="0.0" width="170" height="163"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Rc7-fT-LDU">
