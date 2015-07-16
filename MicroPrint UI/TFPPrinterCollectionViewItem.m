@@ -8,9 +8,13 @@
 
 #import "TFPPrinterCollectionViewItem.h"
 #import "TFPPrinterOperationsViewController.h"
+#import "TFPBedLevelSettingsViewController.h"
+#import "TFPBacklashSettingsViewController.h"
+
 
 @interface TFPPrinterCollectionViewItem ()
 @property NSPopover *filamentPopover;
+@property NSWindowController *calibrationWindowController;
 @end
 
 
@@ -27,6 +31,21 @@
 		self.filamentPopover.behavior = NSPopoverBehaviorTransient;
 	}
 	[self.filamentPopover showRelativeToRect:button.bounds ofView:button preferredEdge:CGRectMaxYEdge];
+}
+
+
+- (IBAction)openCalibration:(id)sender {
+	self.calibrationWindowController = [[NSStoryboard storyboardWithName:@"Main" bundle:nil] instantiateControllerWithIdentifier:@"CalibrationWindowController"];
+	
+	NSTabViewController *tabController = (NSTabViewController*)self.calibrationWindowController.contentViewController;
+	TFPBedLevelSettingsViewController *viewController = tabController.childViewControllers.firstObject;
+	viewController.printer = self.representedObject;
+
+	TFPBacklashSettingsViewController *viewController2 = tabController.childViewControllers.lastObject;
+	viewController2.printer = self.representedObject;
+
+	
+	[self.calibrationWindowController.window makeKeyAndOrderFront:nil];
 }
 
 

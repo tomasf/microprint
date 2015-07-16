@@ -8,6 +8,7 @@
 
 #import "TFPRaiseHeadOperation.h"
 #import "Extras.h"
+#import "TFPGCodeHelpers.h"
 
 
 @interface TFPRaiseHeadOperation ()
@@ -50,10 +51,12 @@ static const double raiseStep = 0.5;
 				}
 				
 				[self raiseStepFromZ:Z toLevel:targetHeight completionHandler:^{
-					if(self.didStopBlock) {
-						self.didStopBlock(YES);
-						[self ended];
-					}
+					[self.printer sendGCode:[TFPGCode turnOffMotorsCode] responseHandler:^(BOOL success, NSString *value) {
+						if(self.didStopBlock) {
+							self.didStopBlock(YES);
+							[self ended];
+						}
+					}];
 				}];
 			}else{
 				if(self.didStopBlock) {

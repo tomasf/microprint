@@ -328,6 +328,16 @@
 }
 
 
+- (void)setBacklashCompensationSpeed:(float)value completionHandler:(void(^)(BOOL success))completionHandler {
+	[self writeVirtualEEPROMFloatValueAtIndex:VirtualEEPROMIndexBacklashCompensationSpeed value:value completionHandler:^(BOOL success) {
+		if(completionHandler) {
+			completionHandler(success);
+		}
+	}];
+}
+
+
+
 - (void)fetchBedOffsetsWithCompletionHandler:(void(^)(BOOL success, TFPBedLevelOffsets offsets))completionHandler {
 	NSArray *indexes = @[@(VirtualEEPROMIndexBedOffsetBackLeft),
 						 @(VirtualEEPROMIndexBedOffsetBackRight),
@@ -364,7 +374,9 @@
 	
 	
 	[self writeVirtualEEPROMFloatValues:EEPROMValues completionHandler:^(BOOL success) {
-		completionHandler(success);
+		if(completionHandler) {
+			completionHandler(success);
+		}
 	}];
 }
 
@@ -384,6 +396,22 @@
 		}
 	}];
 }
+
+
+- (void)setBacklashValues:(TFPBacklashValues)values completionHandler:(void(^)(BOOL success))completionHandler {
+	NSDictionary *EEPROMValues = @{
+								   @(VirtualEEPROMIndexBacklashCompensationX): @(values.x),
+								   @(VirtualEEPROMIndexBacklashCompensationY): @(values.y),
+								   };
+	
+	
+	[self writeVirtualEEPROMFloatValues:EEPROMValues completionHandler:^(BOOL success) {
+		if(completionHandler) {
+			completionHandler(success);
+		}
+	}];
+}
+
 
 
 - (void)fetchPositionWithCompletionHandler:(void(^)(BOOL success, TFP3DVector *position, NSNumber *E))completionHandler {
