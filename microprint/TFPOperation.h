@@ -16,5 +16,6 @@
 @property (readonly) NSString *activityDescription;
 
 - (void)start;
+- (void)stop;
 - (void)ended;
 @end

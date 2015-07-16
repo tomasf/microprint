@@ -296,8 +296,24 @@
 	}else if([command isEqualTo:@"raise"]) {
 		TFPRaiseHeadOperation *raiseHeadOperation = [[TFPRaiseHeadOperation alloc] initWithPrinter:self.printer];
 		raiseHeadOperation.targetHeight = [settings floatForKey:@"height"];
+		
+		raiseHeadOperation.didStartBlock = ^{
+			TFLog(@"Raising print head. Press Return to stop.");
+		};
+		
+		raiseHeadOperation.didStopBlock = ^(BOOL didMove) {
+			if(!didMove) {
+				TFLog(@"Head is already at or above target height.");
+			}
+			exit(EXIT_SUCCESS);
+		};
+		
 		[raiseHeadOperation start];
 		self.operation = raiseHeadOperation;
+		
+		TFPListenForInputLine(^(NSString *line) {
+			[raiseHeadOperation stop];
+		});
 		
 	}else if([command isEqual:@"console"]) {
 		TFPGCodeConsoleOperation *consoleOperation = [[TFPGCodeConsoleOperation alloc] initWithPrinter:self.printer];

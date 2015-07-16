@@ -11,5 +11,10 @@
 
 @interface TFPRaiseHeadOperation : TFPOperation
 @property double targetHeight;
+
+@property (copy) void(^didStartBlock)();
+@property (copy) void(^didStopBlock)(BOOL didRaise);
+
 - (void)start;
+- (void)stop;
 @end

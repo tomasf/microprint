@@ -7,59 +7,73 @@
 //
 
 #import "TFPRaiseHeadOperation.h"
-#import "TFPRepeatingCommandSender.h"
 #import "Extras.h"
 
 
 @interface TFPRaiseHeadOperation ()
-@property TFPRepeatingCommandSender *repeatSender;
+@property BOOL stopped;
 @end
+
+
+static const double raiseStep = 0.5;
 
 
 @implementation TFPRaiseHeadOperation
 
-static const double raiseStep = 1;
+
+- (void)raiseStepFromZ:(double)Z toLevel:(double)targetHeight completionHandler:(void(^)())completionHandler {
+	if(self.stopped || Z >= targetHeight) {
+		completionHandler();
+		return;
+	}
+	
+	Z += raiseStep;
+	
+	TFP3DVector *position = [TFP3DVector zVector:Z];
+	[self.printer moveToPosition:position usingFeedRate:2000 completionHandler:^(BOOL success) {
+		[self raiseStepFromZ:Z toLevel:targetHeight completionHandler:completionHandler];
+	}];
+}
 
 
 - (void)start {
-	__weak __typeof__(self) weakSelf = self;
-	__weak TFPPrinter *printer = self.printer;
+	[super start];
 	double targetHeight = self.targetHeight;
 		
-	[printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, NSNumber *E) {
-		[printer setRelativeMode:NO completionHandler:^(BOOL success) {
-			__block double Z = position.z.doubleValue;
+	[self.printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, NSNumber *E) {
+		[self.printer setRelativeMode:NO completionHandler:^(BOOL success) {
+			double Z = position.z.doubleValue;
 			
 			if(Z < targetHeight) {
-				weakSelf.repeatSender = [[TFPRepeatingCommandSender alloc] initWithPrinter:printer];
+				if(self.didStartBlock) {
+					self.didStartBlock();
+				}
 				
-				weakSelf.repeatSender.nextCodeBlock = ^TFPGCode*{
-					if(Z < targetHeight) {
-						Z += raiseStep;
-						return [[TFPGCode codeWithString:@"G0"] codeBySettingField:'Z' toValue:Z];
-					}else{
-						return nil;
+				[self raiseStepFromZ:Z toLevel:targetHeight completionHandler:^{
+					if(self.didStopBlock) {
+						self.didStopBlock(YES);
+						[self ended];
 					}
-				};
-				
-				weakSelf.repeatSender.stoppingBlock = ^{
-					TFLog(@"Stopping...");
-				};
-				
-				
-				weakSelf.repeatSender.endedBlock = ^{
-					exit(EXIT_SUCCESS);
-				};
-				
-				TFLog(@"Raising print head. Press Return to stop.");
-				[weakSelf.repeatSender start];
-				
+				}];
 			}else{
-				TFLog(@"Head is already at or above target height.");
-				exit(EXIT_SUCCESS);
+				if(self.didStopBlock) {
+					[self ended];
+					self.didStopBlock(NO);
+				}
 			}
 		}];
 	}];
+}
+
+
+- (void)stop {
+	[super stop];
+	self.stopped = YES;
+}
+
+
+- (NSString *)activityDescription {
+	return @"Raising Print Head";
 }
 
 

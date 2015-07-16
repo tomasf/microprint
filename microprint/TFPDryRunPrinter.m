@@ -42,6 +42,13 @@
 }
 
 
+- (void)fetchBacklashCompensationSpeedWithCompletionHandler:(void (^)(BOOL, float))completionHandler {
+	dispatch_after(dispatch_time(0, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+		completionHandler(YES, 1500);
+	});
+}
+
+
 - (void)fetchBedOffsetsWithCompletionHandler:(void (^)(BOOL, TFPBedLevelOffsets))completionHandler {
 	dispatch_after(dispatch_time(0, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 		completionHandler(YES, (TFPBedLevelOffsets){-0.30, -0.4, -0.65, -1, -0.95});

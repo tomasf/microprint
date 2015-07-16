@@ -9,6 +9,6 @@
 #import <Cocoa/Cocoa.h>
 @class TFPPrinter;
 
-@interface TFPFilamentOperationsViewController : NSViewController
+@interface TFPPrinterOperationsViewController : NSViewController
 @property TFPPrinter *printer;
 @end

@@ -60,7 +60,7 @@
 		C95F11191B55183100F396B6 /* TFPPrintingProgressViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C95F11181B55183100F396B6 /* TFPPrintingProgressViewController.m */; };
 		C95F111C1B552AEE00F396B6 /* TFPUIExtras.m in Sources */ = {isa = PBXBuildFile; fileRef = C95F111B1B552AEE00F396B6 /* TFPUIExtras.m */; };
 		C95F111F1B5536D200F396B6 /* TFPPrinterCollectionViewItem.m in Sources */ = {isa = PBXBuildFile; fileRef = C95F111E1B5536D200F396B6 /* TFPPrinterCollectionViewItem.m */; };
-		C95F11221B55443500F396B6 /* TFPFilamentOperationsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C95F11211B55443500F396B6 /* TFPFilamentOperationsViewController.m */; };
+		C95F11221B55443500F396B6 /* TFPPrinterOperationsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C95F11211B55443500F396B6 /* TFPPrinterOperationsViewController.m */; };
 		C96590E11B3F5CAA009D028F /* TFPThermalBondingPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C96590E01B3F5CAA009D028F /* TFPThermalBondingPreprocessor.m */; };
 		C96590E41B3F6469009D028F /* TFPWaveBondingPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C96590E31B3F6469009D028F /* TFPWaveBondingPreprocessor.m */; };
 		C96776DE1B565A2B00D2D6CB /* TFPPrintStatusController.m in Sources */ = {isa = PBXBuildFile; fileRef = C96776DD1B565A2B00D2D6CB /* TFPPrintStatusController.m */; };
@@ -151,8 +151,8 @@
 		C95F111B1B552AEE00F396B6 /* TFPUIExtras.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPUIExtras.m; sourceTree = "<group>"; };
 		C95F111D1B5536D200F396B6 /* TFPPrinterCollectionViewItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPPrinterCollectionViewItem.h; sourceTree = "<group>"; };
 		C95F111E1B5536D200F396B6 /* TFPPrinterCollectionViewItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPPrinterCollectionViewItem.m; sourceTree = "<group>"; };
-		C95F11201B55443500F396B6 /* TFPFilamentOperationsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPFilamentOperationsViewController.h; sourceTree = "<group>"; };
-		C95F11211B55443500F396B6 /* TFPFilamentOperationsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPFilamentOperationsViewController.m; sourceTree = "<group>"; };
+		C95F11201B55443500F396B6 /* TFPPrinterOperationsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPPrinterOperationsViewController.h; sourceTree = "<group>"; };
+		C95F11211B55443500F396B6 /* TFPPrinterOperationsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPPrinterOperationsViewController.m; sourceTree = "<group>"; };
 		C96590DF1B3F5CAA009D028F /* TFPThermalBondingPreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPThermalBondingPreprocessor.h; sourceTree = "<group>"; };
 		C96590E01B3F5CAA009D028F /* TFPThermalBondingPreprocessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPThermalBondingPreprocessor.m; sourceTree = "<group>"; };
 		C96590E21B3F6469009D028F /* TFPWaveBondingPreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPWaveBondingPreprocessor.h; sourceTree = "<group>"; };
@@ -269,8 +269,8 @@
 				C95F10A61B53E3E200F396B6 /* TFPPrinterListViewController.m */,
 				C95F111D1B5536D200F396B6 /* TFPPrinterCollectionViewItem.h */,
 				C95F111E1B5536D200F396B6 /* TFPPrinterCollectionViewItem.m */,
-				C95F11201B55443500F396B6 /* TFPFilamentOperationsViewController.h */,
-				C95F11211B55443500F396B6 /* TFPFilamentOperationsViewController.m */,
+				C95F11201B55443500F396B6 /* TFPPrinterOperationsViewController.h */,
+				C95F11211B55443500F396B6 /* TFPPrinterOperationsViewController.m */,
 				C96776E71B56939A00D2D6CB /* Document */,
 				C95F10A81B53E3E200F396B6 /* Images.xcassets */,
 				C95F10AA1B53E3E200F396B6 /* Main.storyboard */,
@@ -583,7 +583,7 @@
 				C95F110B1B54107500F396B6 /* TFPBacklashPreprocessor.m in Sources */,
 				C95F10BF1B53EBC100F396B6 /* TFPPrinter.m in Sources */,
 				C95F110A1B54107500F396B6 /* TFPBedCompensationPreprocessor.m in Sources */,
-				C95F11221B55443500F396B6 /* TFPFilamentOperationsViewController.m in Sources */,
+				C95F11221B55443500F396B6 /* TFPPrinterOperationsViewController.m in Sources */,
 				C95F110F1B54108400F396B6 /* TFPOperation.m in Sources */,
 				C95F11151B54108400F396B6 /* TFPBedLevelCalibrationOperation.m in Sources */,
 				C95F11081B54107500F396B6 /* TFPGCodePreprocessor.m in Sources */,

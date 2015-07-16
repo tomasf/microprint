@@ -7,7 +7,7 @@
 //
 
 #import "TFPPrinterCollectionViewItem.h"
-#import "TFPFilamentOperationsViewController.h"
+#import "TFPPrinterOperationsViewController.h"
 
 @interface TFPPrinterCollectionViewItem ()
 @property NSPopover *filamentPopover;
@@ -19,7 +19,7 @@
 
 - (IBAction)showFilamentOptions:(NSButton*)button {
 	if(!self.filamentPopover) {
-		TFPFilamentOperationsViewController *viewController = [[NSStoryboard storyboardWithName:@"Main" bundle:nil] instantiateControllerWithIdentifier:@"extrusionViewController"];
+		TFPPrinterOperationsViewController *viewController = [[NSStoryboard storyboardWithName:@"Main" bundle:nil] instantiateControllerWithIdentifier:@"extrusionViewController"];
 		viewController.printer = self.representedObject;
 	
 		self.filamentPopover = [NSPopover new];

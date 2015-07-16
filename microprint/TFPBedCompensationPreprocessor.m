@@ -203,8 +203,7 @@ static double GetHeightAdjustmentRequired(double x, double y, TFPBedLevelOffsets
 								[output addObject:code];
 								
 							} else {
-								if (self.moveZToCompensate && hasXorY)
-								{
+								if (self.moveZToCompensate && hasXorY) {
 									if ([line hasField:'Z']) {
 										line = [line codeByAdjustingField:'Z' offset:num30];
 									} else {
