@@ -187,6 +187,10 @@ static double GetHeightAdjustmentRequired(double x, double y, TFPBedLevelOffsets
 								if ([line hasField:'Y']) {
 									code = [code codeBySettingField:'Y' toValue:relativeY - deltaY + (num25 - num17)];
 								}
+								
+								if ([line hasField:'F'] && i == 1) {
+									code = [code codeBySettingField:'F' toValue:[line valueForField:'F']];
+								}
 
 								if (self.moveZToCompensate && hasXorY) {
 									code = [code codeBySettingField:'Z' toValue:relativeZ - deltaZ + (num26 - num18) + num30];
