@@ -321,23 +321,6 @@
 }
 
 
-- (void)fetchBacklashCompensationSpeedWithCompletionHandler:(void(^)(BOOL success, float speed))completionHandler {
-	[self readVirtualEEPROMFloatValueAtIndex:VirtualEEPROMIndexBacklashCompensationSpeed completionHandler:^(BOOL success, float value) {
-		completionHandler(success, value);
-	}];
-}
-
-
-- (void)setBacklashCompensationSpeed:(float)value completionHandler:(void(^)(BOOL success))completionHandler {
-	[self writeVirtualEEPROMFloatValueAtIndex:VirtualEEPROMIndexBacklashCompensationSpeed value:value completionHandler:^(BOOL success) {
-		if(completionHandler) {
-			completionHandler(success);
-		}
-	}];
-}
-
-
-
 - (void)fetchBedOffsetsWithCompletionHandler:(void(^)(BOOL success, TFPBedLevelOffsets offsets))completionHandler {
 	NSArray *indexes = @[@(VirtualEEPROMIndexBedOffsetBackLeft),
 						 @(VirtualEEPROMIndexBedOffsetBackRight),
@@ -382,13 +365,17 @@
 
 
 - (void)fetchBacklashValuesWithCompletionHandler:(void(^)(BOOL success, TFPBacklashValues values))completionHandler {
-	NSArray *indexes = @[@(VirtualEEPROMIndexBacklashCompensationX), @(VirtualEEPROMIndexBacklashCompensationY)];
+	NSArray *indexes = @[@(VirtualEEPROMIndexBacklashCompensationX),
+						 @(VirtualEEPROMIndexBacklashCompensationY),
+						 @(VirtualEEPROMIndexBacklashCompensationSpeed)
+						 ];
 	
 	[self readVirtualEEPROMFloatValuesAtIndexes:indexes completionHandler:^(BOOL success, NSArray *values) {
 		TFPBacklashValues backlash;
 		if(success) {
 			backlash.x = [values[0] floatValue];
 			backlash.y = [values[1] floatValue];
+			backlash.speed = [values[2] floatValue];
 			
 			completionHandler(YES, backlash);
 		}else{
@@ -402,8 +389,8 @@
 	NSDictionary *EEPROMValues = @{
 								   @(VirtualEEPROMIndexBacklashCompensationX): @(values.x),
 								   @(VirtualEEPROMIndexBacklashCompensationY): @(values.y),
+								   @(VirtualEEPROMIndexBacklashCompensationSpeed): @(values.speed),
 								   };
-	
 	
 	[self writeVirtualEEPROMFloatValues:EEPROMValues completionHandler:^(BOOL success) {
 		if(completionHandler) {
@@ -448,11 +435,7 @@
 				return;
 			}
 			params.backlashValues = values;
-
-			[self fetchBacklashCompensationSpeedWithCompletionHandler:^(BOOL success, float speed) {
-				params.backlashCompensationSpeed = speed;
-				completionHandler(YES);
-			}];
+			completionHandler(YES);
 		}];
 	}];
 }

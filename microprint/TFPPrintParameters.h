@@ -21,6 +21,7 @@ typedef struct {
 typedef struct {
 	double x;
 	double y;
+	double speed;
 } TFPBacklashValues;
 
 
@@ -38,7 +39,6 @@ extern NSString *TFPBacklashValuesDescription(TFPBacklashValues values);
 
 @property (readwrite) TFPBedLevelOffsets bedLevelOffsets;
 @property (readwrite) TFPBacklashValues backlashValues;
-@property (readwrite) double backlashCompensationSpeed;
 
 @property (readwrite) BOOL useWaveBonding;
 @property (readwrite) BOOL useBacklashCompensation;

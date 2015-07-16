@@ -326,7 +326,6 @@
 		[self.printer fillInOffsetAndBacklashValuesInPrintParameters:params completionHandler:^(BOOL success) {
 			TFLog(@"Bed level: %@", TFPBedLevelOffsetsDescription(params.bedLevelOffsets));
 			TFLog(@"Backlash values: %@", TFPBacklashValuesDescription(params.backlashValues));
-			TFLog(@"Backlash speed: %.02f", params.backlashCompensationSpeed);
 			exit(EXIT_SUCCESS);
 		}];
 		
@@ -394,7 +393,7 @@
 - (TFPGCodeProgram*)preprocessProgramAndLogInfo:(TFPGCodeProgram*)program usingPrintParameters:(TFPPrintParameters*)params {
 	NSString *offsetsString = TFPBedLevelOffsetsDescription(params.bedLevelOffsets);
 	NSString *backlashString = TFPBacklashValuesDescription(params.backlashValues);
-	TFLog(@"Pre-processing using bed level %@ and backlash %@ (F%.0f)", offsetsString, backlashString, params.backlashCompensationSpeed);
+	TFLog(@"Pre-processing using bed level %@ and backlash %@", offsetsString, backlashString);
 	
 	uint64_t start = TFNanosecondTime();
 	program = [TFPPreprocessing programByPreprocessingProgram:program usingParameters:params];

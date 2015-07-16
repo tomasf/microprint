@@ -84,7 +84,7 @@ typedef NS_ENUM(NSUInteger, Direction) {
 					yAdjustment += (yDirection == DirectionPositive) ? backlashY : -backlashY;
 					adjustmentCode = [adjustmentCode codeBySettingField:'Y' toValue:Y + yAdjustment];
 				}
-				adjustmentCode = [adjustmentCode codeBySettingField:'F' toValue:parameters.backlashCompensationSpeed];
+				adjustmentCode = [adjustmentCode codeBySettingField:'F' toValue:parameters.backlashValues.speed];
 				didAddAdjustmentCode = true;
 				[output addObject:adjustmentCode];
 			}

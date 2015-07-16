@@ -8,7 +8,6 @@
 #import "TFPPrintParameters.h"
 
 static const NSUInteger defaultBufferSize = 1;
-static const double defaultBacklashSpeed = 1500;
 
 
 @implementation TFPPrintParameters
@@ -20,7 +19,6 @@ static const double defaultBacklashSpeed = 1500;
 	self.filament = [TFPFilament defaultFilament];
 	self.bufferSize = defaultBufferSize;
 	self.useWaveBonding = NO;
-	self.backlashCompensationSpeed = defaultBacklashSpeed;
 	self.useBacklashCompensation = YES;
 	
 	return self;
@@ -51,8 +49,9 @@ NSString *TFPBedLevelOffsetsDescription(TFPBedLevelOffsets offsets) {
 
 
 NSString *TFPBacklashValuesDescription(TFPBacklashValues values) {
-	return [NSString stringWithFormat:@"{ X: %.02f, Y: %.02f }",
+	return [NSString stringWithFormat:@"{ X: %.02f, Y: %.02f, speed: %.0f }",
 			values.x,
-			values.y
+			values.y,
+			values.speed
 			];
 }

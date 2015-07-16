@@ -1351,7 +1351,7 @@ DQ
                                 <constraints>
                                     <constraint firstAttribute="width" constant="44" id="HfB-PB-ynf"/>
                                 </constraints>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="12,12" drawsBackground="YES" id="PYD-mn-9tp">
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="PYD-mn-9tp">
                                     <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="0Co-ik-XKm">
                                         <metadata>
                                             <real key="inspectorSampleValue" value="1"/>

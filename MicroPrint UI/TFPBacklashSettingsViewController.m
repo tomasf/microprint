@@ -27,12 +27,10 @@
 	__weak __typeof__(self) weakSelf = self;
 	
 	[self.printer fetchBacklashValuesWithCompletionHandler:^(BOOL success, TFPBacklashValues values) {
-		[self.printer fetchBacklashCompensationSpeedWithCompletionHandler:^(BOOL success, float speed) {
-			self.xValue = values.x;
-			self.yValue = values.y;
-			self.speed = speed;
-			self.hasChanges = NO;
-		}];
+		self.xValue = values.x;
+		self.yValue = values.y;
+		self.speed = values.speed;
+		self.hasChanges = NO;
 	}];
 	
 	[self addObserver:self keyPath:@[@"xValue", @"yValue", @"speed"] options:0 block:^(MAKVONotification *notification) {
@@ -42,16 +40,9 @@
 
 
 - (IBAction)apply:(id)sender {
-	__weak __typeof__(self) weakSelf = self;
-	TFPBacklashValues values;
-	values.x = self.xValue;
-	values.y = self.yValue;
+	TFPBacklashValues values = {.x = self.xValue, .y = self.yValue, .speed = self.speed};
+	[self.printer setBacklashValues:values completionHandler:nil];
 	
-	[self.printer setBacklashValues:values completionHandler:^(BOOL success) {
-		[weakSelf.printer setBacklashCompensationSpeed:weakSelf.speed completionHandler:^(BOOL success) {
-			
-		}];
-	}];
 	self.hasChanges = NO;
 }
 
