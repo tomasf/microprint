@@ -22,7 +22,7 @@
 	TFPGCode *gCode2 = nil;
 	
 	BOOL flag = NO;
-	int num = 0;
+	int absoluteLayerIndex = 0;
 	int num2 = 0;
 	BOOL inRelativeMode = YES;
 
@@ -30,9 +30,13 @@
 	TFPFilamentType filamentType = parameters.filament.type;
 	
 	for(__strong TFPGCode *code in self.program.lines) {
-		if ([(code.comment ?: @"") rangeOfString:@"LAYER:"].location != NSNotFound) {
+		NSString *comment = [code.comment stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] ?: @"";
+		
+		if([comment hasPrefix:@"LAYER:"]) {
+			NSInteger layerIndex = [[comment substringFromIndex:6] integerValue];
+			
 			double newTemperature;
-			if (num == 0) {
+			if (absoluteLayerIndex == 0) {
 				if (filamentType == TFPFilamentTypePLA) {
 					newTemperature = [self boundedTemperature:idealTemperature + 10];
 				} else {
@@ -40,28 +44,28 @@
 				}
 				
 				[output addObject:[[TFPGCode codeWithString:@"M109"] codeBySettingField:'S' toValue:newTemperature]];
-				flag = true;
-			} else if (num == 1) {
+				flag = YES;
+				
+			} else if (absoluteLayerIndex == 1) {
 				if (filamentType == TFPFilamentTypePLA) {
 					newTemperature = [self boundedTemperature:idealTemperature + 5];
 				} else {
 					newTemperature = [self boundedTemperature:idealTemperature + 10];
 				}
 				[output addObject:[[TFPGCode codeWithString:@"M109"] codeBySettingField:'S' toValue:newTemperature]];
+				
+			} else if (absoluteLayerIndex > 1 && layerIndex >= 0 && flag) {
+				[output addObject:[[TFPGCode codeWithString:@"M109"] codeBySettingField:'S' toValue:idealTemperature]];
+				flag = NO;
 			}
-			num++;
+			absoluteLayerIndex++;
 		}
-		if ([(code.comment ?: @"") rangeOfString:@"LAYER:0"].location != NSNotFound) {
-			[output addObject:[[TFPGCode codeWithString:@"M109"] codeBySettingField:'S' toValue:parameters.idealTemperature]];
-			flag = NO;
-		}
-		
 		NSInteger G = [code valueForField:'G' fallback:-1];
 		
 		if (G >= 0 && !parameters.useWaveBonding) {
 			if (G == 0 || G == 1) {
 				if (lastCode != nil && flag && (filamentType == TFPFilamentTypeABS || filamentType == TFPFilamentTypeHIPS || filamentType == TFPFilamentTypePLA)) {
-					if (num2 <= 1 && num <= 1) {
+					if (num2 <= 1 && absoluteLayerIndex <= 1) {
 						if ([self isSharpCornerFromLine:code toLine:lastCode]) {
 							if (gCode2 == nil) {
 								TFPGCode *tackPoint = [self makeTackPointForCurrentLine:code lastTackPoint:lastCode];
@@ -73,7 +77,7 @@
 							num2++;
 						}
 						
-					} else if (num2 >= 1 && num <= 1 && [self isSharpCornerFromLine:code toLine:gCode2]) {
+					} else if (num2 >= 1 && absoluteLayerIndex <= 1 && [self isSharpCornerFromLine:code toLine:gCode2]) {
 						TFPGCode *tackPoint = [self makeTackPointForCurrentLine:code lastTackPoint:gCode2];
 						if(tackPoint) {
 							[output addObject:tackPoint];
