@@ -26,27 +26,28 @@
 	int num2 = 0;
 	BOOL inRelativeMode = YES;
 
-	double idealTemperature = parameters.idealTemperature;
+	const double idealTemperature = parameters.idealTemperature;
 	TFPFilamentType filamentType = parameters.filament.type;
 	
 	for(__strong TFPGCode *code in self.program.lines) {
 		if ([(code.comment ?: @"") rangeOfString:@"LAYER:"].location != NSNotFound) {
+			double newTemperature;
 			if (num == 0) {
 				if (filamentType == TFPFilamentTypePLA) {
-					idealTemperature = [self boundedTemperature:idealTemperature + 10];
+					newTemperature = [self boundedTemperature:idealTemperature + 10];
 				} else {
-					idealTemperature = [self boundedTemperature:idealTemperature + 15];
+					newTemperature = [self boundedTemperature:idealTemperature + 15];
 				}
 				
-				[output addObject:[[TFPGCode codeWithString:@"M109"] codeBySettingField:'S' toValue:idealTemperature]];
+				[output addObject:[[TFPGCode codeWithString:@"M109"] codeBySettingField:'S' toValue:newTemperature]];
 				flag = true;
 			} else if (num == 1) {
 				if (filamentType == TFPFilamentTypePLA) {
-					idealTemperature = [self boundedTemperature:idealTemperature + 5];
+					newTemperature = [self boundedTemperature:idealTemperature + 5];
 				} else {
-					idealTemperature = [self boundedTemperature:idealTemperature + 10];
+					newTemperature = [self boundedTemperature:idealTemperature + 10];
 				}
-				[output addObject:[[TFPGCode codeWithString:@"M109"] codeBySettingField:'S' toValue:idealTemperature]];
+				[output addObject:[[TFPGCode codeWithString:@"M109"] codeBySettingField:'S' toValue:newTemperature]];
 			}
 			num++;
 		}
