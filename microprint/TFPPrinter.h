@@ -43,7 +43,7 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 
 + (NSString*)nameForPrinterColor:(TFPPrinterColor)color;
 
-- (void)sendGCode:(TFPGCode*)GCode responseHandler:(void(^)(BOOL success, NSString *value))block;
+- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSString *value))block;
 - (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success))completionHandler;
 
 - (void)fetchBedOffsetsWithCompletionHandler:(void(^)(BOOL success, TFPBedLevelOffsets offsets))completionHandler;

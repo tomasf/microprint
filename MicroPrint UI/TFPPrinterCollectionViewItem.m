@@ -21,6 +21,13 @@
 
 
 - (IBAction)showFilamentOptions:(NSButton*)button {
+	if([NSApp currentEvent].modifierFlags & NSAlternateKeyMask) {
+		TFPPrinter *printer = self.representedObject;
+		printer.verboseMode = !printer.verboseMode;
+		NSLog(@"Verbose mode %@", printer.verboseMode ? @"on" : @"off");
+		return;
+	}
+	
 	TFPPrinterOperationsViewController *viewController = [[NSStoryboard storyboardWithName:@"Main" bundle:nil] instantiateControllerWithIdentifier:@"extrusionViewController"];
 	viewController.printer = self.representedObject;
 

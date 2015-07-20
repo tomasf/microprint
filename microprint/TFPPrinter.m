@@ -110,13 +110,19 @@
 }
 
 
-- (void)sendGCode:(TFPGCode*)GCode responseHandler:(void(^)(BOOL success, NSString *value))block {
-	[self.serialPort sendData:GCode.repetierV2Representation];
+- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSString *value))block {
+	block = [block copy] ?: (id)^(BOOL a, NSString *b) {};
 	
-	if([GCode hasField:'N']) {
-		self.numberedResponseListenerBlocks[@((NSUInteger)[GCode valueForField:'N'])] = [block copy];
+	if(self.verboseMode) {
+		TFLog(@"< %@", code);
+	}
+
+	[self.serialPort sendData:code.repetierV2Representation];
+	
+	if([code hasField:'N']) {
+		self.numberedResponseListenerBlocks[@((NSUInteger)[code valueForField:'N'])] = block;
 	}else{
-		[self.unnumberedResponseListenerBlocks addObject:[block copy]];
+		[self.unnumberedResponseListenerBlocks addObject:block];
 	}
 }
 
@@ -232,7 +238,7 @@
 - (void)processIncomingString:(NSString*)incomingLine {
 	TFStringScanner *scanner = [TFStringScanner scannerWithString:incomingLine];
 	if(self.verboseMode) {
-		TFLog(@"* %@", incomingLine);
+		TFLog(@"> %@", incomingLine);
 	}
 	
 	if([scanner scanString:@"wait"]) {
