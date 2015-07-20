@@ -1281,7 +1281,7 @@ DQ
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ch9-Rt-oll">
                                 <rect key="frame" x="73" y="315" width="144" height="32"/>
-                                <buttonCell key="cell" type="push" title="Print Test Border" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="zUD-32-xU3">
+                                <buttonCell key="cell" type="push" title="Print Test Border" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="zUD-32-xU3">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>

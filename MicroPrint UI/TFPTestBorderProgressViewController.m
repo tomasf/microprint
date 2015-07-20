@@ -25,6 +25,8 @@
 	__weak __typeof__(self) weakSelf = self;
 	
 	TFPPrintParameters *params = [TFPPrintParameters new];
+	params.useBasicPreparation = NO;
+	
 	[self.printer fillInOffsetAndBacklashValuesInPrintParameters:params completionHandler:^(BOOL success) {
 		TFPGCodeProgram *program = [TFPPreprocessing programByPreprocessingProgram:[TFPTestBorderPrinting testBorderProgram] usingParameters:params];
 		

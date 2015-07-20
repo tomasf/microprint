@@ -19,6 +19,7 @@ const double adjustmentAmount = 0.05;
 @interface TFPBedLevelCalibration ()
 @property (readwrite) double currentLevel;
 @property (copy) void(^continueBlock)(double level);
+@property BOOL adjusting;
 @end
 
 
@@ -28,7 +29,18 @@ const double adjustmentAmount = 0.05;
 
 - (void)moveToNewLevel:(double)level {
 	self.currentLevel = level;
-	[self.printer moveToPosition:[TFP3DVector zVector:level] usingFeedRate:fineMoveFeedRate completionHandler:nil];
+	
+	if(!self.adjusting) {
+		self.adjusting = YES;
+		
+		[self.printer moveToPosition:[TFP3DVector zVector:level] usingFeedRate:fineMoveFeedRate completionHandler:^(BOOL success) {
+			self.adjusting = NO;
+			
+			if(fabs(self.currentLevel - level) > 0.01) {
+				[self moveToNewLevel:self.currentLevel];
+			}
+		}];
+	}
 }
 
 

@@ -42,4 +42,5 @@ extern NSString *TFPBacklashValuesDescription(TFPBacklashValues values);
 
 @property (readwrite) BOOL useWaveBonding;
 @property (readwrite) BOOL useBacklashCompensation;
+@property (readwrite) BOOL useBasicPreparation;
 @end

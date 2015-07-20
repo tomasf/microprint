@@ -20,6 +20,7 @@ static const NSUInteger defaultBufferSize = 1;
 	self.bufferSize = defaultBufferSize;
 	self.useWaveBonding = NO;
 	self.useBacklashCompensation = YES;
+	self.useBasicPreparation = YES;
 	
 	return self;
 }

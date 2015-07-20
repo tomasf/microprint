@@ -18,7 +18,9 @@
 
 
 + (TFPGCodeProgram *)programByPreprocessingProgram:(TFPGCodeProgram *)program usingParameters:(TFPPrintParameters *)params {
-	program = [[[TFPBasicPreparationPreprocessor alloc] initWithProgram:program] processUsingParameters:params];
+	if(params.useBasicPreparation) {
+		program = [[[TFPBasicPreparationPreprocessor alloc] initWithProgram:program] processUsingParameters:params];
+	}
 	
 	if(params.useWaveBonding) {
 		program = [[[TFPWaveBondingPreprocessor alloc] initWithProgram:program] processUsingParameters:params];
