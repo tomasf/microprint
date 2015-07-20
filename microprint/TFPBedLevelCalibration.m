@@ -27,11 +27,8 @@ const double adjustmentAmount = 0.05;
 
 
 - (void)moveToNewLevel:(double)level {
-	NSLog(@"moving to %f", level);
 	self.currentLevel = level;
-	
-	[self.printer moveToPosition:[TFP3DVector zVector:level] usingFeedRate:fineMoveFeedRate completionHandler:^(BOOL success) {
-	}];
+	[self.printer moveToPosition:[TFP3DVector zVector:level] usingFeedRate:fineMoveFeedRate completionHandler:nil];
 }
 
 

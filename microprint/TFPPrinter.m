@@ -464,7 +464,9 @@
 	}
 
 	[self sendGCode:code responseHandler:^(BOOL success, NSString *value) {
-		completionHandler(success);
+		if(completionHandler) {
+			completionHandler(success);
+		}
 	}];
 }
 

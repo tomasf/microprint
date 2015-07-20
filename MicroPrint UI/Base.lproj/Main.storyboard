@@ -1281,10 +1281,13 @@ DQ
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ch9-Rt-oll">
                                 <rect key="frame" x="73" y="315" width="144" height="32"/>
-                                <buttonCell key="cell" type="push" title="Print Test Border" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="zUD-32-xU3">
+                                <buttonCell key="cell" type="push" title="Print Test Border" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="zUD-32-xU3">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
+                                <connections>
+                                    <action selector="printTestBorder:" target="RcU-HJ-V8B" id="pI5-r6-7JT"/>
+                                </connections>
                             </button>
                         </subviews>
                         <constraints>
@@ -1814,10 +1817,10 @@ DQ
             </objects>
             <point key="canvasLocation" x="2269.5" y="630.5"/>
         </scene>
-        <!--View Controller-->
+        <!--Test Border Progress View Controller-->
         <scene sceneID="Gei-0q-Pjb">
             <objects>
-                <viewController id="P1J-0D-6JH" sceneMemberID="viewController">
+                <viewController id="P1J-0D-6JH" customClass="TFPTestBorderProgressViewController" sceneMemberID="viewController">
                     <view key="view" id="Dmu-bP-fMG">
                         <rect key="frame" x="0.0" y="0.0" width="215" height="98"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -1836,6 +1839,9 @@ DQ
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
+                                <connections>
+                                    <action selector="cancel:" target="P1J-0D-6JH" id="hqX-uZ-hho"/>
+                                </connections>
                             </button>
                         </subviews>
                         <constraints>
@@ -1847,6 +1853,9 @@ DQ
                             <constraint firstAttribute="trailing" secondItem="muO-vE-Vix" secondAttribute="trailing" constant="20" id="vCM-gA-Bf9"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="statusLabel" destination="muO-vE-Vix" id="N33-zl-H8j"/>
+                    </connections>
                 </viewController>
                 <customObject id="fgF-K8-fRa" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
