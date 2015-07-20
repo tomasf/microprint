@@ -72,6 +72,11 @@ const double maxMMPerSecond = 60.001;
 
 
 + (instancetype)moveWithPosition:(TFP3DVector*)position withRawFeedRate:(double)F {
+	return [self moveWithPosition:position extrusion:nil withRawFeedRate:F];
+}
+
+
++ (instancetype)moveWithPosition:(TFP3DVector*)position extrusion:(NSNumber*)E withRawFeedRate:(double)F {
 	TFPGCode *code = [TFPGCode codeWithString:@"G0"];
 	
 	if(position.x) {
@@ -83,6 +88,9 @@ const double maxMMPerSecond = 60.001;
 	if(position.z) {
 		code = [code codeBySettingField:'Z' toValue:position.z.doubleValue];
 	}
+	if(E) {
+		code = [code codeBySettingField:'E' toValue:E.doubleValue];
+	}
 	if(F >= 0) {
 		code = [code codeBySettingField:'F' toValue:F];
 	}
@@ -92,7 +100,7 @@ const double maxMMPerSecond = 60.001;
 
 
 + (instancetype)moveWithPosition:(TFP3DVector*)position withFeedRate:(double)F {
-	F = (F > 0) ? [self convertFeedRate:F] : 0;
+	F = (F > 0) ? [self convertFeedRate:F] : F;
 	return [self moveWithPosition:position withRawFeedRate:F];
 }
 
@@ -138,6 +146,11 @@ const double maxMMPerSecond = 60.001;
 }
 
 
++ (instancetype)turnOnFanCode {
+	return [TFPGCode codeWithField:'M' value:106];
+}
+
+
 + (instancetype)turnOffFanCode {
 	return [TFPGCode codeWithField:'M' value:107];
 }
@@ -148,7 +161,7 @@ const double maxMMPerSecond = 60.001;
 }
 
 
-+ (instancetype)codeForSettingPosition:(TFP3DVector*)position E:(NSNumber*)E {
++ (instancetype)codeForResettingPosition:(TFP3DVector*)position extrusion:(NSNumber*)E {
 	TFPGCode *code = [TFPGCode codeWithString:@"G92"];
 	
 	if(position.x) {
@@ -169,7 +182,7 @@ const double maxMMPerSecond = 60.001;
 
 
 + (instancetype)resetExtrusionCode {
-	return [self codeForSettingPosition:nil E:@0];
+	return [self codeForResettingPosition:nil extrusion:@0];
 }
 
 

@@ -9,7 +9,5 @@
 #import <Cocoa/Cocoa.h>
 
 @interface TFPApplicationDelegate : NSObject <NSApplicationDelegate>
-
-
 @end
 

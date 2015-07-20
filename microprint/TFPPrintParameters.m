@@ -38,12 +38,12 @@ static const NSUInteger defaultBufferSize = 1;
 
 
 NSString *TFPBedLevelOffsetsDescription(TFPBedLevelOffsets offsets) {
-	return [NSString stringWithFormat:@"{ Z: %.02f, BL: %.02f, BR: %.02f, FL: %.02f, FR: %.02f }",
+	return [NSString stringWithFormat:@"{ Z: %.02f, BL: %.02f, BR: %.02f, FR: %.02f, FL: %.02f }",
 			offsets.common,
 			offsets.backLeft,
 			offsets.backRight,
-			offsets.frontLeft,
-			offsets.frontRight
+			offsets.frontRight,
+			offsets.frontLeft
 			];
 }
 

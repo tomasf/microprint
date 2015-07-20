@@ -8,7 +8,6 @@
 
 #import "TFPExtrusionOperation.h"
 #import "Extras.h"
-#import "TFPRepeatingCommandSender.h"
 #import "TFPGCodeHelpers.h"
 
 #import "MAKVONotificationCenter.h"
@@ -21,7 +20,6 @@ static const double minimumZLevelForOperation = 25;
 
 
 @interface TFPExtrusionOperation ()
-@property TFPRepeatingCommandSender *repeatSender;
 @property BOOL retract;
 @property BOOL stopped;
 @end

@@ -13,7 +13,6 @@
 
 
 @interface TFPPrinterCollectionViewItem ()
-@property NSPopover *filamentPopover;
 @property NSWindowController *calibrationWindowController;
 @end
 
@@ -22,15 +21,10 @@
 
 
 - (IBAction)showFilamentOptions:(NSButton*)button {
-	if(!self.filamentPopover) {
-		TFPPrinterOperationsViewController *viewController = [[NSStoryboard storyboardWithName:@"Main" bundle:nil] instantiateControllerWithIdentifier:@"extrusionViewController"];
-		viewController.printer = self.representedObject;
-	
-		self.filamentPopover = [NSPopover new];
-		self.filamentPopover.contentViewController = viewController;
-		self.filamentPopover.behavior = NSPopoverBehaviorTransient;
-	}
-	[self.filamentPopover showRelativeToRect:button.bounds ofView:button preferredEdge:CGRectMaxYEdge];
+	TFPPrinterOperationsViewController *viewController = [[NSStoryboard storyboardWithName:@"Main" bundle:nil] instantiateControllerWithIdentifier:@"extrusionViewController"];
+	viewController.printer = self.representedObject;
+
+	[self.view.window.contentViewController presentViewControllerAsSheet:viewController];
 }
 
 
@@ -44,7 +38,6 @@
 	TFPBacklashSettingsViewController *viewController2 = tabController.childViewControllers.lastObject;
 	viewController2.printer = self.representedObject;
 
-	
 	[self.calibrationWindowController.window makeKeyAndOrderFront:nil];
 }
 

@@ -28,8 +28,9 @@
 #import "TFPGCodeConsoleOperation.h"
 #import "TFPBedLevelCalibrationOperation.h"
 #import "TFPPreprocessing.h"
-#import "TFPManualBedLevelCalibration.h"
+#import "TFPBedLevelCalibration.h"
 #import "TFPGCodeHelpers.h"
+#import "TFPTestBorderPrinting.h"
 
 #import "MAKVONotificationCenter.h"
 #import "GBCli.h"
@@ -73,6 +74,8 @@
 
 - (void)runWithArgumentCount:(int)argc arguments:(char **)argv {
 	__weak __typeof__(self) weakSelf = self;
+	
+	[TFPTestBorderPrinting testBorderProgram];
 	
 	GBSettings *factoryDefaults = [GBSettings settingsWithName:@"Factory" parent:nil];
 	[factoryDefaults setInteger:0 forKey:@"temperature"];
@@ -281,7 +284,7 @@
 		self.operation = bedLevelCalibrationOperation;
 
 	}else if([command isEqual:@"bedlevel"]) {
-		TFPManualBedLevelCalibration *bedLevelCalibrationOperation = [[TFPManualBedLevelCalibration alloc] initWithPrinter:self.printer];
+		TFPBedLevelCalibration *bedLevelCalibrationOperation = [[TFPBedLevelCalibration alloc] initWithPrinter:self.printer];
 		bedLevelCalibrationOperation.heightTarget = [settings floatForKey:@"target"];
 		bedLevelCalibrationOperation.startZ = [settings floatForKey:@"start"];
 		[bedLevelCalibrationOperation start];

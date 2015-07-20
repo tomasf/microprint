@@ -49,6 +49,11 @@
 }
 
 
++ (instancetype)xVector:(double)x {
+	return [self vectorWithX:@(x) Y:nil Z:nil];
+}
+
+
 + (instancetype)yVector:(double)y {
 	return [self vectorWithX:nil Y:@(y) Z:nil];
 }

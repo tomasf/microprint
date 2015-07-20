@@ -11,6 +11,7 @@
 
 + (instancetype)xyVectorWithX:(double)x y:(double)y;
 + (instancetype)zVector:(double)z;
++ (instancetype)xVector:(double)x;
 + (instancetype)yVector:(double)y;
 
 + (instancetype)zeroVector;

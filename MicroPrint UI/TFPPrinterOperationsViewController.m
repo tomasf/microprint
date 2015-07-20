@@ -18,6 +18,7 @@
 @property IBOutlet NSButton *retractButton;
 @property IBOutlet NSButton *extrudeButton;
 @property IBOutlet NSButton *raiseButton;
+@property IBOutlet NSButton *closeButton;
 
 @property IBOutlet NSProgressIndicator *progressIndicator;
 @property IBOutlet NSTextField *statusLabel;
@@ -74,6 +75,7 @@
 		button.title = self.actionButtonTitles[index];
 		button.keyEquivalent = @"";
 	}];
+	self.closeButton.enabled = YES;
 }
 
 
@@ -129,6 +131,7 @@
 				button.keyEquivalent = @"\r";
 			}
 		}
+		self.closeButton.enabled = NO;
 	}
 }
 

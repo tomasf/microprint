@@ -11,49 +11,57 @@
 
 
 @interface TFPGCode (TFPHelpers)
-+ (double)convertFeedRate:(double)feedRate;
-+ (NSDictionary*)dictionaryFromResponseValueString:(NSString*)string;
++ (instancetype)stopCode;
++ (instancetype)waitCodeWithDuration:(NSUInteger)seconds;
 
+// Line numbering
 + (instancetype)codeForSettingLineNumber:(uint16_t)lineNumber;
 - (instancetype)codeBySettingLineNumber:(uint16_t)lineNumber;
 
-+ (instancetype)stopCode;
+// Feed rates
++ (double)convertFeedRate:(double)feedRate;
++ (instancetype)codeForSettingFeedRate:(double)feedRate raw:(BOOL)raw;
 
-+ (instancetype)waitCodeWithDuration:(NSUInteger)seconds;
-
-+ (instancetype)moveHomeCode;
+// Motors
 + (instancetype)turnOnMotorsCode;
 + (instancetype)turnOffMotorsCode;
 
-+ (instancetype)codeForSettingPosition:(TFP3DVector*)position E:(NSNumber*)E;
-+ (instancetype)resetExtrusionCode;
+// Positioning
++ (instancetype)absoluteModeCode;
++ (instancetype)relativeModeCode;
++ (instancetype)codeForResettingPosition:(TFP3DVector*)position extrusion:(NSNumber*)E;
 
-+ (instancetype)codeForSettingFeedRate:(double)feedRate raw:(BOOL)raw;
-
+// Moving
++ (instancetype)moveHomeCode;
++ (instancetype)moveWithPosition:(TFP3DVector*)position extrusion:(NSNumber*)E withRawFeedRate:(double)F;
 + (instancetype)moveWithPosition:(TFP3DVector*)position withRawFeedRate:(double)F;
 + (instancetype)moveWithPosition:(TFP3DVector*)position withFeedRate:(double)feedRate;
 
+// Extrusion
 + (instancetype)codeForExtrusion:(double)E withRawFeedRate:(double)feedRate;
 + (instancetype)codeForExtrusion:(double)E withFeedRate:(double)feedRate;
++ (instancetype)resetExtrusionCode;
 
-+ (instancetype)absoluteModeCode;
-+ (instancetype)relativeModeCode;
-
+// Heater
 + (instancetype)codeForHeaterTemperature:(double)temperature waitUntilDone:(BOOL)wait;
 + (instancetype)codeForTurningOffHeater;
 
-+ (instancetype)codeForSettingFanSpeed:(double)speed;
+// Fan
++ (instancetype)turnOnFanCode;
 + (instancetype)turnOffFanCode;
++ (instancetype)codeForSettingFanSpeed:(double)speed;
 
+// Virtual EEPROM
 + (instancetype)codeForReadingVirtualEEPROMAtIndex:(NSUInteger)valueIndex;
 + (instancetype)codeForWritingVirtualEEPROMAtIndex:(NSUInteger)valueIndex value:(int32_t)value;
+
+// Utilities
++ (NSDictionary*)dictionaryFromResponseValueString:(NSString*)string;
 @end
 
 
 
 @interface TFPGCodeProgram (TFPHelpers)
-
 - (TFP3DVector*)measureSize;
 - (void)enumerateMovesWithBlock:(void(^)(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate))block;
-
 @end

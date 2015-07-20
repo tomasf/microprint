@@ -7,7 +7,7 @@
 //
 
 #import "TFPBedLevelSettingsViewController.h"
-
+#import "TFPBedLevelCalibrationViewController.h"
 #import "MAKVONotificationCenter.h"
 
 
@@ -19,15 +19,15 @@
 @property double commonOffset;
 
 @property BOOL hasChanges;
+
+@property NSWindowController *calibrationWindowController;
 @end
 
 
 @implementation TFPBedLevelSettingsViewController
 
-- (void)viewDidAppear {
-    [super viewDidAppear];
-	__weak __typeof__(self) weakSelf = self;
-	
+
+- (void)reload {
 	[self.printer fetchBedOffsetsWithCompletionHandler:^(BOOL success, TFPBedLevelOffsets offsets) {
 		self.backLeftOffset = offsets.backLeft;
 		self.backRightOffset = offsets.backRight;
@@ -36,6 +36,14 @@
 		self.commonOffset = offsets.common;
 		self.hasChanges = NO;
 	}];
+}
+
+
+- (void)viewDidAppear {
+    [super viewDidAppear];
+	__weak __typeof__(self) weakSelf = self;
+	
+	[self reload];
 	
 	[self addObserver:self keyPath:@[@"backLeftOffset", @"backRightOffset", @"frontRightOffset", @"frontLeftOffset", @"commonOffset"] options:0 block:^(MAKVONotification *notification) {
 		weakSelf.hasChanges = YES;
@@ -53,6 +61,16 @@
 	
 	[self.printer setBedOffsets:offsets completionHandler:nil];
 	self.hasChanges = NO;
+}
+
+
+- (IBAction)interactiveCalibration:(id)sender {
+	NSWindowController *windowController = [self.storyboard instantiateControllerWithIdentifier:@"BedLevelCalibrationWindowController"];
+	TFPBedLevelCalibrationViewController *viewController = (TFPBedLevelCalibrationViewController*)windowController.contentViewController;
+	viewController.printer = self.printer;
+	viewController.bedLevelSettingsViewController = self;
+	
+	[self presentViewControllerAsSheet:viewController];
 }
 
 

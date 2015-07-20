@@ -15,12 +15,51 @@
 @end
 
 
+@interface TFPDryRunPrinter ()
+@property TFP3DVector *simulatedPosition;
+@property BOOL relativeMode;
+@end
+
+
 
 @implementation TFPDryRunPrinter
 
-- (void)sendGCode:(TFPGCode*)GCode responseHandler:(void(^)(BOOL success, NSString *value))block {
-	//TFLog(@"* Sent: %@", GCode);
-	dispatch_after(dispatch_time(0, 0.02 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+
+- (instancetype)init {
+	if(!(self = [super init])) return nil;
+	
+	self.simulatedPosition = [TFP3DVector zeroVector];
+	
+	return self;
+}
+
+
+- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSString *value))block {
+	NSInteger G = [code valueForField:'G' fallback:-1];
+	TFLog(@"* Sent: %@", code);
+	NSTimeInterval duration = 0.02;
+	
+	if(G == 0 || G == 1) {
+		TFP3DVector *movement = [code movementVector];
+		
+		if(self.relativeMode) {
+			movement = [TFP3DVector vectorWithX:@(self.simulatedPosition.x.doubleValue + movement.x.doubleValue)
+											  Y:@(self.simulatedPosition.y.doubleValue + movement.y.doubleValue)
+											  Z:@(self.simulatedPosition.z.doubleValue + movement.z.doubleValue)];
+		}
+		
+		double distance = [self.simulatedPosition distanceToPoint:movement];
+		duration = MAX(duration, distance / 100.0);
+		self.simulatedPosition = movement;
+		
+	} else if(G == 90) {
+		self.relativeMode = NO;
+		
+	} else if(G == 91) {
+		self.relativeMode = YES;
+	}
+	
+	dispatch_after(dispatch_time(0, duration * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 		block(YES, nil);
 	});
 }
@@ -59,6 +98,12 @@
 		}
 	});
 };
+
+
+- (void)setBedOffsets:(TFPBedLevelOffsets)offsets completionHandler:(void (^)(BOOL))completionHandler {
+	TFLog(@"Dry run setBedOffsets: %@", TFPBedLevelOffsetsDescription(offsets));
+	[super setBedOffsets:offsets completionHandler:completionHandler];
+}
 
 
 @end

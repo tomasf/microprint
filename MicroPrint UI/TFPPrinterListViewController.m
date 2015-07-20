@@ -9,10 +9,15 @@
 #import "TFPPrinterListViewController.h"
 #import "TFPPrinterManager.h"
 #import "TFPDryRunPrinter.h"
+#import "TFPApplicationDelegate.h"
+#import "Extras.h"
 
-@interface TFPPrinterListViewController ()
+
+@interface TFPPrinterListViewController () <NSMenuDelegate>
 @property IBOutlet NSCollectionView *collectionView;
 @property TFPPrinterManager *printerManager;
+
+@property IBOutlet NSPopUpButton *recentsButton;
 @end
 
 
@@ -27,7 +32,39 @@
 	
 	self.printerManager = [TFPPrinterManager sharedManager];
 	
-	//[self.printerManager startDryRunMode];
+	[self.printerManager startDryRunMode];
 }
+
+
+- (void)openRecentDocument:(NSMenuItem*)menuItem {
+	NSURL *URL = menuItem.representedObject;
+	[[NSDocumentController sharedDocumentController] openDocumentWithContentsOfURL:URL display:YES completionHandler:nil];
+}
+
+
+- (void)menuNeedsUpdate:(NSMenu *)menu {
+	[menu removeAllItems];
+	
+	NSMenuItem *titleItem = [[NSMenuItem alloc] initWithTitle:@"Recent Files" action:nil keyEquivalent:@""];
+	[menu addItem:titleItem];
+
+	NSArray *newItems = [[[NSDocumentController sharedDocumentController] recentDocumentURLs] tf_mapWithBlock:^NSMenuItem*(NSURL *URL) {
+		NSDictionary *resourceValues = [URL resourceValuesForKeys:@[NSURLEffectiveIconKey, NSURLLocalizedNameKey] error:nil];
+		NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:resourceValues[NSURLLocalizedNameKey] action:@selector(openRecentDocument:) keyEquivalent:@""];
+		item.target = self;
+		item.representedObject = URL;
+		
+		NSImage *image = [resourceValues[NSURLEffectiveIconKey] copy];
+		image.size = CGSizeMake(16, 16);
+		item.image = image;
+		
+		return item;
+	}];
+ 
+	for(NSMenuItem *newItem in newItems){
+		[menu addItem:newItem];
+	}
+}
+
 
 @end
