@@ -14,7 +14,6 @@
 @property TFPPrinter *printer;
 @property TFPPrintParameters *printParameters;
 
-@property (weak) NSWindow *parentWindow;
-
 - (void)start;
+@property (copy) void(^endHandler)();
 @end

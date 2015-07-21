@@ -869,15 +869,15 @@
                                 <constraints>
                                     <constraint firstAttribute="width" constant="80" id="E7s-64-AVo"/>
                                 </constraints>
-                                <popUpButtonCell key="cell" type="push" title="Other" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" tag="4" imageScaling="proportionallyDown" inset="2" selectedItem="iI9-a1-9yQ" id="Jtg-Ey-AiX">
+                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" id="Jtg-Ey-AiX">
                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="menu"/>
                                     <menu key="menu" id="H5z-oa-LY8">
                                         <items>
-                                            <menuItem title="PLA" tag="1" id="Jmw-HJ-Vq8"/>
-                                            <menuItem title="ABS" tag="2" id="qQB-1B-UGC"/>
-                                            <menuItem title="HIPS" tag="3" id="Y0x-0K-fFv"/>
-                                            <menuItem title="Other" state="on" tag="4" id="iI9-a1-9yQ"/>
+                                            <menuItem title="PLA" tag="1347174688" id="Jmw-HJ-Vq8"/>
+                                            <menuItem title="ABS" tag="1094865696" id="qQB-1B-UGC"/>
+                                            <menuItem title="HIPS" tag="1212764243" id="Y0x-0K-fFv"/>
+                                            <menuItem title="Other" tag="1869899890" id="iI9-a1-9yQ"/>
                                         </items>
                                     </menu>
                                 </popUpButtonCell>

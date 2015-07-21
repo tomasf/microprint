@@ -73,11 +73,17 @@
 	};
 	
 	self.printJob.abortionBlock = ^{
-		[weakSelf.parentWindow endSheet:weakSelf.view.window];
+		[weakSelf dismissController:nil];
+		if(weakSelf.endHandler) {
+			weakSelf.endHandler();
+		}
 	};
 	
 	self.printJob.completionBlock = ^{
-		[weakSelf.parentWindow endSheet:weakSelf.view.window];
+		[weakSelf dismissController:nil];
+		if(weakSelf.endHandler) {
+			weakSelf.endHandler();
+		}
 	};
 	
 	[self.printJob start];
@@ -86,8 +92,8 @@
 	self.printStatusController = [[TFPPrintStatusController alloc] initWithPrintJob:self.printJob];
 	
 	[self.printStatusController addObserver:self keyPath:@"printProgress" options:0 block:^(MAKVONotification *notification) {
-		weakSelf.parentWindow.dockTile.badgeLabel = [weakSelf.percentFormatter stringFromNumber:@(weakSelf.printStatusController.printProgress)];
-		[weakSelf.parentWindow.dockTile display];
+		//weakSelf.parentWindow.dockTile.badgeLabel = [weakSelf.percentFormatter stringFromNumber:@(weakSelf.printStatusController.printProgress)];
+		//[weakSelf.parentWindow.dockTile display];
 	}];
 }
 
@@ -117,9 +123,14 @@
 
 
 - (IBAction)abort:(id)sender {
+	__weak __typeof__(self) weakSelf = self;
+	
 	if(!self.printJob) {
 		self.aborted = YES;
-		[self.parentWindow endSheet:self.view.window];
+		[self dismissController:nil];
+		if(weakSelf.endHandler) {
+			weakSelf.endHandler();
+		}
 		return;
 	}
 	

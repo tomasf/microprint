@@ -8,6 +8,8 @@
 
 #import "TFPGCodeDocument.h"
 #import "TFPGCodeProgram.h"
+#import "TFPPrintSettingsViewController.h"
+#import "Extras.h"
 
 
 @interface TFPGCodeDocument ()
@@ -26,6 +28,26 @@
 - (BOOL)readFromData:(NSData *)data ofType:(NSString *)typeName error:(NSError **)outError {
 	self.data = data;
 	return YES;
+}
+
+
+- (id)valueForUndefinedKey:(NSString *)key {
+	return [[self printSettingsViewController] valueForKey:key];
+}
+
+
+- (void)setValue:(id)value forUndefinedKey:(NSString *)key {
+	return [[self printSettingsViewController] setValue:value forKey:key];
+}
+
+
+- (TFPPrintSettingsViewController*)printSettingsViewController {
+	return (TFPPrintSettingsViewController*)[self.windowControllers.firstObject contentViewController];
+}
+
+
+- (void)test:(NSScriptCommand*)command {
+	TFLog(@"test! %@", command);
 }
 
 

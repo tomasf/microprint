@@ -10,11 +10,11 @@
 
 
 typedef NS_ENUM(NSUInteger, TFPFilamentType) {
-	TFPFilamentTypeUnknown,
-	TFPFilamentTypePLA,
-	TFPFilamentTypeABS,
-	TFPFilamentTypeHIPS,
-	TFPFilamentTypeOther,
+	TFPFilamentTypeUnknown = 0,
+	TFPFilamentTypePLA = 'PLA ',
+	TFPFilamentTypeABS  = 'ABS ',
+	TFPFilamentTypeHIPS = 'HIPS',
+	TFPFilamentTypeOther = 'othr',
 };
 
 

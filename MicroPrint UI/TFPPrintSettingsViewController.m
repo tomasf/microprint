@@ -31,6 +31,8 @@
 @property BOOL useWaveBonding;
 
 @property TFP3DVector *printSize;
+
+@property TFPPrintingProgressViewController *printingProgressViewController;
 @end
 
 
@@ -141,7 +143,10 @@
 
 
 - (IBAction)print:(id)sender {
+	__weak __typeof__(self) weakSelf = self;
+	
 	TFPPrintParameters *params = [self printParameters];
+	
 	[self.selectedPrinter fillInOffsetAndBacklashValuesInPrintParameters:params completionHandler:^(BOOL success) {
 		NSWindowController *printingProgressWindowController = [self.storyboard instantiateControllerWithIdentifier:@"printingProgressWindowController"];
 		
@@ -150,11 +155,32 @@
 		viewController.program = self.program;
 		viewController.printParameters = params;
 		
-		viewController.parentWindow = self.view.window;
-		
-		[self.view.window beginSheet:printingProgressWindowController.window completionHandler:nil];
+		self.printingProgressViewController = viewController;
+		[self presentViewControllerAsSheet:viewController];
 		[viewController start];
+		
+		viewController.endHandler = ^{
+			weakSelf.printingProgressViewController = nil;
+		};
 	}];
+}
+
+
+- (id)valueForUndefinedKey:(NSString *)key {
+	if([key hasPrefix:@"progress."]) {
+		return [self.printingProgressViewController valueForKey:[key substringFromIndex:9]];
+	}else{
+		return [super valueForUndefinedKey:key];
+	}
+}
+
+
+- (void)setValue:(id)value forUndefinedKey:(NSString *)key {
+	if([key hasPrefix:@"progress."]) {
+		return [self.printingProgressViewController setValue:value forKey:[key substringFromIndex:9]];
+	}else{
+		return [super setValue:value forUndefinedKey:key];
+	}
 }
 
 

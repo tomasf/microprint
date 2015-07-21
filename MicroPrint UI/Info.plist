@@ -30,6 +30,10 @@
 	<string>Main</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSAppleScriptEnabled</key>
+	<true/>
+	<key>OSAScriptingDefinition</key>
+	<string>MicroPrint.sdef</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>

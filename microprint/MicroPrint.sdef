@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE dictionary SYSTEM "file://localhost/System/Library/DTDs/sdef.dtd">
+<dictionary title="Dictionary" xmlns:xi="http://www.w3.org/2003/XInclude">
+    <xi:include href="file:///System/Library/ScriptingDefinitions/CocoaStandard.sdef" xpointer="xpointer(/dictionary/suite)"/>    
+    
+    <suite name="MicroPrint Suite" code="TFMP" description="Classes and commands specific to MicroPrint.">
+		<enumeration name="filament type" code="fila">
+			<enumerator name="PLA" code="PLA " description="Polylactic acid filament"/>
+			<enumerator name="ABS" code="ABS " description="Acrylonitrile butadiene styrene filament"/>
+			<enumerator name="HIPS" code="HIPS" description="High-impact polystyrene filament"/>
+			<enumerator name="other" code="othr" description="Other filament"/>
+		</enumeration>
+		
+		<class-extension extends="application" description="The MicroPrint application">
+			<element type="printer" access="r">
+				<cocoa key="scripting_printers"/>
+			</element>
+		</class-extension>
+		
+		<class-extension extends="document" description="A G-code file document.">
+            <responds-to name="test">
+                <cocoa method="test:"/>
+            </responds-to>
+			
+			<property name="temperature" code="temp" description="the heater temperature" type="integer"><cocoa key="temperature"/></property>
+			<property name="use wave bonding" code="wavb" description="whether to use wave bonding" type="boolean"><cocoa key="useWaveBonding"/></property>
+			<property name="filament type" code="filt" description="the filament type to use" type="filament type"><cocoa key="filamentType"/></property>
+			<property name="selected printer" code="pntr" description="the printer to use" type="printer"><cocoa key="selectedPrinter"/></property>
+
+			<property name="printing progress" code="prgr" description="the printing progress, as a number 0-1" type="real">
+				<cocoa key="progress.printingProgress"/>
+			</property>
+			
+			<property name="printing" code="prn?" description="is this document currently printing?" type="boolean">
+				<cocoa key="printing"/>
+			</property>
+        </class-extension>
+		
+		
+		<class name="printer" code="prtr" description="An M3D Micro printer.">
+			<cocoa class="TFPPrinter"/>
+			
+			<property name="serial number" code="seri" description="the serial number" type="text" access="r">
+				<cocoa key="serialNumber"/>
+			</property>
+		</class>
+		
+    </suite>
+</dictionary>
