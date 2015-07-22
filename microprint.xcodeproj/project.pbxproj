@@ -63,7 +63,6 @@
 		C96776E11B565BC600D2D6CB /* TFTimer.m in Sources */ = {isa = PBXBuildFile; fileRef = C96776DF1B565BC600D2D6CB /* TFTimer.m */; };
 		C96776E21B565BC600D2D6CB /* TFTimer.m in Sources */ = {isa = PBXBuildFile; fileRef = C96776DF1B565BC600D2D6CB /* TFTimer.m */; };
 		C96776E31B5662D900D2D6CB /* TFPPrintStatusController.m in Sources */ = {isa = PBXBuildFile; fileRef = C96776DD1B565A2B00D2D6CB /* TFPPrintStatusController.m */; };
-		C96776E61B56939300D2D6CB /* TFPLoadingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C96776E51B56939300D2D6CB /* TFPLoadingViewController.m */; };
 		C991C31D1B4DA676005846B9 /* TFPGCodeConsoleOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = C991C31C1B4DA676005846B9 /* TFPGCodeConsoleOperation.m */; };
 		C99E871F1B3AA56D0099E79E /* GBCommandLineParser.m in Sources */ = {isa = PBXBuildFile; fileRef = C99E87181B3AA56D0099E79E /* GBCommandLineParser.m */; };
 		C99E87201B3AA56D0099E79E /* GBOptionsHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = C99E871A1B3AA56D0099E79E /* GBOptionsHelper.m */; };
@@ -161,8 +160,6 @@
 		C96776DD1B565A2B00D2D6CB /* TFPPrintStatusController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPPrintStatusController.m; sourceTree = "<group>"; };
 		C96776DF1B565BC600D2D6CB /* TFTimer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFTimer.m; sourceTree = "<group>"; };
 		C96776E01B565BC600D2D6CB /* TFTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFTimer.h; sourceTree = "<group>"; };
-		C96776E41B56939300D2D6CB /* TFPLoadingViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPLoadingViewController.h; sourceTree = "<group>"; };
-		C96776E51B56939300D2D6CB /* TFPLoadingViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPLoadingViewController.m; sourceTree = "<group>"; };
 		C991C31B1B4DA676005846B9 /* TFPGCodeConsoleOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPGCodeConsoleOperation.h; sourceTree = "<group>"; };
 		C991C31C1B4DA676005846B9 /* TFPGCodeConsoleOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPGCodeConsoleOperation.m; sourceTree = "<group>"; };
 		C99E87161B3AA56D0099E79E /* GBCli.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GBCli.h; sourceTree = "<group>"; };
@@ -370,8 +367,6 @@
 			children = (
 				C95F11011B54004100F396B6 /* TFPGCodeDocument.h */,
 				C95F11021B54004100F396B6 /* TFPGCodeDocument.m */,
-				C96776E41B56939300D2D6CB /* TFPLoadingViewController.h */,
-				C96776E51B56939300D2D6CB /* TFPLoadingViewController.m */,
 				C95F11041B5403FA00F396B6 /* TFPPrintSettingsViewController.h */,
 				C95F11051B5403FA00F396B6 /* TFPPrintSettingsViewController.m */,
 				C95F11171B55183100F396B6 /* TFPPrintingProgressViewController.h */,
@@ -595,7 +590,6 @@
 				C96776E21B565BC600D2D6CB /* TFTimer.m in Sources */,
 				C95F11061B5403FA00F396B6 /* TFPPrintSettingsViewController.m in Sources */,
 				C95F10C81B53EBDE00F396B6 /* MAKVONotificationCenter.m in Sources */,
-				C96776E61B56939300D2D6CB /* TFPLoadingViewController.m in Sources */,
 				C9C871BB1B5AD2070063FACB /* TFPBedLevelCalibrationViewController.m in Sources */,
 				C95F10CD1B53EBEF00F396B6 /* TFPGCode.m in Sources */,
 				C96776E31B5662D900D2D6CB /* TFPPrintStatusController.m in Sources */,

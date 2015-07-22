@@ -644,23 +644,48 @@
                         <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
                     </window>
                     <connections>
-                        <segue destination="gsM-aq-D1g" kind="relationship" relationship="window.shadowedContentViewController" id="dsS-Mg-Bw4"/>
+                        <segue destination="QEg-b8-EU3" kind="relationship" relationship="window.shadowedContentViewController" id="QQo-CG-fgH"/>
                     </connections>
                 </windowController>
                 <customObject id="vFH-CX-8hr" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="757" y="250"/>
+            <point key="canvasLocation" x="1227" y="250"/>
         </scene>
-        <!--Loading View Controller-->
+        <!--Window Controller-->
+        <scene sceneID="y6e-wx-Rj5">
+            <objects>
+                <windowController storyboardIdentifier="LoadingWindowController" id="nMF-xW-EVV" sceneMemberID="viewController">
+                    <window key="window" title="Opening…" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" animationBehavior="default" id="8uq-Lo-zTm">
+                        <windowStyleMask key="styleMask" titled="YES"/>
+                        <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+                        <rect key="contentRect" x="425" y="461" width="200" height="200"/>
+                        <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1417"/>
+                    </window>
+                    <connections>
+                        <segue destination="gsM-aq-D1g" kind="relationship" relationship="window.shadowedContentViewController" id="Mxd-9f-M1m"/>
+                    </connections>
+                </windowController>
+                <customObject id="Gaq-oN-xp5" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="697" y="250"/>
+        </scene>
+        <!--View Controller-->
         <scene sceneID="wLt-DV-1Qw">
             <objects>
-                <viewController id="gsM-aq-D1g" customClass="TFPLoadingViewController" sceneMemberID="viewController">
+                <viewController id="gsM-aq-D1g" sceneMemberID="viewController">
                     <view key="view" id="Bn3-8c-wbt">
-                        <rect key="frame" x="0.0" y="0.0" width="450" height="190"/>
+                        <rect key="frame" x="0.0" y="0.0" width="189" height="190"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" bezeled="NO" indeterminate="YES" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="dvA-0u-7s9">
-                                <rect key="frame" x="209" y="79" width="32" height="32"/>
+                                <rect key="frame" x="78" y="79" width="32" height="32"/>
+                                <connections>
+                                    <binding destination="gsM-aq-D1g" name="animate" keyPath="self" id="4wS-K0-I04">
+                                        <dictionary key="options">
+                                            <string key="NSValueTransformerName">NSIsNotNil</string>
+                                        </dictionary>
+                                    </binding>
+                                </connections>
                             </progressIndicator>
                         </subviews>
                         <constraints>
@@ -668,13 +693,10 @@
                             <constraint firstAttribute="centerY" secondItem="dvA-0u-7s9" secondAttribute="centerY" id="lvz-J9-qOH"/>
                         </constraints>
                     </view>
-                    <connections>
-                        <outlet property="progressIndicator" destination="dvA-0u-7s9" id="f2C-Ot-c4d"/>
-                    </connections>
                 </viewController>
                 <customObject id="9hS-u8-2ba" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="657" y="635"/>
+            <point key="canvasLocation" x="697.5" y="538"/>
         </scene>
         <!--Printer List View Controller-->
         <scene sceneID="hIz-AP-VOD">
@@ -861,7 +883,7 @@
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
                                 <connections>
-                                    <binding destination="QEg-b8-EU3" name="value" keyPath="useWaveBonding" id="diU-Bx-MN8"/>
+                                    <binding destination="QEg-b8-EU3" name="value" keyPath="document.useWaveBonding" id="E90-bE-LK0"/>
                                 </connections>
                             </button>
                             <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="hyh-Gr-D9e">
@@ -882,7 +904,7 @@
                                     </menu>
                                 </popUpButtonCell>
                                 <connections>
-                                    <binding destination="QEg-b8-EU3" name="selectedTag" keyPath="filamentType" id="9Yr-VG-jx1"/>
+                                    <binding destination="QEg-b8-EU3" name="selectedTag" keyPath="document.filamentType" id="9Js-uT-jgi"/>
                                 </connections>
                             </popUpButton>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gU0-qB-TaV">
@@ -914,7 +936,7 @@
                                             <string key="NSNullPlaceholder">No Printer</string>
                                         </dictionary>
                                     </binding>
-                                    <binding destination="QEg-b8-EU3" name="selectedObject" keyPath="selectedPrinter" previousBinding="9Js-ru-RvA" id="GWm-MN-YrG"/>
+                                    <binding destination="QEg-b8-EU3" name="selectedObject" keyPath="document.selectedPrinter" previousBinding="9Js-ru-RvA" id="zfZ-8g-929"/>
                                 </connections>
                             </popUpButton>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="BCH-il-VZP">
@@ -940,7 +962,7 @@
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                                 <connections>
-                                    <binding destination="QEg-b8-EU3" name="value" keyPath="temperature" id="GFs-sd-8e5"/>
+                                    <binding destination="QEg-b8-EU3" name="value" keyPath="document.temperature" id="uc4-4D-gCe"/>
                                 </connections>
                             </textField>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="yaE-Hy-kFO">
@@ -984,11 +1006,7 @@ DQ
                                 </buttonCell>
                                 <connections>
                                     <action selector="print:" target="QEg-b8-EU3" id="WAg-jB-3ph"/>
-                                    <binding destination="QEg-b8-EU3" name="enabled" keyPath="printSize" id="zb5-zh-b5S">
-                                        <dictionary key="options">
-                                            <string key="NSValueTransformerName">NSIsNotNil</string>
-                                        </dictionary>
-                                    </binding>
+                                    <binding destination="QEg-b8-EU3" name="enabled" keyPath="canPrint" id="lRr-bc-AjX"/>
                                 </connections>
                             </button>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="QnW-U8-L9q">
@@ -1614,28 +1632,10 @@ DQ
             </objects>
             <point key="canvasLocation" x="576" y="951"/>
         </scene>
-        <!--Window Controller-->
-        <scene sceneID="rgs-fM-vme">
-            <objects>
-                <windowController storyboardIdentifier="printingProgressWindowController" id="H3W-cR-E7k" sceneMemberID="viewController">
-                    <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="PrintingProgress" animationBehavior="default" id="ZR7-GC-2Yj">
-                        <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
-                        <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-                        <rect key="contentRect" x="2854" y="313" width="480" height="270"/>
-                        <rect key="screenRect" x="2560" y="0.0" width="1920" height="1057"/>
-                    </window>
-                    <connections>
-                        <segue destination="loo-rf-9XD" kind="relationship" relationship="window.shadowedContentViewController" id="xSr-Q3-qW4"/>
-                    </connections>
-                </windowController>
-                <customObject id="9x3-ok-sMm" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="1768" y="250"/>
-        </scene>
         <!--Printing Progress View Controller-->
         <scene sceneID="gSv-o8-Dyf">
             <objects>
-                <viewController id="loo-rf-9XD" customClass="TFPPrintingProgressViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="PrintingProgressViewController" id="loo-rf-9XD" customClass="TFPPrintingProgressViewController" sceneMemberID="viewController">
                     <view key="view" id="NkQ-q7-BVC">
                         <rect key="frame" x="0.0" y="0.0" width="488" height="178"/>
                         <autoresizingMask key="autoresizingMask"/>

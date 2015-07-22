@@ -10,7 +10,7 @@
 @class TFPGCodeProgram, TFPPrinter, TFPPrintParameters;
 
 @interface TFPPrintingProgressViewController : NSViewController
-@property TFPGCodeProgram *program;
+@property NSURL *GCodeFileURL;
 @property TFPPrinter *printer;
 @property TFPPrintParameters *printParameters;
 

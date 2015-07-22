@@ -7,8 +7,14 @@
 //
 
 #import <Cocoa/Cocoa.h>
-@class TFPGCodeProgram;
+#import "TFPFilament.h"
+@class TFP3DVector, TFPPrinter;
 
 @interface TFPGCodeDocument : NSDocument
-@property NSData *data;
+@property (readonly) TFP3DVector *printSize;
+
+@property TFPPrinter *selectedPrinter;
+@property TFPFilamentType filamentType;
+@property NSNumber *temperature;
+@property BOOL useWaveBonding;
 @end

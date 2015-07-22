@@ -101,24 +101,25 @@
 - (void)start {
 	__weak __typeof__(self) weakSelf = self;
 	
-	TFPGCodeProgram *program = self.program;
 	TFPPrintParameters *params = self.printParameters;
 	
 	self.progressIndicator.indeterminate = YES;
 	[self.progressIndicator startAnimation:nil];
 	
-	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-		TFPGCodeProgram *newProgram = [TFPPreprocessing programByPreprocessingProgram:program usingParameters:params];
-		
-		dispatch_async(dispatch_get_main_queue(), ^{
-			if(weakSelf.aborted) {
-				return;
-			}
-			weakSelf.printJob = [[TFPPrintJob alloc] initWithProgram:newProgram printer:weakSelf.printer printParameters:params];
+	[self.printer fillInOffsetAndBacklashValuesInPrintParameters:params completionHandler:^(BOOL success) {
+		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+			TFPGCodeProgram *program = [[TFPGCodeProgram alloc] initWithFileURL:self.GCodeFileURL];
+			program = [TFPPreprocessing programByPreprocessingProgram:program usingParameters:params];
 			
-			[weakSelf configurePrintJob];
+			dispatch_async(dispatch_get_main_queue(), ^{
+				if(weakSelf.aborted) {
+					return;
+				}
+				weakSelf.printJob = [[TFPPrintJob alloc] initWithProgram:program printer:weakSelf.printer printParameters:params];
+				[weakSelf configurePrintJob];
+			});
 		});
-	});
+	}];
 }
 
 

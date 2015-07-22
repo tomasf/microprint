@@ -7,8 +7,8 @@
 //
 
 #import <Cocoa/Cocoa.h>
-@class TFPGCodeProgram;
+@class TFPGCodeDocument;
 
 @interface TFPPrintSettingsViewController : NSViewController
-@property TFPGCodeProgram *program;
+@property (strong) TFPGCodeDocument *document;
 @end

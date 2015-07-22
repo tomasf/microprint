@@ -10,23 +10,67 @@
 #import "TFPGCodeProgram.h"
 #import "TFPPrintSettingsViewController.h"
 #import "Extras.h"
+#import "TFPGCodeHelpers.h"
+#import "TFPPrinterManager.h"
 
 
 @interface TFPGCodeDocument ()
+@property (readwrite) TFP3DVector *printSize;
+
+@property NSWindowController *loadingWindowController;
 @end
 
 
 @implementation TFPGCodeDocument
 
 
-- (void)makeWindowControllers {
-	// Override to return the Storyboard file name of the document.
-	[self addWindowController:[[NSStoryboard storyboardWithName:@"Main" bundle:nil] instantiateControllerWithIdentifier:@"PrintWindowController"]];
+- (instancetype)init {
+	if(!(self = [super init])) return nil;
+	
+	self.selectedPrinter = [TFPPrinterManager sharedManager].printers.firstObject;
+	self.filamentType = TFPFilamentTypePLA;
+	self.useWaveBonding = YES;
+	
+	return self;
 }
 
 
-- (BOOL)readFromData:(NSData *)data ofType:(NSString *)typeName error:(NSError **)outError {
-	self.data = data;
+- (void)makeWindowControllers {
+	NSWindowController *windowController = [[NSStoryboard storyboardWithName:@"Main" bundle:nil] instantiateControllerWithIdentifier:@"PrintWindowController"];
+	
+	((TFPPrintSettingsViewController*)windowController.contentViewController).document = self;
+	
+	[self addWindowController:windowController];
+}
+
+
++ (BOOL)canConcurrentlyReadDocumentsOfType:(NSString *)typeName {
+	return YES;
+}
+
+
+- (BOOL)readFromURL:(NSURL *)absoluteURL ofType:(NSString *)typeName error:(NSError **)outError {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		self.loadingWindowController = [[NSStoryboard storyboardWithName:@"Main" bundle:nil] instantiateControllerWithIdentifier:@"LoadingWindowController"];
+		[self.loadingWindowController showWindow:nil];
+	});
+	
+	TFPGCodeProgram *program = [[TFPGCodeProgram alloc] initWithFileURL:absoluteURL];
+	if(!program) {
+		return NO;
+	}
+	
+	dispatch_async(dispatch_get_main_queue(), ^{
+		[self.loadingWindowController close];
+	});
+	
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+		TFP3DVector *size = [program measureSize];
+		dispatch_async(dispatch_get_main_queue(), ^{
+			self.printSize = size;
+		});
+	});
+	
 	return YES;
 }
 
@@ -48,6 +92,11 @@
 
 - (void)test:(NSScriptCommand*)command {
 	TFLog(@"test! %@", command);
+}
+
+- (void)close {
+	self.printSettingsViewController.document = nil;
+	[super close];
 }
 
 

@@ -25,13 +25,6 @@
 
 @property TFPPrinterManager *printerManager;
 
-@property TFPPrinter *selectedPrinter;
-@property TFPFilamentType filamentType;
-@property NSNumber *temperature;
-@property BOOL useWaveBonding;
-
-@property TFP3DVector *printSize;
-
 @property TFPPrintingProgressViewController *printingProgressViewController;
 @end
 
@@ -44,10 +37,6 @@
 	if(!(self = [super initWithCoder:coder])) return nil;
 	
 	self.printerManager = [TFPPrinterManager sharedManager];
-	self.selectedPrinter = self.printerManager.printers.firstObject;
-	
-	self.filamentType = TFPFilamentTypePLA;
-	self.useWaveBonding = YES;
 	
 	return self;
 }
@@ -63,20 +52,11 @@
 	[self addObserver:self keyPath:@[@"temperature", @"filamentType"] options:NSKeyValueObservingOptionInitial block:^(MAKVONotification *notification) {
 		[weakSelf updateTemperaturePlaceholder];
 	}];
-	
-	TFPGCodeProgram *program = self.program;
-	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-		TFP3DVector *size = [program measureSize];
-		
-		dispatch_async(dispatch_get_main_queue(), ^{
-			weakSelf.printSize = size;
-		});
-	});
 }
 
 
 - (NSString*)printDimensionsString {
-	if(self.printSize) {
+	if(self.document.printSize) {
 		NSNumberFormatter *formatter = [NSNumberFormatter new];
 		formatter.positiveSuffix = @" mm";
 		formatter.minimumFractionDigits = 2;
@@ -84,9 +64,9 @@
 		formatter.minimumIntegerDigits = 1;
 		
 		return [NSString stringWithFormat:@"X:  %@\nY:  %@\nZ:  %@",
-				[formatter stringFromNumber:self.printSize.x],
-				[formatter stringFromNumber:self.printSize.y],
-				[formatter stringFromNumber:self.printSize.z]];
+				[formatter stringFromNumber:self.document.printSize.x],
+				[formatter stringFromNumber:self.document.printSize.y],
+				[formatter stringFromNumber:self.document.printSize.z]];
 		
 	}else{
 		return @"Measuring…\n\n";;
@@ -95,7 +75,7 @@
 
 
 + (NSSet *)keyPathsForValuesAffectingPrintDimensionsString {
-	return @[@"printSize"].tf_set;
+	return @[@"document.printSize"].tf_set;
 }
 
 
@@ -111,7 +91,7 @@
 
 - (void)updateTemperaturePlaceholder {
 	dispatch_async(dispatch_get_main_queue(), ^{
-		int temperature = [TFPFilament filamentForType:self.filamentType].defaultTemperature;
+		int temperature = [TFPFilament filamentForType:self.document.filamentType].defaultTemperature;
 		NSString *string = [NSString stringWithFormat:@"%d", temperature];
 		self.temperatureTextField.placeholderString = string;
 	});
@@ -123,21 +103,16 @@
 }
 
 
-- (TFPGCodeDocument*)document {
-	return [[NSDocumentController sharedDocumentController] documentForWindow:self.view.window];
-}
-
-
 - (TFPPrintParameters*)printParameters {
 	TFPPrintParameters *parameters = [TFPPrintParameters new];
-	parameters.maxZ = self.printSize.z.doubleValue;
+	parameters.maxZ = self.document.printSize.z.doubleValue;
 	
-	parameters.filament = [TFPFilament filamentForType:self.filamentType];
-	if(self.temperature) {
-		parameters.idealTemperature = self.temperature.doubleValue;
+	parameters.filament = [TFPFilament filamentForType:self.document.filamentType];
+	if(self.document.temperature) {
+		parameters.idealTemperature = self.document.temperature.doubleValue;
 	}
 	
-	parameters.useWaveBonding = self.useWaveBonding;
+	parameters.useWaveBonding = self.document.useWaveBonding;
 	return parameters;
 }
 
@@ -145,24 +120,28 @@
 - (IBAction)print:(id)sender {
 	__weak __typeof__(self) weakSelf = self;
 	
-	TFPPrintParameters *params = [self printParameters];
+	TFPPrintingProgressViewController *viewController = [self.storyboard instantiateControllerWithIdentifier:@"PrintingProgressViewController"];
+	viewController.printer = self.document.selectedPrinter;
+	viewController.printParameters = [self printParameters];
+	viewController.GCodeFileURL = self.document.fileURL;
 	
-	[self.selectedPrinter fillInOffsetAndBacklashValuesInPrintParameters:params completionHandler:^(BOOL success) {
-		NSWindowController *printingProgressWindowController = [self.storyboard instantiateControllerWithIdentifier:@"printingProgressWindowController"];
-		
-		TFPPrintingProgressViewController *viewController = (TFPPrintingProgressViewController*)printingProgressWindowController.window.contentViewController;
-		viewController.printer = self.selectedPrinter;
-		viewController.program = self.program;
-		viewController.printParameters = params;
-		
-		self.printingProgressViewController = viewController;
-		[self presentViewControllerAsSheet:viewController];
-		[viewController start];
-		
-		viewController.endHandler = ^{
-			weakSelf.printingProgressViewController = nil;
-		};
-	}];
+	self.printingProgressViewController = viewController;
+	[self presentViewControllerAsSheet:viewController];
+	[viewController start];
+	
+	viewController.endHandler = ^{
+		weakSelf.printingProgressViewController = nil;
+	};
+}
+
+
+- (BOOL)canPrint {
+	return self.document.selectedPrinter != nil && self.document.printSize != nil;
+}
+
+
++ (NSSet *)keyPathsForValuesAffectingCanPrint {
+	return @[@"document.selectedPrinter", @"document.printSize"].tf_set;
 }
 
 

@@ -49,7 +49,7 @@
 		}
 		
 		double distance = [self.simulatedPosition distanceToPoint:movement];
-		duration = MAX(duration, distance / 100.0);
+		duration = MAX(duration, distance / 10000.0);
 		self.simulatedPosition = movement;
 		
 	} else if(G == 90) {
