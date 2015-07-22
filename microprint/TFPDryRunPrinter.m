@@ -64,6 +64,7 @@
 	});
 }
 
+
 - (TFPPrinterColor)color {
 	return TFPPrinterColorOther;
 }

@@ -55,14 +55,24 @@
 		[self.loadingWindowController showWindow:nil];
 	});
 	
-	TFPGCodeProgram *program = [[TFPGCodeProgram alloc] initWithFileURL:absoluteURL];
-	if(!program) {
+	void(^stopLoading)() = ^{
+		dispatch_async(dispatch_get_main_queue(), ^{
+			[self.loadingWindowController close];
+		});
+	};
+	
+	TFPGCodeProgram *program = [[TFPGCodeProgram alloc] initWithFileURL:absoluteURL error:outError];
+	if(!program) {		
+		stopLoading();
 		return NO;
 	}
 	
-	dispatch_async(dispatch_get_main_queue(), ^{
-		[self.loadingWindowController close];
-	});
+	if(![program validateForM3D:outError]) {
+		stopLoading();
+		return NO;
+	}
+	
+	stopLoading();
 	
 	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
 		TFP3DVector *size = [program measureSize];

@@ -8,6 +8,12 @@
 @import MachO;
 
 
+NSString *const TFPErrorDomain = @"TFPErrorDomain";
+NSString *const TFPErrorGCodeStringKey = @"GCodeString";
+NSString *const TFPErrorGCodeKey = @"GCode";
+NSString *const TFPErrorGCodeLineKey = @"GCodeLine";
+
+
 @implementation NSArray (TFExtras)
 
 - (NSArray*)tf_mapWithBlock:(id(^)(id object))function {
@@ -162,6 +168,26 @@ static io_object_t IOEntryAncestorConformingTo(io_object_t object, const io_name
 
 @end
 
+
+@implementation NSIndexSet (TFExtras)
+
+
++ (NSIndexSet*)tf_indexSetWithIndexes:(NSInteger)firstIndex, ... {
+	va_list list;
+	va_start(list, firstIndex);
+	
+	NSMutableIndexSet *indexes = [NSMutableIndexSet indexSetWithIndex:firstIndex];
+	NSInteger index;
+	while((index = va_arg(list, int)) >= 0) {
+		[indexes addIndex:index];
+	}
+	
+	va_end(list);
+	return indexes;
+}
+
+
+@end
 
 
 void TFLog(NSString *format, ...) {

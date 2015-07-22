@@ -108,7 +108,7 @@
 	
 	[self.printer fillInOffsetAndBacklashValuesInPrintParameters:params completionHandler:^(BOOL success) {
 		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-			TFPGCodeProgram *program = [[TFPGCodeProgram alloc] initWithFileURL:self.GCodeFileURL];
+			TFPGCodeProgram *program = [[TFPGCodeProgram alloc] initWithFileURL:self.GCodeFileURL error:nil];
 			program = [TFPPreprocessing programByPreprocessingProgram:program usingParameters:params];
 			
 			dispatch_async(dispatch_get_main_queue(), ^{

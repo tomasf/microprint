@@ -7,6 +7,7 @@
 //
 
 #import "TFPGCodeHelpers.h"
+#import "Extras.h"
 
 
 @implementation TFPGCode (TFPHelpers)
@@ -379,6 +380,49 @@ const double maxMMPerSecond = 60.001;
 	}
 	
 }
+
+
+// These values only need to contain codes relevant for printing
+
+
++ (NSIndexSet*)validM3DGValues {
+	return [NSIndexSet tf_indexSetWithIndexes:0, 1, 4, 28, 90, 91, 92,  30, 32, 33, -1];
+}
+
+
++ (NSIndexSet*)validM3DMValues {
+	return [NSIndexSet tf_indexSetWithIndexes:0, 1, 17, 18, 104, 105, 106, 107, 108, 109, 110, 114, 115, 117, -1];
+}
+
+
+- (BOOL)validateForM3D:(NSError**)outError {
+	NSIndexSet *Gset = [self.class validM3DGValues];
+	NSIndexSet *Mset = [self.class validM3DMValues];
+	__block BOOL valid = YES;
+	__block NSError *error;
+	
+	[self.lines enumerateObjectsUsingBlock:^(TFPGCode *code, NSUInteger index, BOOL *stop) {
+		if(code.hasFields) {
+			NSInteger G = [code valueForField:'G' fallback:-1];
+			NSInteger M = [code valueForField:'M' fallback:-1];
+			
+			if((G > -1 && ![Gset containsIndex:G]) || (M > -1 && ![Mset containsIndex:M])) {
+				NSString *errorString = [NSString stringWithFormat:@"File contains G-code that is incompatible with the M3D Micro at line %d:\n%@", (int)index+1, code];
+					
+				error = [NSError errorWithDomain:TFPErrorDomain code:TFPErrorCodeIncompatibleCode userInfo:@{NSLocalizedRecoverySuggestionErrorKey: errorString, TFPErrorGCodeKey: code, TFPErrorGCodeLineKey: @(index+1)}];
+				
+				valid = NO;
+			}
+		}
+	}];
+	
+	if(!valid && outError) {
+		*outError = error;
+	}
+	
+	return valid;
+}
+
 
 
 @end

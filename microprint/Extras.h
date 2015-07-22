@@ -34,6 +34,23 @@
 @end
 
 
+@interface NSIndexSet (TFExtras)
++ (NSIndexSet*)tf_indexSetWithIndexes:(NSInteger)firstIndex, ...; // Terminate with negative
+@end
+
+
+extern NSString *const TFPErrorDomain;
+extern NSString *const TFPErrorGCodeStringKey;
+extern NSString *const TFPErrorGCodeKey;
+extern NSString *const TFPErrorGCodeLineKey;
+
+
+enum TFPErrorCodes {
+	TFPErrorCodeParseError = 1,
+	TFPErrorCodeIncompatibleCode,
+};
+
+
 extern void TFLog(NSString *format, ...);
 extern uint64_t TFNanosecondTime(void);
 
