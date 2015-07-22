@@ -32,7 +32,7 @@
 	
 	self.printerManager = [TFPPrinterManager sharedManager];
 	
-	[self.printerManager startDryRunMode];
+	//[self.printerManager startDryRunMode];
 }
 
 

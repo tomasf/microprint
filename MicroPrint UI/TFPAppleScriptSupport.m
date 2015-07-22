@@ -13,6 +13,7 @@
 #import "TFPPrintStatusController.h"
 #import "TFPPrinterManager.h"
 #import "TFPPrinter.h"
+#import "TFPGCodeDocument.h"
 
 
 @interface TFPPrintingProgressViewController (Private)
@@ -23,6 +24,12 @@
 
 @interface TFPPrintSettingsViewController (Private)
 @property TFPPrintingProgressViewController *printingProgressViewController;
+- (IBAction)print:(id)sender;
+@end
+
+
+@interface TFPGCodeDocument (Private)
+- (TFPPrintSettingsViewController*)printSettingsViewController;
 @end
 
 
@@ -42,6 +49,18 @@
 - (BOOL)printing {
 	return self.printingProgressViewController != nil;
 }
+
+@end
+
+
+
+@implementation TFPGCodeDocument (AppleScriptSupport)
+
+
+- (void)scripting_print:(NSScriptCommand*)command {
+	[self.printSettingsViewController print:nil];
+}
+
 
 @end
 

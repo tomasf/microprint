@@ -141,7 +141,7 @@ static double GetHeightAdjustmentRequired(double x, double y, TFPBedLevelOffsets
 						hasExtruded = true;
 					}
 					if (flag4) {
-						[output addObject:[[TFPGCode codeWithString:@"G0"] codeBySettingField:'E' toValue:num5]];
+						//[output addObject:[[TFPGCode codeWithString:@"G0"] codeBySettingField:'E' toValue:num5]];
 					}
 					
 					

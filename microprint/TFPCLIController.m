@@ -404,7 +404,7 @@
 	NSURL *file = [NSURL fileURLWithPath:path];
 	
 	uint64_t start = TFNanosecondTime();
-	TFPGCodeProgram *program = [[TFPGCodeProgram alloc] initWithFileURL:file];
+	TFPGCodeProgram *program = [[TFPGCodeProgram alloc] initWithFileURL:file error:nil];
 	
 	if(!program) {
 		TFLog(@"Failed to read G-code program at path: %@", path);

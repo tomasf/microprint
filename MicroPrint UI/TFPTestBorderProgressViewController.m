@@ -28,7 +28,8 @@
 	params.useBasicPreparation = NO;
 	
 	[self.printer fillInOffsetAndBacklashValuesInPrintParameters:params completionHandler:^(BOOL success) {
-		TFPGCodeProgram *program = [TFPPreprocessing programByPreprocessingProgram:[TFPTestBorderPrinting testBorderProgram] usingParameters:params];
+		TFPGCodeProgram *program = [TFPTestBorderPrinting testBorderProgram];
+		program = [TFPPreprocessing programByPreprocessingProgram:program usingParameters:params];
 		
 		self.printJob = [[TFPPrintJob alloc] initWithProgram:program printer:self.printer printParameters:params];
 		

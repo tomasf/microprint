@@ -49,7 +49,7 @@
 	self.printerMenuButton.menu.delegate = self;
 	[self updatePrinterMenuImages];
 	
-	[self addObserver:self keyPath:@[@"temperature", @"filamentType"] options:NSKeyValueObservingOptionInitial block:^(MAKVONotification *notification) {
+	[self addObserver:self keyPath:@[@"document.temperature", @"document.filamentType"] options:NSKeyValueObservingOptionInitial block:^(MAKVONotification *notification) {
 		[weakSelf updateTemperaturePlaceholder];
 	}];
 }

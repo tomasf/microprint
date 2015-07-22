@@ -100,10 +100,6 @@
 }
 
 
-- (void)test:(NSScriptCommand*)command {
-	TFLog(@"test! %@", command);
-}
-
 - (void)close {
 	self.printSettingsViewController.document = nil;
 	[super close];
