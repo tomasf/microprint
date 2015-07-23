@@ -52,18 +52,13 @@
 	int baseLayer = 0;
 	bool isRelative = true;
 	bool firstLayer = true;
-	bool flag3 = false;
+	bool movesInXorY = false;
 	double num3 = 0;
 	
 	double relativeX = 0;
 	double relativeY = 0;
 	double relativeZ = 0;
 	double relativeE = 0;
-	
-	double absoluteX = 0;
-	double absoluteY = 0;
-	double absoluteZ = 0;
-	double absoluteE = 0;
 	
 	double F = 0;
 	
@@ -73,15 +68,6 @@
 	TFPGCode *lastTackPoint = nil;
 	int num6 = 0;
 	
-	/*
-	 if (parameters.filamentType == TFPFilamentTypePLA) {
-		double boundedTemp = [self boundedTemperature:parameters.idealTemperature + 10];
-		double boundedTemp2 = [self boundedTemperature:parameters.idealTemperature + 5];
-	 } else {
-		double boundedTemp = [self boundedTemperature:parameters.idealTemperature + 15];
-		double boundedTemp2 = [self boundedTemperature:parameters.idealTemperature + 10];
-	 }
-	 */
 	
 	for(__strong TFPGCode *code in self.program.lines) {
 		if ([(code.comment ?: @"") rangeOfString:@"LAYER:"].location != NSNotFound) {
@@ -95,7 +81,7 @@
 		NSInteger G = [code valueForField:'G' fallback:-1];
 		if((G == 0 || G == 1) && !isRelative) {
 			if([code hasField:'X'] || [code hasField:'Y']) {
-				flag3 = YES;
+				movesInXorY = YES;
 			}
 			
 			if([code hasField:'Z'] && firstLayer) {
@@ -107,11 +93,6 @@
 			double deltaZ = [code hasField:'Z'] ? [code valueForField:'Z'] - relativeZ : 0;
 			double deltaE = [code hasField:'E'] ? [code valueForField:'E'] - relativeE : 0;
 			
-			absoluteX += deltaX;
-			absoluteY += deltaY;
-			absoluteZ += deltaZ;
-			absoluteE += deltaE;
-			
 			relativeX += deltaX;
 			relativeY += deltaY;
 			relativeZ += deltaZ;
@@ -121,22 +102,18 @@
 				F = [code valueForField:'F'];
 			}
 			
-			double distance = sqrt(deltaX*deltaX + deltaY*deltaY); //num12
-			int num13 = 1;
-			if(distance < 1.25) {
-				num13 = distance / 1.25;
-			}
+			const double segmentLength = 1.25;
+			double moveDistance = sqrt(deltaX*deltaX + deltaY*deltaY); //num12
+			int segmentCount = MAX(1, moveDistance / segmentLength);
 			
-			//double num14 = absoluteX - deltaX;
-			//double num15 = absoluteY - deltaY;
-			double num16 = relativeX - deltaX;
-			double num17 = relativeY - deltaY;
-			double num18 = relativeZ - deltaZ;
-			double num19 = relativeE - deltaE;
-			double num20 = deltaX / distance;
-			double num21 = deltaY / distance;
-			double num22 = deltaZ / distance;
-			double num23 = deltaE / distance;
+			double previousX = relativeX - deltaX;
+			double previousY = relativeY - deltaY;
+			double previousZ = relativeZ - deltaZ;
+			double previousE = relativeE - deltaE;
+			double stepX = deltaX / moveDistance;
+			double stepY = deltaY / moveDistance;
+			double stepZ = deltaZ / moveDistance;
+			double stepE = deltaE / moveDistance;
 			
 			if(firstLayer && deltaE > 0) {
 				if(previousCode) {
@@ -146,58 +123,51 @@
 					}
 				}
 				
-				for (int i = 1; i < num13 + 1; i++)
-				{
+				for (int segment = 1; segment < segmentCount+1; segment++) {
 					double num26;
 					double num27;
 					double num28;
 					double num29;
-					if (i == num13)
-					{
-						//double num24 = absoluteX;
-						//double num25 = absoluteY;
+					
+					if (segment == segmentCount) {
 						num26 = relativeX;
 						num27 = relativeY;
 						num28 = relativeZ;
 						num29 = relativeE;
+					} else {
+						num26 = previousX + (double)segment * segmentLength * stepX;
+						num27 = previousY + (double)segment * segmentLength * stepY;
+						num28 = previousZ + (double)segment * segmentLength * stepZ;
+						num29 = previousE + (double)segment * segmentLength * stepE;
 					}
-					else
-					{
-						//double num24 = num14 + (double)i * 1.25 * num20;
-						//double num25 = num15 + (double)i * 1.25 * num21;
-						num26 = num16 + (double)i * 1.25 * num20;
-						num27 = num17 + (double)i * 1.25 * num21;
-						num28 = num18 + (double)i * 1.25 * num22;
-						num29 = num19 + (double)i * 1.25 * num23;
-					}
-					//double num30 = num29 - num5;
-					if (i != num13) {
+
+					if (segment != segmentCount) {
 						TFPGCode *newCode = [TFPGCode codeWithField:'G' value:G];
 						
 						if ([code hasField:'X']) {
-							newCode = [newCode codeBySettingField:'X' toValue:relativeX - deltaX + (num26 - num16)];
+							newCode = [newCode codeBySettingField:'X' toValue:relativeX - deltaX + (num26 - previousX)];
 						}
 						
 						if ([code hasField:'Y']) {
-							newCode = [newCode codeBySettingField:'Y' toValue:relativeY - deltaY + (num27 - num17)];
+							newCode = [newCode codeBySettingField:'Y' toValue:relativeY - deltaY + (num27 - previousY)];
 						}
 						
-						if (flag3) {
-							newCode = [newCode codeBySettingField:'Z' toValue:relativeZ - deltaZ + (num28 - num18 + self.currentAdjustmentZ)];
+						if (movesInXorY) {
+							newCode = [newCode codeBySettingField:'Z' toValue:relativeZ - deltaZ + (num28 - previousZ + self.currentAdjustmentZ)];
 							
 						} else if ([code hasField:'Z'] && (deltaZ > DBL_EPSILON || deltaZ < DBL_EPSILON)) {
-							newCode = [newCode codeBySettingField:'Z' toValue:relativeZ - deltaZ + (num28 - num18)];
+							newCode = [newCode codeBySettingField:'Z' toValue:relativeZ - deltaZ + (num28 - previousZ)];
 						}
 						
-						newCode = [newCode codeBySettingField:'E' toValue:relativeE - deltaE + (num29 - num19) + num4];
+						newCode = [newCode codeBySettingField:'E' toValue:relativeE - deltaE + (num29 - previousE) + num4];
 						[output addObject:newCode];
 						
 					} else {
-						if (flag3) {
+						if (movesInXorY) {
 							if ([code hasField:'Z']) {
 								code = [code codeByAdjustingField:'Z' offset:self.currentAdjustmentZ];
 							} else {
-								code = [code codeBySettingField:'Z' toValue:num18 + deltaZ + self.currentAdjustmentZ];
+								code = [code codeBySettingField:'Z' toValue:previousZ + deltaZ + self.currentAdjustmentZ];
 							}
 						}
 						code = [code codeByAdjustingField:'Z' offset:num4];
