@@ -81,8 +81,10 @@
 			self.printSize = size;
 		});
 		
-		self.curaProfile = [program curaProfileValues];
-		NSLog(@"%@", self.curaProfile);
+		NSDictionary *profile = [program curaProfileValues];
+		dispatch_async(dispatch_get_main_queue(), ^{
+			self.curaProfile = profile;
+		});
 	});
 	
 	return YES;
