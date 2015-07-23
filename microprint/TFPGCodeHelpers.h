@@ -67,4 +67,5 @@
 - (void)enumerateMovesWithBlock:(void(^)(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate))block;
 
 - (BOOL)validateForM3D:(NSError**)error;
+- (NSDictionary*)curaProfileValues;
 @end

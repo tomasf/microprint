@@ -12,6 +12,7 @@
 
 @interface TFPGCodeDocument : NSDocument
 @property (readonly) TFP3DVector *printSize;
+@property (readonly) NSDictionary *curaProfile;
 
 @property TFPPrinter *selectedPrinter;
 @property TFPFilamentType filamentType;

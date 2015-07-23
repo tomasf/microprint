@@ -424,4 +424,46 @@ const double maxMMPerSecond = 60.001;
 }
 
 
+- (NSString*)curaProfileComment {
+	for(TFPGCode *code in self.lines) {
+		if([code.comment hasPrefix:@"CURA_PROFILE_STRING:"]) {
+			return [code.comment substringFromIndex:20];
+		}
+	}
+	return nil;
+}
+
+
+- (NSDictionary*)curaProfileValues {
+	NSString *base64 = [self curaProfileComment];
+	if(!base64) {
+		return nil;
+	}
+	
+	NSData *deflatedData = [[NSData alloc] initWithBase64EncodedString:base64 options:NSDataBase64DecodingIgnoreUnknownCharacters];
+	NSData *rawData = [deflatedData tf_dataByDecodingDeflate];
+	
+	if(!rawData) {
+		return nil;
+	}
+	
+	NSString *string = [[NSString alloc] initWithData:rawData encoding:NSUTF8StringEncoding];
+	NSArray *pairs = [string componentsSeparatedByString:@"\x08"];
+	NSMutableDictionary *profile = [NSMutableDictionary new];
+	
+	for(NSString *pairString in pairs) {
+		NSUInteger separator = [pairString rangeOfString:@"="].location;
+		if(separator == NSNotFound) {
+			continue;
+		}
+		
+		NSString *key = [pairString substringWithRange:NSMakeRange(0, separator)];
+		NSString *value = [pairString substringWithRange:NSMakeRange(separator+1, pairString.length - separator - 1)];
+		profile[key] = value;
+	}
+	
+	return profile;
+}
+
+
 @end

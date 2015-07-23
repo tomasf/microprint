@@ -73,6 +73,8 @@
 		C9B547AF1B5D27210042E867 /* TFPTestBorderProgressViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C9B547AE1B5D27210042E867 /* TFPTestBorderProgressViewController.m */; };
 		C9B940DE1B5E5DFB00E42864 /* MicroPrint.sdef in Resources */ = {isa = PBXBuildFile; fileRef = C9B940DD1B5E5DFB00E42864 /* MicroPrint.sdef */; };
 		C9B940E11B5E641D00E42864 /* TFPAppleScriptSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = C9B940E01B5E641D00E42864 /* TFPAppleScriptSupport.m */; };
+		C9B940EB1B61008700E42864 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C9B940EA1B61008700E42864 /* libz.dylib */; };
+		C9B940EC1B61014600E42864 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C9B940EA1B61008700E42864 /* libz.dylib */; };
 		C9C729C81B4E96CB00277F1F /* TFPPreprocessing.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C729C71B4E96CB00277F1F /* TFPPreprocessing.m */; };
 		C9C729E11B516DA900277F1F /* TFPFilament.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C729E01B516DA900277F1F /* TFPFilament.m */; };
 		C9C729E41B5177A700277F1F /* TFPOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C729E31B5177A700277F1F /* TFPOperation.m */; };
@@ -180,6 +182,7 @@
 		C9B940DD1B5E5DFB00E42864 /* MicroPrint.sdef */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = MicroPrint.sdef; path = microprint/MicroPrint.sdef; sourceTree = SOURCE_ROOT; };
 		C9B940DF1B5E641D00E42864 /* TFPAppleScriptSupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPAppleScriptSupport.h; sourceTree = "<group>"; };
 		C9B940E01B5E641D00E42864 /* TFPAppleScriptSupport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPAppleScriptSupport.m; sourceTree = "<group>"; };
+		C9B940EA1B61008700E42864 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		C9C729C61B4E96CB00277F1F /* TFPPreprocessing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPPreprocessing.h; sourceTree = "<group>"; };
 		C9C729C71B4E96CB00277F1F /* TFPPreprocessing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPPreprocessing.m; sourceTree = "<group>"; };
 		C9C729DF1B516DA900277F1F /* TFPFilament.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPFilament.h; sourceTree = "<group>"; };
@@ -233,6 +236,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C9B940EB1B61008700E42864 /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -240,6 +244,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C9B940EC1B61014600E42864 /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -428,6 +433,7 @@
 		C9E59B5F1B316AF400343D58 = {
 			isa = PBXGroup;
 			children = (
+				C9B940EA1B61008700E42864 /* libz.dylib */,
 				C96590DB1B3DAAFE009D028F /* Printer */,
 				C9C871A31B56A1130063FACB /* Print Job */,
 				C96590DD1B3DAB30009D028F /* Operations */,

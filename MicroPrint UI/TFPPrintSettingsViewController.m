@@ -163,4 +163,84 @@
 }
 
 
+
+#pragma mark - Cura Profile
+
+
+
+- (NSArray*)profileKeysToDisplay {
+	return @[@"layer_height", @"wall_thickness", @"fill_density", @"platform_adhesion", @"support"];
+}
+
+
+- (NSString*)displayNameForProfileKey:(NSString*)key {
+	return @{
+			 @"layer_height": @"Layer Height",
+			 @"wall_thickness": @"Wall Thickness",
+			 @"fill_density": @"Fill Density",
+			 
+			 @"platform_adhesion": @"Bed Adhesion",
+			 @"support": @"Support",
+			 }[key];
+}
+
+
+- (NSString*)displayStringForProfileValue:(NSString*)value key:(NSString*)key {
+	NSNumberFormatter *mmFormatter = [NSNumberFormatter new];
+	mmFormatter.minimumIntegerDigits = 1;
+	mmFormatter.minimumFractionDigits = 2;
+	mmFormatter.maximumFractionDigits = 2;
+	mmFormatter.positiveSuffix = @" mm";
+	mmFormatter.negativeSuffix = @" mm";
+	
+	double doubleValue = value.doubleValue;
+	
+	if([key isEqual:@"layer_height"] || [key isEqual:@"wall_thickness"]) {
+		return [mmFormatter stringFromNumber:@(doubleValue)];
+
+	}else if([key isEqual:@"fill_density"]) {
+		return [value stringByAppendingString:@"%"];
+	
+	}else if([key isEqual:@"platform_adhesion"] || [key isEqual:@"support"]) {
+		return value;
+	
+	}else{
+		return nil;
+	}
+}
+
+
++ (NSSet *)keyPathsForValuesAffectingProfileKeysString {
+	return @[@"document.curaProfile"].tf_set;
+}
+
+
++ (NSSet *)keyPathsForValuesAffectingProfileValuesString {
+	return @[@"document.curaProfile"].tf_set;
+}
+
+
+- (NSString*)profileKeysString {
+	if(!self.document.curaProfile) {
+		return @"No Profile";
+	}
+	
+	return [[[self profileKeysToDisplay] tf_mapWithBlock:^NSString*(NSString *key) {
+		return [[self displayNameForProfileKey:key] stringByAppendingString:@":"];
+	}] componentsJoinedByString:@"\n"];
+}
+
+
+- (NSString*)profileValuesString {
+	if(!self.document.curaProfile) {
+		return @"";
+	}
+	
+	return [[[self profileKeysToDisplay] tf_mapWithBlock:^NSString*(NSString *key) {
+		NSString *value = self.document.curaProfile[key];
+		return [self displayStringForProfileValue:value key:key];
+	}] componentsJoinedByString:@"\n"];
+}
+
+
 @end

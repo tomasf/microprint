@@ -26,6 +26,7 @@
 @interface NSData (TFExtras)
 @property (readonly) NSData *tf_fletcher16Checksum;
 - (NSUInteger)tf_indexOfData:(NSData*)subdata;
+- (NSData *)tf_dataByDecodingDeflate;
 @end
 
 

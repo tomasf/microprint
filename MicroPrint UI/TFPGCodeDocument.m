@@ -16,6 +16,7 @@
 
 @interface TFPGCodeDocument ()
 @property (readwrite) TFP3DVector *printSize;
+@property (readwrite) NSDictionary *curaProfile;
 
 @property NSWindowController *loadingWindowController;
 @end
@@ -79,6 +80,9 @@
 		dispatch_async(dispatch_get_main_queue(), ^{
 			self.printSize = size;
 		});
+		
+		self.curaProfile = [program curaProfileValues];
+		NSLog(@"%@", self.curaProfile);
 	});
 	
 	return YES;
