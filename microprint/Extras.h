@@ -49,6 +49,7 @@ extern NSString *const TFPErrorGCodeLineKey;
 enum TFPErrorCodes {
 	TFPErrorCodeParseError = 1,
 	TFPErrorCodeIncompatibleCode,
+	TFPScriptExecutionError,
 };
 
 

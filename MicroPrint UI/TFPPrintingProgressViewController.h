@@ -15,5 +15,7 @@
 @property TFPPrintParameters *printParameters;
 
 - (void)start;
-@property (copy) void(^endHandler)();
+@property (copy) void(^endHandler)(BOOL didFinishPrint);
+
+- (NSString*)elapsedTimeString;
 @end

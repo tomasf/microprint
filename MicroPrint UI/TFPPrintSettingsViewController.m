@@ -16,12 +16,28 @@
 #import "TFPPrintingProgressViewController.h"
 #import "TFPGCodeHelpers.h"
 #import "Extras.h"
+#import "TFPScriptManager.h"
+@import QuartzCore;
+
+
+static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
+
 
 
 @interface TFPPrintSettingsViewController () <NSMenuDelegate>
 @property IBOutlet NSPopUpButton *printerMenuButton;
+@property IBOutlet NSPopUpButton *scriptMenuButton;
+
 @property IBOutlet NSTextField *temperatureTextField;
 @property IBOutlet NSTextField *dimensionsLabel;
+
+@property IBOutlet NSButton *printButton;
+
+@property IBOutlet NSView *advancedSettingsView;
+@property (nonatomic) BOOL showAdvancedSettings;
+@property IBOutlet NSLayoutConstraint *advancedSettingsConstraint;
+@property NSLayoutConstraint *basicSettingsConstraint;
+@property IBOutlet NSButton *advancedDisclosureButton;
 
 @property TFPPrinterManager *printerManager;
 
@@ -42,6 +58,15 @@
 }
 
 
+- (void)viewDidLoad {
+	[super viewDidLoad];
+	
+	self.basicSettingsConstraint = [NSLayoutConstraint constraintWithItem:self.printButton attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.printerMenuButton attribute:NSLayoutAttributeBottom multiplier:1 constant:20];
+	
+	[self setShowAdvancedSettings:[[NSUserDefaults standardUserDefaults] boolForKey:showAdvancedSettingsKey] animated:NO];
+}
+
+
 - (void)viewDidAppear {
 	[super viewDidAppear];
 	__weak __typeof__(self) weakSelf = self;
@@ -52,6 +77,8 @@
 	[self addObserver:self keyPath:@[@"document.temperature", @"document.filamentType"] options:NSKeyValueObservingOptionInitial block:^(MAKVONotification *notification) {
 		[weakSelf updateTemperaturePlaceholder];
 	}];
+	
+	[self updateScriptMenu];
 }
 
 
@@ -129,7 +156,21 @@
 	[self presentViewControllerAsSheet:viewController];
 	[viewController start];
 	
-	viewController.endHandler = ^{
+	viewController.endHandler = ^(BOOL didFinish){
+		if(didFinish && weakSelf.document.completionScriptURL) {
+			NSDictionary *error;
+			BOOL success = [[TFPScriptManager sharedManager] runScriptFile:weakSelf.document.completionScriptURL printName:self.document.displayName duration:weakSelf.printingProgressViewController.elapsedTimeString errorInfo:&error];
+			if(!success) {
+				NSMutableDictionary *userInfo = [NSMutableDictionary new];
+				userInfo[NSLocalizedDescriptionKey] = error[NSAppleScriptErrorMessage] ?: @"Script execution failed.";
+				if (error[NSAppleScriptErrorNumber]) {
+					userInfo[NSLocalizedRecoverySuggestionErrorKey] = [NSString stringWithFormat:@"AppleScript error %@", error[NSAppleScriptErrorNumber]];
+				}
+				NSError *error = [NSError errorWithDomain:TFPErrorDomain code:TFPScriptExecutionError userInfo:userInfo];
+				[weakSelf presentError:error];
+			}
+		}
+		
 		weakSelf.printingProgressViewController = nil;
 	};
 }
@@ -240,6 +281,106 @@
 		NSString *value = self.document.curaProfile[key];
 		return [self displayStringForProfileValue:value key:key];
 	}] componentsJoinedByString:@"\n"];
+}
+
+
+#pragma mark - Scripts
+
+
+- (NSMenuItem*)fileMenuItemForURL:(NSURL*)URL {
+	NSDictionary *resourceValues = [URL resourceValuesForKeys:@[NSURLEffectiveIconKey, NSURLLocalizedNameKey] error:nil];
+	NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:resourceValues[NSURLLocalizedNameKey] action:@selector(selectScriptFile:) keyEquivalent:@""];
+	item.target = self;
+	item.representedObject = URL;
+	
+	NSImage *image = [resourceValues[NSURLEffectiveIconKey] copy];
+	image.size = CGSizeMake(16, 16);
+	item.image = image;
+	
+	return item;
+}
+
+
+- (void)selectScriptFile:(NSMenuItem*)item {
+	self.document.completionScriptURL = item.representedObject;
+	[self updateScriptMenu];
+}
+
+
+- (void)chooseScript:(NSMenuItem*)item {
+	NSOpenPanel *panel = [[TFPScriptManager sharedManager] openPanelForSelectingScript];
+	[panel beginSheetModalForWindow:self.view.window completionHandler:^(NSInteger result) {
+		if(result == NSFileHandlingPanelOKButton) {
+			self.document.completionScriptURL = panel.URL;
+			[[TFPScriptManager sharedManager] addRecentScript:panel.URL];
+		}
+		[self updateScriptMenu];
+	}];
+}
+
+
+- (void)updateScriptMenu {
+	NSMenu *menu = [NSMenu new];
+	//menu.autoenablesItems = NO;
+	
+	NSMenuItem *selectedItem = [[NSMenuItem alloc] initWithTitle:@"None" action:@selector(selectScriptFile:) keyEquivalent:@""];
+	[menu addItem:selectedItem];
+	if(self.document.completionScriptURL) {
+		[menu addItem:[NSMenuItem separatorItem]];
+
+		NSMenuItem *item = [self fileMenuItemForURL:self.document.completionScriptURL];
+		[menu addItem:item];
+		selectedItem = item;
+	}
+	
+	NSArray *recents = [[TFPScriptManager sharedManager].recentScripts tf_rejectWithBlock:^BOOL(NSURL *recentURL) {
+		return [recentURL isEqual:self.document.completionScriptURL];
+	}];
+	
+	if(recents.count) {
+		[menu addItem:[NSMenuItem separatorItem]];
+		NSMenuItem *recentsHeader = [[NSMenuItem alloc] initWithTitle:@"Recent Scripts" action:NSSelectorFromString(@"something") keyEquivalent:@""];
+		recentsHeader.enabled = NO;
+		[menu addItem:recentsHeader];
+	}
+	
+	for(NSURL *recentURL in recents) {
+		[menu addItem:[self fileMenuItemForURL:recentURL]];
+	}
+	
+	
+	[menu addItem:[NSMenuItem separatorItem]];
+	[menu addItem:[[NSMenuItem alloc] initWithTitle:@"Choose…" action:@selector(chooseScript:) keyEquivalent:@""]];
+	
+	self.scriptMenuButton.menu = menu;
+	[self.scriptMenuButton selectItem:selectedItem];
+}
+
+
+- (void)setShowAdvancedSettings:(BOOL)showAdvancedSettings animated:(BOOL)animate {
+	self.showAdvancedSettings = showAdvancedSettings;
+	self.advancedDisclosureButton.state = showAdvancedSettings ? NSOnState : NSOffState;
+	[[NSUserDefaults standardUserDefaults] setBool:showAdvancedSettings forKey:showAdvancedSettingsKey];
+	
+	[self.view.window makeFirstResponder:nil];
+	
+	CGFloat advancedViewHeight = self.advancedSettingsView.frame.size.height;
+	CGFloat extraHeight = showAdvancedSettings ? 0 : -advancedViewHeight;
+	CGFloat margin = 20;
+	
+	[NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
+		context.duration = animate ? 0.25 : 0;
+		context.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+		
+		self.advancedSettingsConstraint.animator.constant = margin + extraHeight;
+		self.advancedSettingsView.animator.hidden = !showAdvancedSettings;
+	} completionHandler:nil];
+	
+}
+
+
+- (IBAction)toggleShowAdvanced:(id)sender {
+	[self setShowAdvancedSettings:!self.showAdvancedSettings animated:YES];
 }
 
 

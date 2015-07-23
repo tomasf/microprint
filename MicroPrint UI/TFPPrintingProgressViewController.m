@@ -75,14 +75,14 @@
 	self.printJob.abortionBlock = ^{
 		[weakSelf dismissController:nil];
 		if(weakSelf.endHandler) {
-			weakSelf.endHandler();
+			weakSelf.endHandler(NO);
 		}
 	};
 	
 	self.printJob.completionBlock = ^{
 		[weakSelf dismissController:nil];
 		if(weakSelf.endHandler) {
-			weakSelf.endHandler();
+			weakSelf.endHandler(YES);
 		}
 	};
 	
@@ -130,7 +130,7 @@
 		self.aborted = YES;
 		[self dismissController:nil];
 		if(weakSelf.endHandler) {
-			weakSelf.endHandler();
+			weakSelf.endHandler(NO);
 		}
 		return;
 	}

@@ -14,8 +14,10 @@
 @property (readonly) TFP3DVector *printSize;
 @property (readonly) NSDictionary *curaProfile;
 
-@property TFPPrinter *selectedPrinter;
 @property TFPFilamentType filamentType;
 @property NSNumber *temperature;
 @property BOOL useWaveBonding;
+
+@property TFPPrinter *selectedPrinter;
+@property NSURL *completionScriptURL;
 @end
