@@ -33,7 +33,7 @@ static const uint16_t M3DMicroUSBProductID = 0x2404;
 
 
 - (void)startDryRunMode {
-	self.printers = @[[TFPDryRunPrinter new]];
+	[[self mutableArrayValueForKey:@"printers"] addObject:[TFPDryRunPrinter new]];
 	[self identifyPrinters];
 }
 
@@ -49,12 +49,7 @@ static const uint16_t M3DMicroUSBProductID = 0x2404;
 
 - (NSArray*)printersForSerialPorts:(NSArray*)serialPorts {
 	return [[serialPorts tf_selectWithBlock:^BOOL(ORSSerialPort *port) {
-		uint16_t vendorID, productID;
-		if([port getUSBVendorID:&vendorID productID:&productID]) {
-			return vendorID == M3DMicroUSBVendorID && productID == M3DMicroUSBProductID;
-		}else{
-			return NO;
-		}
+		return port.USBVendorID.unsignedShortValue == M3DMicroUSBVendorID && port.USBProductID.unsignedShortValue == M3DMicroUSBProductID;
 	}] tf_mapWithBlock:^TFPPrinter*(ORSSerialPort *serialPort) {
 		return [[TFPPrinter alloc] initWithSerialPort:serialPort];
 	}];

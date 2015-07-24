@@ -59,6 +59,8 @@ static const NSInteger minimumPrintCodeOffsetForEstimation = 100;
 
 
 - (void)progressUpdate {
+	TFAssertMainThread();
+	
 	NSUInteger offset = self.printJob.completedRequests;
 	self.currentPhase = [self printPhaseForIndex:offset];
 	NSRange phaseRange = [self rangeForPrintPhase:self.currentPhase];

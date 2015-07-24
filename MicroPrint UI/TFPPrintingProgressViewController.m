@@ -69,10 +69,12 @@
 	};
 	
 	self.printJob.heatingProgressBlock = ^(double targetTemperature, double currentTemperature) {
+		TFAssertMainThread();
 		weakSelf.statusLabel.stringValue = [NSString stringWithFormat:@"Heating to %.0f: %d%%", targetTemperature, (int)((currentTemperature/targetTemperature)*100)];
 	};
 	
 	self.printJob.abortionBlock = ^{
+		TFAssertMainThread();
 		[weakSelf dismissController:nil];
 		if(weakSelf.endHandler) {
 			weakSelf.endHandler(NO);
@@ -80,6 +82,7 @@
 	};
 	
 	self.printJob.completionBlock = ^{
+		TFAssertMainThread();
 		[weakSelf dismissController:nil];
 		if(weakSelf.endHandler) {
 			weakSelf.endHandler(YES);
@@ -107,6 +110,8 @@
 	[self.progressIndicator startAnimation:nil];
 	
 	[self.printer fillInOffsetAndBacklashValuesInPrintParameters:params completionHandler:^(BOOL success) {
+		TFAssertMainThread();
+		
 		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
 			TFPGCodeProgram *program = [[TFPGCodeProgram alloc] initWithFileURL:self.GCodeFileURL error:nil];
 			program = [TFPPreprocessing programByPreprocessingProgram:program usingParameters:params];
