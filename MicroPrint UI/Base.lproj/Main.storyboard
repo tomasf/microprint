@@ -1091,10 +1091,10 @@ DQ
                                     </textField>
                                     <popUpButton verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="tWL-ek-LzW">
                                         <rect key="frame" x="188" y="-3" width="235" height="26"/>
-                                        <popUpButtonCell key="cell" type="push" title="Item 1" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" autoenablesItems="NO" selectedItem="q0t-zv-ETa" id="8ZS-Xm-XDZ">
+                                        <popUpButtonCell key="cell" type="push" title="Item 1" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="q0t-zv-ETa" id="8ZS-Xm-XDZ">
                                             <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="menu"/>
-                                            <menu key="menu" autoenablesItems="NO" id="A0x-aU-vB7">
+                                            <menu key="menu" id="A0x-aU-vB7">
                                                 <items>
                                                     <menuItem title="Item 1" state="on" id="q0t-zv-ETa"/>
                                                     <menuItem title="Item 2" id="8LW-ar-ea8"/>

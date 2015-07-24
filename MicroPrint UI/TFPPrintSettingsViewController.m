@@ -321,10 +321,11 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 
 - (void)updateScriptMenu {
 	NSMenu *menu = [NSMenu new];
-	//menu.autoenablesItems = NO;
 	
 	NSMenuItem *selectedItem = [[NSMenuItem alloc] initWithTitle:@"None" action:@selector(selectScriptFile:) keyEquivalent:@""];
+	selectedItem.target = self;
 	[menu addItem:selectedItem];
+	
 	if(self.document.completionScriptURL) {
 		[menu addItem:[NSMenuItem separatorItem]];
 
@@ -350,7 +351,9 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 	
 	
 	[menu addItem:[NSMenuItem separatorItem]];
-	[menu addItem:[[NSMenuItem alloc] initWithTitle:@"Choose…" action:@selector(chooseScript:) keyEquivalent:@""]];
+	NSMenuItem *chooseItem = [[NSMenuItem alloc] initWithTitle:@"Choose…" action:@selector(chooseScript:) keyEquivalent:@""];
+	chooseItem.target = self;
+	[menu addItem:chooseItem];
 	
 	self.scriptMenuButton.menu = menu;
 	[self.scriptMenuButton selectItem:selectedItem];
