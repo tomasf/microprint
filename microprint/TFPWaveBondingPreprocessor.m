@@ -152,6 +152,10 @@
 							newCode = [newCode codeBySettingField:'Y' toValue:relativeY - deltaY + (num27 - previousY)];
 						}
 						
+						if ([code hasField:'F'] && segment == 1) {
+							newCode = [newCode codeBySettingField:'F' toValue:[code valueForField:'F']];
+						}
+						
 						if (movesInXorY) {
 							newCode = [newCode codeBySettingField:'Z' toValue:relativeZ - deltaZ + (num28 - previousZ + self.currentAdjustmentZ)];
 							
