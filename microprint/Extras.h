@@ -30,11 +30,6 @@
 @end
 
 
-@interface ORSSerialPort (TFExtras)
-- (BOOL)getUSBVendorID:(uint16_t*)vendorID productID:(uint16_t*)productID;
-@end
-
-
 @interface NSIndexSet (TFExtras)
 + (NSIndexSet*)tf_indexSetWithIndexes:(NSInteger)firstIndex, ...; // Terminate with negative
 @end
@@ -61,3 +56,5 @@ extern CGFloat TFPVectorDot(CGVector a, CGVector b);
 extern void TFPListenForInputLine(void(^block)(NSString *line));
 extern NSString *TFPGetInputLine();
 extern void TFPEraseLastLine();
+
+extern void TFAssertMainThread();
