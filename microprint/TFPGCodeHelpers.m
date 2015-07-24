@@ -205,6 +205,61 @@ const double maxMMPerSecond = 60.001;
 }
 
 
+
+- (NSInteger)layerIndexFromComment {
+	if ([self.comment hasPrefix:@"LAYER:"]) {
+		return [[self.comment substringFromIndex:6] integerValue];
+	} else {
+		return NSNotFound;
+	}
+}
+
+
+- (BOOL)isStartOfPostamble {
+	return [self.comment isEqual:@"POSTAMBLE"];
+}
+
+
+- (BOOL)isEndLine {
+	return [self.comment isEqual:@"END"];
+}
+
+
+@end
+
+
+
+@interface TFPPrintLayer ()
+@property (readwrite) NSInteger layerIndex;
+@property (readwrite) TFPPrintPhase phase;
+@property (readwrite) NSRange lineRange;
+@property (readwrite) double minZ;
+@property (readwrite) double maxZ;
+@end
+
+
+@implementation TFPPrintLayer
+
+
+- (instancetype)init {
+	if(!(self = [super init])) return nil;
+	
+	self.minZ = INFINITY;
+	self.maxZ = -INFINITY;
+	
+	return self;
+}
+
+
+- (NSString *)description {
+	NSArray *phases = @[@"invalid", @"preamble", @"adhesion", @"model", @"postamble"];
+	return [NSString stringWithFormat:@"Layer %ld (%@), lines %d - %d, Z %.02f - %.02f",
+			(long)self.layerIndex, phases[self.phase],
+			(int)self.lineRange.location+1, (int)(self.lineRange.location + self.lineRange.length),
+			self.minZ, self.maxZ];
+}
+
+
 @end
 
 
@@ -227,7 +282,6 @@ const double maxMMPerSecond = 60.001;
 			
 			minZ = MIN(MIN(minZ, from.z), to.z);
 			maxZ = MAX(MAX(maxZ, from.z), to.z);
-			
 		}
 	}];
 	
@@ -406,10 +460,9 @@ const double maxMMPerSecond = 60.001;
 			return;
 		}
 		NSRange range = NSMakeRange(startLine, index-startLine);
+		NSInteger layerIndex = code.layerIndexFromComment;
 		
-		if([code.comment hasPrefix:@"LAYER:"]) {
-			NSInteger layerIndex = [[code.comment substringFromIndex:6] integerValue];
-			
+		if(layerIndex != NSNotFound) {
 			if(phase == TFPPrintPhasePreamble) {
 				phaseRanges[@(TFPPrintPhasePreamble)] = [NSValue valueWithRange:range];
 				
@@ -419,16 +472,17 @@ const double maxMMPerSecond = 60.001;
 					phase = TFPPrintPhaseModel;
 				}
 				startLine = index;
+				
 			}else if(phase == TFPPrintPhaseAdhesion && layerIndex >= 0) {
 				phaseRanges[@(TFPPrintPhaseAdhesion)] = [NSValue valueWithRange:range];
 				phase = TFPPrintPhaseModel;
 				startLine = index;
 			}
-		}else if([code.comment isEqual:@"POSTAMBLE"]) {
+		}else if([code isStartOfPostamble]) {
 			phaseRanges[@(TFPPrintPhaseModel)] = [NSValue valueWithRange:range];
 			phase = TFPPrintPhasePostamble;
 			startLine = index;
-		}else if([code.comment isEqual:@"END"]) {
+		}else if([code isEndLine]) {
 			phaseRanges[@(TFPPrintPhasePostamble)] = [NSValue valueWithRange:range];
 		}
 	}];
@@ -437,4 +491,48 @@ const double maxMMPerSecond = 60.001;
 }
 
 
+- (NSArray*)determineLayers {
+	NSMutableArray *layers = [NSMutableArray new];
+	__block TFPPrintLayer *currentLayer;
+	
+	[self.lines enumerateObjectsUsingBlock:^(TFPGCode *code, NSUInteger index, BOOL *stop) {
+		NSInteger layerIndex = code.layerIndexFromComment;
+		if(layerIndex != NSNotFound) {
+			if(currentLayer) {
+				NSUInteger start = currentLayer.lineRange.location;
+				currentLayer.lineRange = NSMakeRange(start, index - start);
+			}
+			
+			currentLayer = [TFPPrintLayer new];
+			currentLayer.layerIndex = layerIndex;
+			currentLayer.lineRange = NSMakeRange(index, 0);
+			currentLayer.phase = (layerIndex < 0) ? TFPPrintPhaseAdhesion : TFPPrintPhaseModel;
+			
+			[layers addObject:currentLayer];
+		}
+		
+		if(currentLayer && ([code isStartOfPostamble] || [code isEndLine])) {
+			NSUInteger start = currentLayer.lineRange.location;
+			currentLayer.lineRange = NSMakeRange(start, index - start);
+			currentLayer = nil;
+		}
+		
+		if(currentLayer && [code hasField:'Z']) {
+			double Z = [code valueForField:'Z'];
+			currentLayer.minZ = MIN(currentLayer.minZ, Z);
+			currentLayer.maxZ = MAX(currentLayer.maxZ, Z);
+		}
+	}];
+	
+	if(currentLayer) {
+		NSUInteger start = currentLayer.lineRange.location;
+		currentLayer.lineRange = NSMakeRange(start, self.lines.count - 1 - start);
+	}
+	
+	return layers;
+}
+
+
 @end
+
+

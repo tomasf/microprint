@@ -57,6 +57,8 @@
 
 // Utilities
 + (NSDictionary*)dictionaryFromResponseValueString:(NSString*)string;
+
+@property (readonly) NSInteger layerIndexFromComment;
 @end
 
 
@@ -67,6 +69,15 @@ typedef NS_ENUM(NSUInteger, TFPPrintPhase) {
 	TFPPrintPhaseModel,
 	TFPPrintPhasePostamble,
 };
+
+
+@interface TFPPrintLayer : NSObject
+@property (readonly) NSInteger layerIndex;
+@property (readonly) TFPPrintPhase phase;
+@property (readonly) NSRange lineRange;
+@property (readonly) double minZ;
+@property (readonly) double maxZ;
+@end
 
 
 
@@ -82,4 +93,5 @@ typedef NS_ENUM(NSUInteger, TFPPrintPhase) {
 // Values are NSValue-wrapped NSRanges
 - (NSDictionary*)determinePhaseRanges;
 
+- (NSArray*)determineLayers;
 @end
