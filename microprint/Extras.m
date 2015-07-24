@@ -161,58 +161,6 @@ NSString *const TFPErrorGCodeLineKey = @"GCodeLine";
 @end
 
 
-
-
-#import "ORSSerialPort.h"
-#import <IOKit/usb/USB.h>
-#import <IOKit/usb/IOUSBLib.h>
-#import <IOKit/serial/IOSerialKeys.h>
-
-
-@implementation ORSSerialPort (TFExtras)
-
-
-// Return value must be released with IOObjectRelease
-static io_object_t IOEntryAncestorConformingTo(io_object_t object, const io_name_t className) {
-	IOObjectRetain(object); // released later
-	
-	for(;;) {
-		io_object_t parent = 0;
-		IORegistryEntryGetParentEntry(object, kIOServicePlane, &parent);
-		IOObjectRelease(object);
-		if(!parent) {
-			break;
-		}
-		if(IOObjectConformsTo(parent, className)) {
-			return parent;
-		}
-		object = parent;
-	}
-	return 0;
-}
-
-
-
-- (BOOL)getUSBVendorID:(uint16_t*)vendorID productID:(uint16_t*)productID {
-	io_object_t USBInterface = IOEntryAncestorConformingTo(self.IOKitDevice, kIOUSBInterfaceClassName);
-	if(!USBInterface) {
-		return NO;
-	}
-	
-	NSNumber *vendorIDNumber = CFBridgingRelease(IORegistryEntryCreateCFProperty(USBInterface, CFSTR(kUSBVendorID), kCFAllocatorDefault, 0));
-	NSNumber *productIDNumber = CFBridgingRelease(IORegistryEntryCreateCFProperty(USBInterface, CFSTR(kUSBProductID), kCFAllocatorDefault, 0));
-	
-	*vendorID = vendorIDNumber.unsignedShortValue;
-	*productID = productIDNumber.unsignedShortValue;
-	
-	IOObjectRelease(USBInterface);
-	return vendorIDNumber && productIDNumber;
-}
-
-
-@end
-
-
 @implementation NSIndexSet (TFExtras)
 
 
@@ -284,4 +232,9 @@ NSString *TFPGetInputLine() {
 
 void TFPEraseLastLine() {
 	printf("\x1b[A\x1b[K");
+}
+
+
+void TFAssertMainThread() {
+	NSCAssert([NSThread isMainThread], @"Whoa. This should be on the main thread but isn't!");
 }

@@ -31,6 +31,7 @@
 #import <sys/param.h>
 #import <sys/filio.h>
 #import <sys/ioctl.h>
+#import <IOKit/usb/IOUSBLib.h>
 
 #if !__has_feature(objc_arc)
 #error ORSSerialPort.m must be compiled with ARC. Either turn on ARC for the project or set the -fobjc-arc flag for ORSSerialPort.m in the Build Phases for this target
@@ -61,6 +62,9 @@ static __strong NSMutableArray *allSerialPorts;
 @property (readwrite) io_object_t IOKitDevice;
 @property int fileDescriptor;
 @property (copy, readwrite) NSString *name;
+
+@property (copy, readwrite) NSNumber *USBVendorID;
+@property (copy, readwrite) NSNumber *USBProductID;
 
 @property (strong) NSMutableData *receiveBuffer;
 
@@ -173,6 +177,7 @@ static __strong NSMutableArray *allSerialPorts;
 		self.requestHandlingQueue = dispatch_queue_create("com.openreelsoftware.ORSSerialPort.requestHandlingQueue", 0);
 		self.requestsQueue = [NSMutableArray array];
 		self.selectSemaphore = dispatch_semaphore_create(1);
+		self.delegateQueue = dispatch_get_main_queue();
 		self.baudRate = @B19200;
 		self.allowsNonStandardBaudRates = NO;
 		self.numberOfStopBits = 1;
@@ -183,6 +188,9 @@ static __strong NSMutableArray *allSerialPorts;
 		self.usesDCDOutputFlowControl = NO;
 		self.RTS = NO;
 		self.DTR = NO;
+		
+		self.USBVendorID = CFBridgingRelease(IORegistryEntrySearchCFProperty(device, kIOServicePlane, CFSTR(kUSBVendorID), kCFAllocatorDefault, kIORegistryIterateRecursively | kIORegistryIterateParents));
+		self.USBProductID = CFBridgingRelease(IORegistryEntrySearchCFProperty(device, kIOServicePlane, CFSTR(kUSBProductID), kCFAllocatorDefault, kIORegistryIterateRecursively | kIORegistryIterateParents));
 	}
 	
 	[[self class] addSerialPort:self];
@@ -237,8 +245,6 @@ static __strong NSMutableArray *allSerialPorts;
 {
 	if (self.isOpen) return;
 	
-	dispatch_queue_t mainQueue = dispatch_get_main_queue();
-	
 	int descriptor=0;
 	descriptor = open([self.path cStringUsingEncoding:NSASCIIStringEncoding], O_RDWR | O_NOCTTY | O_EXLOCK | O_NONBLOCK);
 	if (descriptor < 1)
@@ -281,7 +287,7 @@ static __strong NSMutableArray *allSerialPorts;
 	
 	if ([self.delegate respondsToSelector:@selector(serialPortWasOpened:)])
 	{
-		dispatch_async(mainQueue, ^{
+		dispatch_async(self.delegateQueue, ^{
 			[self.delegate serialPortWasOpened:self];
 		});
 	}
@@ -339,11 +345,15 @@ static __strong NSMutableArray *allSerialPorts;
 		int result = ioctl(self.fileDescriptor, TIOCMGET, &modemLines);
 		if (result < 0)
 		{
-			[self notifyDelegateOfPosixErrorWaitingUntilDone:(errno == ENXIO)];
-			if (errno == ENXIO)
-			{
-				[self cleanupAfterSystemRemoval];
-			}
+			BOOL isENXIO = (errno == ENXIO);
+			
+			[self notifyDelegateOfPosixErrorWithCompletionBlock:^{
+				if(isENXIO) {
+					dispatch_async(pollQueue, ^{
+						[self cleanupAfterSystemRemoval];
+					});
+				}
+			}];
 			return;
 		}
 		
@@ -352,11 +362,11 @@ static __strong NSMutableArray *allSerialPorts;
 		BOOL DCDPin = (modemLines & TIOCM_CAR) != 0;
 		
 		if (CTSPin != self.CTS)
-			dispatch_sync(mainQueue, ^{self.CTS = CTSPin;});
+			dispatch_sync(self.delegateQueue, ^{self.CTS = CTSPin;});
 		if (DSRPin != self.DSR)
-			dispatch_sync(mainQueue, ^{self.DSR = DSRPin;});
+			dispatch_sync(self.delegateQueue, ^{self.DSR = DSRPin;});
 		if (DCDPin != self.DCD)
-			dispatch_sync(mainQueue, ^{self.DCD = DCDPin;});
+			dispatch_sync(self.delegateQueue, ^{self.DCD = DCDPin;});
 	});
 	self.pinPollTimer = timer;
 	dispatch_resume(self.pinPollTimer);
@@ -396,7 +406,9 @@ static __strong NSMutableArray *allSerialPorts;
 	
 	if ([self.delegate respondsToSelector:@selector(serialPortWasClosed:)])
 	{
-		[(id)self.delegate performSelectorOnMainThread:@selector(serialPortWasClosed:) withObject:self waitUntilDone:YES];
+		dispatch_sync(self.delegateQueue, ^{
+			[self.delegate serialPortWasClosed:self];
+		});
 		dispatch_async(self.requestHandlingQueue, ^{
 			self.requestsQueue = [NSMutableArray array]; // Cancel all queued requests
 			self.pendingRequest = nil; // Discard pending request
@@ -415,7 +427,9 @@ static __strong NSMutableArray *allSerialPorts;
 {
 	if ([self.delegate respondsToSelector:@selector(serialPortWasRemovedFromSystem:)])
 	{
-		[(id)self.delegate performSelectorOnMainThread:@selector(serialPortWasRemovedFromSystem:) withObject:self waitUntilDone:YES];
+		dispatch_sync(self.delegateQueue, ^{
+			[self.delegate serialPortWasRemovedFromSystem:self];
+		});
 	}
 	[self close];
 }
@@ -508,7 +522,7 @@ static __strong NSMutableArray *allSerialPorts;
 		return;
 	}
 	
-	dispatch_async(dispatch_get_main_queue(), ^{
+	dispatch_async(self.delegateQueue, ^{
 		[self.delegate serialPort:self requestDidTimeout:request];
 		dispatch_async(self.requestHandlingQueue, ^{
 			[self sendNextRequest];
@@ -525,7 +539,7 @@ static __strong NSMutableArray *allSerialPorts;
 	self.pendingRequestTimeoutTimer = nil;
 	ORSSerialRequest *request = self.pendingRequest;
 	
-	dispatch_async(dispatch_get_main_queue(), ^{
+	dispatch_async(self.delegateQueue, ^{
 		if ([responseData length] &&
 			[self.delegate respondsToSelector:@selector(serialPort:didReceiveResponse:toRequest:)])
 		{
@@ -542,7 +556,7 @@ static __strong NSMutableArray *allSerialPorts;
 {
 	if ([self.delegate respondsToSelector:@selector(serialPort:didReceiveData:)])
 	{
-		dispatch_async(dispatch_get_main_queue(), ^{
+		dispatch_async(self.delegateQueue, ^{
 			[self.delegate serialPort:self didReceiveData:data];
 		});
 	}
@@ -694,10 +708,10 @@ static __strong NSMutableArray *allSerialPorts;
 
 - (void)notifyDelegateOfPosixError
 {
-	[self notifyDelegateOfPosixErrorWaitingUntilDone:NO];
+	[self notifyDelegateOfPosixErrorWithCompletionBlock:nil];
 }
 
-- (void)notifyDelegateOfPosixErrorWaitingUntilDone:(BOOL)shouldWait;
+- (void)notifyDelegateOfPosixErrorWithCompletionBlock:(void(^)())completionBlock;
 {
 	if (![self.delegate respondsToSelector:@selector(serialPort:didEncounterError:)]) return;
 	
@@ -707,17 +721,12 @@ static __strong NSMutableArray *allSerialPorts;
 										 code:errno
 									 userInfo:errDict];
 	
-	void (^notifyBlock)(void) = ^{
+	dispatch_async(self.delegateQueue, ^{
 		[self.delegate serialPort:self didEncounterError:error];
-	};
-	
-	if ([NSThread isMainThread]) {
-		notifyBlock();
-	} else if (shouldWait) {
-		dispatch_sync(dispatch_get_main_queue(), notifyBlock);
-	} else {
-		dispatch_async(dispatch_get_main_queue(), notifyBlock);
-	}
+		if(completionBlock) {
+			completionBlock();
+		}
+	});
 }
 
 #pragma mark - Properties
