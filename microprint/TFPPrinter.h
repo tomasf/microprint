@@ -65,4 +65,6 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 @property (readonly) double heaterTemperature; // Observable
 @property BOOL verboseMode;
 @property (readonly) BOOL pendingConnection;
+
+@property (readonly) double speedMultiplier;
 @end

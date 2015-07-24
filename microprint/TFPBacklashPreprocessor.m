@@ -73,6 +73,7 @@ typedef NS_ENUM(NSUInteger, Direction) {
 				(yDirection != lastYDirection && lastYDirection != DirectionNeither))
 			{
 				TFPGCode *adjustmentCode = [TFPGCode codeWithField:'G' value:G];
+				adjustmentCode = [adjustmentCode codeBySettingComment:@"BACKLASH"];
 
 				if (xDirection != lastXDirection && lastXDirection != DirectionNeither)
 				{

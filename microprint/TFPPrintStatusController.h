@@ -21,4 +21,9 @@
 @property (readonly) double printProgress;
 @property (readonly) TFPPrintPhase currentPhase;
 @property (readonly) double phaseProgress;
+@property (readonly) TFPPrintLayer *currentLayer;
+@property (readonly) NSUInteger layerCount;
+
+@property (copy) void(^willMoveHandler)(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate, TFPGCode *code);
+@property (copy) void(^layerChangeHandler)();
 @end

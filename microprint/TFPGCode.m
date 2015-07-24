@@ -103,6 +103,11 @@ const char *canonicalFieldOrder = "NMGXYZE FTSP    IJRD";
 }
 
 
+- (TFPGCode*)codeBySettingComment:(NSString*)comment {
+	return [[self.class alloc] initWithFields:self.fields comment:comment];
+}
+
+
 - (TFPGCode*)codeByAdjustingField:(char)field offset:(double)offset {
 	return [self codeBySettingField:field toValue:[self valueForField:field]+offset];
 }
@@ -187,7 +192,7 @@ const char *canonicalFieldOrder = "NMGXYZE FTSP    IJRD";
 	}
 	
 	if(self.comment) {
-		[items addObject:[NSString stringWithFormat:@"; %@", self.comment]];
+		[items addObject:[NSString stringWithFormat:@";%@", self.comment]];
 	}
 	
 	return [items componentsJoinedByString:@" "];

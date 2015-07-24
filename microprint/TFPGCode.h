@@ -16,6 +16,7 @@
 
 - (TFPGCode*)codeBySettingField:(char)field toValue:(double)value;
 - (TFPGCode*)codeByAdjustingField:(char)field offset:(double)offset;
+- (TFPGCode*)codeBySettingComment:(NSString*)comment;
 
 @property (readonly, copy) NSString *comment;
 

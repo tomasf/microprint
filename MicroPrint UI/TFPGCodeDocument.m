@@ -15,7 +15,8 @@
 
 
 @interface TFPGCodeDocument ()
-@property (readwrite) TFP3DVector *printSize;
+@property (readwrite) TFPCuboid boundingBox;
+@property (readwrite) BOOL hasBoundingBox;
 @property (readwrite) NSDictionary *curaProfile;
 
 @property NSWindowController *loadingWindowController;
@@ -76,9 +77,10 @@
 	stopLoading();
 	
 	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-		TFP3DVector *size = [program measureSize];
+		TFPCuboid boundingBox = [program measureBoundingBox];
 		dispatch_async(dispatch_get_main_queue(), ^{
-			self.printSize = size;
+			self.boundingBox = boundingBox;
+			self.hasBoundingBox = YES;
 		});
 		
 		NSDictionary *profile = [program curaProfileValues];

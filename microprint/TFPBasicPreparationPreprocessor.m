@@ -37,15 +37,16 @@
 	];
 	
 	double raiseHeight;
-	if(parameters.maxZ >= 110) {
+	double maxZ = parameters.boundingBox.z + parameters.boundingBox.zSize;
+	if(maxZ >= 110) {
 		raiseHeight = 0;
-	}else if(parameters.maxZ >= 25) {
+	}else if(maxZ >= 25) {
 		raiseHeight = 3;
 	}else{
-		raiseHeight = 25 + 3 - parameters.maxZ;
+		raiseHeight = 25 + 3 - maxZ;
 	}
 	
-	TFP3DVector *backPosition = (parameters.maxZ > 60) ? [TFP3DVector xyVectorWithX:90 y:84] : [TFP3DVector xyVectorWithX:95 y:95];
+	TFP3DVector *backPosition = (maxZ > 60) ? [TFP3DVector xyVectorWithX:90 y:84] : [TFP3DVector xyVectorWithX:95 y:95];
 	
 	NSArray *postamble =
 	@[

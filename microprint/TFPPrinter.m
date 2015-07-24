@@ -502,6 +502,10 @@
 }
 
 
+- (double)speedMultiplier {
+	return 1;
+}
+
 
 #pragma mark - Serial port delegate
 

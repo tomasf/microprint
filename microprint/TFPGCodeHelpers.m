@@ -267,7 +267,7 @@ const double maxMMPerSecond = 60.001;
 @implementation TFPGCodeProgram (TFPHelpers)
 
 
-- (TFP3DVector*)measureSize {
+- (TFPCuboid)measureBoundingBox {
 	__block double minX = 10000, maxX = 0;
 	__block double minY = 10000, maxY = 0;
 	__block double minZ = 10000, maxZ = 0;
@@ -285,7 +285,14 @@ const double maxMMPerSecond = 60.001;
 		}
 	}];
 	
-	return [TFP3DVector vectorWithX:@(maxX-minX) Y:@(maxY-minY) Z:@(maxZ-minZ)];
+	return (TFPCuboid) {
+		.x = minX,
+		.y = minY,
+		.z = minZ,
+		.xSize = maxX-minX,
+		.ySize = maxY-minY,
+		.zSize = maxZ-minZ
+	};
 }
 
 

@@ -83,7 +83,7 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 
 
 - (NSString*)printDimensionsString {
-	if(self.document.printSize) {
+	if(self.document.boundingBox.xSize > 0) {
 		NSNumberFormatter *formatter = [NSNumberFormatter new];
 		formatter.positiveSuffix = @" mm";
 		formatter.minimumFractionDigits = 2;
@@ -91,9 +91,9 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 		formatter.minimumIntegerDigits = 1;
 		
 		return [NSString stringWithFormat:@"X:  %@\nY:  %@\nZ:  %@",
-				[formatter stringFromNumber:self.document.printSize.x],
-				[formatter stringFromNumber:self.document.printSize.y],
-				[formatter stringFromNumber:self.document.printSize.z]];
+				[formatter stringFromNumber:@(self.document.boundingBox.xSize)],
+				[formatter stringFromNumber:@(self.document.boundingBox.ySize)],
+				[formatter stringFromNumber:@(self.document.boundingBox.zSize)]];
 		
 	}else{
 		return @"Measuring…\n\n";;
@@ -102,7 +102,7 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 
 
 + (NSSet *)keyPathsForValuesAffectingPrintDimensionsString {
-	return @[@"document.printSize"].tf_set;
+	return @[@"document.hasBoundingBox"].tf_set;
 }
 
 
@@ -132,7 +132,7 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 
 - (TFPPrintParameters*)printParameters {
 	TFPPrintParameters *parameters = [TFPPrintParameters new];
-	parameters.maxZ = self.document.printSize.z.doubleValue;
+	parameters.boundingBox = self.document.boundingBox;
 	
 	parameters.filament = [TFPFilament filamentForType:self.document.filamentType];
 	if(self.document.temperature) {
@@ -177,12 +177,12 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 
 
 - (BOOL)canPrint {
-	return self.document.selectedPrinter != nil && self.document.printSize != nil;
+	return self.document.selectedPrinter != nil && self.document.boundingBox.xSize > 0;
 }
 
 
 + (NSSet *)keyPathsForValuesAffectingCanPrint {
-	return @[@"document.selectedPrinter", @"document.printSize"].tf_set;
+	return @[@"document.selectedPrinter", @"document.hasBoundingBox"].tf_set;
 }
 
 

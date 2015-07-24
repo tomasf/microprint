@@ -7,6 +7,7 @@
 
 @import Foundation;
 #import "TFPFilament.h"
+#import "TFPGCodeHelpers.h"
 
 
 typedef struct {
@@ -35,7 +36,7 @@ extern NSString *TFPBacklashValuesDescription(TFPBacklashValues values);
 
 @property (readwrite) TFPFilament *filament;
 @property (readwrite, nonatomic) double idealTemperature;
-@property (readwrite) double maxZ;
+@property (readwrite) TFPCuboid boundingBox;
 
 @property (readwrite) TFPBedLevelOffsets bedLevelOffsets;
 @property (readwrite) TFPBacklashValues backlashValues;

@@ -21,6 +21,7 @@ static const NSInteger minimumPrintCodeOffsetForEstimation = 100;
 
 @property TFTimer *timer;
 @property NSDictionary *phaseRanges;
+@property NSArray *layers;
 @property uint64_t printContentStartTime;
 
 @property (readwrite) NSTimeInterval elapsedTime;
@@ -30,6 +31,13 @@ static const NSInteger minimumPrintCodeOffsetForEstimation = 100;
 @property (readwrite) double printProgress;
 @property (readwrite) TFPPrintPhase currentPhase;
 @property (readwrite) double phaseProgress;
+@property (readwrite) NSUInteger layerCount;
+@property (readwrite) TFPPrintLayer *currentLayer;
+
+// Live state
+@property BOOL relativeMode;
+@property TFPAbsolutePosition position;
+@property double feedRate;
 @end
 
 
@@ -45,6 +53,9 @@ static const NSInteger minimumPrintCodeOffsetForEstimation = 100;
 	
 	self.printJob = printJob;
 	self.phaseRanges = [self.printJob.program determinePhaseRanges];
+	self.layers = [self.printJob.program determineLayers];
+	
+	self.layerCount = [[self.layers valueForKeyPath:@"@max.layerIndex"] integerValue]+1;
 	
 	self.timer = [TFTimer timerWithInterval:1 repeating:YES block:^{
 		[weakSelf periodicalUpdate];
@@ -93,6 +104,66 @@ static const NSInteger minimumPrintCodeOffsetForEstimation = 100;
 	}else{
 		self.hasRemainingTimeEstimate = NO;
 	}
+	
+	NSInteger previousCodeIndex = (NSInteger)self.printJob.completedRequests - 1;
+	NSUInteger nextCodeIndex = self.printJob.completedRequests;
+	
+	if(previousCodeIndex >= 0) {
+		TFPGCode *previousCode = self.printJob.program.lines[previousCodeIndex];
+		NSInteger G = [previousCode valueForField:'G' fallback:-1];
+		if(G == 90) {
+			self.relativeMode = NO;
+		}else if(G == 91) {
+			self.relativeMode = YES;
+		}
+	}
+	
+	if(nextCodeIndex < self.printJob.program.lines.count) {
+		TFPGCode *upcomingCode = self.printJob.program.lines[nextCodeIndex];
+		
+		TFPAbsolutePosition newPosition = self.position;
+		double newF = self.feedRate;
+		TFP3DVector *vector = upcomingCode.movementVector;
+
+		if(self.relativeMode) {
+			newPosition.x += vector.x.doubleValue;
+			newPosition.y += vector.y.doubleValue;
+			newPosition.z += vector.z.doubleValue;
+			newPosition.e += [upcomingCode valueForField:'E' fallback:0];
+		} else {
+			newPosition.x = vector.x ? vector.x.doubleValue : newPosition.x;
+			newPosition.y = vector.y ? vector.y.doubleValue : newPosition.y;
+			newPosition.z = vector.z ? vector.z.doubleValue : newPosition.z;
+			newPosition.e = [upcomingCode valueForField:'E' fallback:newPosition.e];
+		}
+		
+		newF = [upcomingCode valueForField:'F' fallback:newF];
+		
+		if(self.willMoveHandler) {
+			self.willMoveHandler(self.position, newPosition, newF, upcomingCode);
+		}
+		
+		if(upcomingCode.layerIndexFromComment != NSNotFound) {
+			self.currentLayer = [self printLayerForOffset:nextCodeIndex];
+
+			if(self.layerChangeHandler) {
+				self.layerChangeHandler();
+			}
+		}
+		
+		self.feedRate = newF;
+		self.position = newPosition;
+	}
+}
+
+
+- (TFPPrintLayer*)printLayerForOffset:(NSUInteger)offset {
+	for(TFPPrintLayer *layer in self.layers) {
+		if(NSLocationInRange(offset, layer.lineRange)) {
+			return layer;
+		}
+	}
+	return nil;
 }
 
 

@@ -8,10 +8,14 @@
 
 #import <Cocoa/Cocoa.h>
 #import "TFPFilament.h"
+#import "TFPGCodeHelpers.h"
+
 @class TFP3DVector, TFPPrinter;
 
+
 @interface TFPGCodeDocument : NSDocument
-@property (readonly) TFP3DVector *printSize;
+@property (readonly) BOOL hasBoundingBox;
+@property (readonly) TFPCuboid boundingBox;
 @property (readonly) NSDictionary *curaProfile;
 
 @property TFPFilamentType filamentType;

@@ -80,9 +80,18 @@ typedef NS_ENUM(NSUInteger, TFPPrintPhase) {
 @end
 
 
+typedef struct {
+	double x;
+	double y;
+	double z;
+	double xSize;
+	double ySize;
+	double zSize;
+} TFPCuboid;
+
 
 @interface TFPGCodeProgram (TFPHelpers)
-- (TFP3DVector*)measureSize;
+- (TFPCuboid)measureBoundingBox;
 
 - (void)enumerateMovesWithBlock:(void(^)(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate, TFPGCode *code, NSUInteger index))block;
 
