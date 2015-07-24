@@ -395,4 +395,46 @@ const double maxMMPerSecond = 60.001;
 }
 
 
+
+- (NSDictionary*)determinePhaseRanges {
+	__block TFPPrintPhase phase = TFPPrintPhasePreamble;
+	__block NSUInteger startLine = 0;
+	NSMutableDictionary *phaseRanges = [NSMutableDictionary new];
+	
+	[self.lines enumerateObjectsUsingBlock:^(TFPGCode *code, NSUInteger index, BOOL *stop) {
+		if(!code.comment) {
+			return;
+		}
+		NSRange range = NSMakeRange(startLine, index-startLine);
+		
+		if([code.comment hasPrefix:@"LAYER:"]) {
+			NSInteger layerIndex = [[code.comment substringFromIndex:6] integerValue];
+			
+			if(phase == TFPPrintPhasePreamble) {
+				phaseRanges[@(TFPPrintPhasePreamble)] = [NSValue valueWithRange:range];
+				
+				if(layerIndex < 0) {
+					phase = TFPPrintPhaseAdhesion;
+				}else{
+					phase = TFPPrintPhaseModel;
+				}
+				startLine = index;
+			}else if(phase == TFPPrintPhaseAdhesion && layerIndex >= 0) {
+				phaseRanges[@(TFPPrintPhaseAdhesion)] = [NSValue valueWithRange:range];
+				phase = TFPPrintPhaseModel;
+				startLine = index;
+			}
+		}else if([code.comment isEqual:@"POSTAMBLE"]) {
+			phaseRanges[@(TFPPrintPhaseModel)] = [NSValue valueWithRange:range];
+			phase = TFPPrintPhasePostamble;
+			startLine = index;
+		}else if([code.comment isEqual:@"END"]) {
+			phaseRanges[@(TFPPrintPhasePostamble)] = [NSValue valueWithRange:range];
+		}
+	}];
+	
+	return phaseRanges;
+}
+
+
 @end

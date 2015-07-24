@@ -60,6 +60,15 @@
 @end
 
 
+typedef NS_ENUM(NSUInteger, TFPPrintPhase) {
+	TFPPrintPhaseInvalid,
+	TFPPrintPhasePreamble,
+	TFPPrintPhaseAdhesion,
+	TFPPrintPhaseModel,
+	TFPPrintPhasePostamble,
+};
+
+
 
 @interface TFPGCodeProgram (TFPHelpers)
 - (TFP3DVector*)measureSize;
@@ -68,4 +77,9 @@
 
 - (BOOL)validateForM3D:(NSError**)error;
 - (NSDictionary*)curaProfileValues;
+
+// Keys are NSNumber-wrapped TFPPrintPhases
+// Values are NSValue-wrapped NSRanges
+- (NSDictionary*)determinePhaseRanges;
+
 @end

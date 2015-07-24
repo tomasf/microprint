@@ -8,16 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "TFPPrintJob.h"
-
-
-typedef NS_ENUM(NSUInteger, TFPPrintPhase) {
-	TFPPrintPhaseInvalid,
-	TFPPrintPhasePreamble,
-	TFPPrintPhaseAdhesion,
-	TFPPrintPhaseModel,
-	TFPPrintPhasePostamble,
-};
-
+#import "TFPGCodeHelpers.h"
 
 @interface TFPPrintStatusController : NSObject
 - (instancetype)initWithPrintJob:(TFPPrintJob*)printJob;

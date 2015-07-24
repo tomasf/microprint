@@ -20,7 +20,7 @@ static const NSInteger minimumPrintCodeOffsetForEstimation = 100;
 @property TFPPrintJob *printJob;
 
 @property TFTimer *timer;
-@property NSMutableDictionary *phaseRanges;
+@property NSDictionary *phaseRanges;
 @property uint64_t printContentStartTime;
 
 @property (readwrite) NSTimeInterval elapsedTime;
@@ -44,7 +44,7 @@ static const NSInteger minimumPrintCodeOffsetForEstimation = 100;
 	NSParameterAssert(printJob != nil);
 	
 	self.printJob = printJob;
-	[self determinePhaseRanges];
+	self.phaseRanges = [self.printJob.program determinePhaseRanges];
 	
 	self.timer = [TFTimer timerWithInterval:1 repeating:YES block:^{
 		[weakSelf periodicalUpdate];
@@ -96,47 +96,6 @@ static const NSInteger minimumPrintCodeOffsetForEstimation = 100;
 
 - (void)periodicalUpdate {
 	self.elapsedTime = self.printJob.elapsedTime;
-}
-
-
-- (void)determinePhaseRanges {
-	__block TFPPrintPhase phase = TFPPrintPhasePreamble;
-	__block NSUInteger startLine = 0;
-	NSMutableDictionary *phaseRanges = [NSMutableDictionary new];
-	
-	[self.printJob.program.lines enumerateObjectsUsingBlock:^(TFPGCode *code, NSUInteger index, BOOL *stop) {
-		if(!code.comment) {
-			return;
-		}
-		NSRange range = NSMakeRange(startLine, index-startLine);
-		
-		if([code.comment hasPrefix:@"LAYER:"]) {
-			NSInteger layerIndex = [[code.comment substringFromIndex:6] integerValue];
-			
-			if(phase == TFPPrintPhasePreamble) {
-				phaseRanges[@(TFPPrintPhasePreamble)] = [NSValue valueWithRange:range];
-				
-				if(layerIndex < 0) {
-					phase = TFPPrintPhaseAdhesion;
-				}else{
-					phase = TFPPrintPhaseModel;
-				}
-				startLine = index;
-			}else if(phase == TFPPrintPhaseAdhesion && layerIndex >= 0) {
-				phaseRanges[@(TFPPrintPhaseAdhesion)] = [NSValue valueWithRange:range];
-				phase = TFPPrintPhaseModel;
-				startLine = index;
-			}
-		}else if([code.comment isEqual:@"POSTAMBLE"]) {
-			phaseRanges[@(TFPPrintPhaseModel)] = [NSValue valueWithRange:range];
-			phase = TFPPrintPhasePostamble;
-			startLine = index;
-		}else if([code.comment isEqual:@"END"]) {
-			phaseRanges[@(TFPPrintPhasePostamble)] = [NSValue valueWithRange:range];
-		}
-	}];
-	
-	self.phaseRanges = phaseRanges;
 }
 
 
