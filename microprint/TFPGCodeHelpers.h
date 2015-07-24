@@ -64,7 +64,7 @@
 @interface TFPGCodeProgram (TFPHelpers)
 - (TFP3DVector*)measureSize;
 
-- (void)enumerateMovesWithBlock:(void(^)(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate))block;
+- (void)enumerateMovesWithBlock:(void(^)(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate, TFPGCode *code, NSUInteger index))block;
 
 - (BOOL)validateForM3D:(NSError**)error;
 - (NSDictionary*)curaProfileValues;

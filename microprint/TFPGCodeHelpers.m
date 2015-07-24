@@ -213,107 +213,36 @@ const double maxMMPerSecond = 60.001;
 
 
 - (TFP3DVector*)measureSize {
-	double minX = 10000, maxX = 0;
-	double minY = 10000, maxY = 0;
-	double minZ = 10000, maxZ = 0;
+	__block double minX = 10000, maxX = 0;
+	__block double minY = 10000, maxY = 0;
+	__block double minZ = 10000, maxZ = 0;
 	
-	BOOL relativeMode = NO;
-	double X=0, Y=0, Z=0, E=0;
-	
-	for(TFPGCode *code in self.lines) {
-		if(![code hasField:'G']) {
-			continue;
+	[self enumerateMovesWithBlock:^(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate, TFPGCode *code, NSUInteger index) {
+		if(to.e > from.e) {
+			minX = MIN(MIN(minX, from.x), to.x);
+			maxX = MAX(MAX(maxX, from.x), to.x);
+			
+			minY = MIN(MIN(minY, from.y), to.y);
+			maxY = MAX(MAX(maxY, from.y), to.y);
+			
+			minZ = MIN(MIN(minZ, from.z), to.z);
+			maxZ = MAX(MAX(maxZ, from.z), to.z);
+			
 		}
-		
-		switch ((int)[code valueForField:'G']) {
-			case 0:
-			case 1: {
-				BOOL extruding = [code hasField:'E'] && !isnan([code valueForField:'E']);
-				BOOL positiveExtrusion = NO;
-				if(extruding) {
-					double thisE = [code valueForField:'E'];
-					if(relativeMode) {
-						positiveExtrusion = (thisE > 0);
-						E += thisE;
-					}else{
-						positiveExtrusion = (thisE > E);
-						E = thisE;
-					}
-				}
-				
-				if(positiveExtrusion) {
-					minX = MIN(minX, X);
-					maxX = MAX(maxX, X);
-					minY = MIN(minY, Y);
-					maxY = MAX(maxY, Y);
-					minZ = MIN(minZ, Z);
-					maxZ = MAX(maxZ, Z);
-				}
-				
-				if([code hasField:'X']) {
-					double thisX = [code valueForField:'X'];
-					if(relativeMode) {
-						X += thisX;
-					}else{
-						X = thisX;
-					}
-				}
-				
-				if([code hasField:'Y']) {
-					double thisY = [code valueForField:'Y'];
-					if(relativeMode) {
-						Y += thisY;
-					}else{
-						Y = thisY;
-					}
-				}
-				
-				if([code hasField:'Z']) {
-					double thisZ = [code valueForField:'Z'];
-					if(relativeMode) {
-						Z += thisZ;
-					}else{
-						Z = thisZ;
-					}
-				}
-				
-				if(positiveExtrusion) {
-					minX = MIN(minX, X);
-					maxX = MAX(maxX, X);
-					minY = MIN(minY, Y);
-					maxY = MAX(maxY, Y);
-					minZ = MIN(minZ, Z);
-					maxZ = MAX(maxZ, Z);
-				}
-				
-				break;
-			}
-    
-			case 90:
-				relativeMode = NO;
-				break;
-				
-			case 91:
-				relativeMode = YES;
-				break;
-				
-			case 92:
-				break;
-		}
-	}
+	}];
 	
 	return [TFP3DVector vectorWithX:@(maxX-minX) Y:@(maxY-minY) Z:@(maxZ-minZ)];
 }
 
 
-- (void)enumerateMovesWithBlock:(void(^)(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate))block {
-	BOOL relativeMode = NO;
-	TFPAbsolutePosition position = {0,0,0,0};
-	double feedRate = 0;
+- (void)enumerateMovesWithBlock:(void(^)(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate, TFPGCode *code, NSUInteger index))block {
+	__block BOOL relativeMode = NO;
+	__block TFPAbsolutePosition position = {0,0,0,0};
+	__block double feedRate = 0;
 	
-	for(TFPGCode *code in self.lines) {
+	[self.lines enumerateObjectsUsingBlock:^(TFPGCode *code, NSUInteger index, BOOL *stop) {
 		if(![code hasField:'G']) {
-			continue;
+			return;
 		}
 		
 		switch ((int)[code valueForField:'G']) {
@@ -362,7 +291,7 @@ const double maxMMPerSecond = 60.001;
 					}
 				}
 				
-				block(previous, position, feedRate);
+				block(previous, position, feedRate, code, index);
 				break;
 			}
     
@@ -377,7 +306,7 @@ const double maxMMPerSecond = 60.001;
 			case 92:
 				break;
 		}
-	}
+	}];
 	
 }
 
