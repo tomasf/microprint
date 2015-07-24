@@ -156,7 +156,7 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 	[self presentViewControllerAsSheet:viewController];
 	[viewController start];
 	
-	viewController.endHandler = ^(BOOL didFinish){
+	viewController.endHandler = ^(BOOL didFinish){		
 		if(didFinish && weakSelf.document.completionScriptURL) {
 			NSDictionary *error;
 			BOOL success = [[TFPScriptManager sharedManager] runScriptFile:weakSelf.document.completionScriptURL printName:self.document.displayName duration:weakSelf.printingProgressViewController.elapsedTimeString errorInfo:&error];

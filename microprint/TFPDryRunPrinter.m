@@ -34,7 +34,7 @@
 }
 
 
-- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSString *value))block {
+- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSString *value))block responseQueue:(dispatch_queue_t)queue {
 	NSInteger G = [code valueForField:'G' fallback:-1];
 	TFLog(@"* Sent: %@", code);
 	NSTimeInterval duration = 0.02;
@@ -59,8 +59,10 @@
 		self.relativeMode = YES;
 	}
 	
-	dispatch_after(dispatch_time(0, duration * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-		block(YES, nil);
+	dispatch_after(dispatch_time(0, duration * NSEC_PER_SEC), queue, ^{
+		if(block) {
+			block(YES, nil);
+		}
 	});
 }
 

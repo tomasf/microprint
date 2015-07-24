@@ -83,7 +83,10 @@
 	
 	self.printJob.completionBlock = ^{
 		TFAssertMainThread();
+		NSWindow *window = weakSelf.view.window;
 		[weakSelf dismissController:nil];
+		[window orderOut:nil];
+
 		if(weakSelf.endHandler) {
 			weakSelf.endHandler(YES);
 		}
