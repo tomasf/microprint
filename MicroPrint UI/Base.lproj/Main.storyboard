@@ -1077,7 +1077,11 @@ DQ
                                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                         </textFieldCell>
                                         <connections>
-                                            <binding destination="QEg-b8-EU3" name="value" keyPath="document.temperature" id="uc4-4D-gCe"/>
+                                            <binding destination="QEg-b8-EU3" name="value" keyPath="document.temperature" id="ekD-DX-44g">
+                                                <dictionary key="options">
+                                                    <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                                                </dictionary>
+                                            </binding>
                                         </connections>
                                     </textField>
                                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="yaE-Hy-kFO">
