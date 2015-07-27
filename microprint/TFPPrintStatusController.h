@@ -8,16 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "TFPPrintJob.h"
-
-
-typedef NS_ENUM(NSUInteger, TFPPrintPhase) {
-	TFPPrintPhaseInvalid,
-	TFPPrintPhasePreamble,
-	TFPPrintPhaseAdhesion,
-	TFPPrintPhaseModel,
-	TFPPrintPhasePostamble,
-};
-
+#import "TFPGCodeHelpers.h"
 
 @interface TFPPrintStatusController : NSObject
 - (instancetype)initWithPrintJob:(TFPPrintJob*)printJob;
@@ -30,4 +21,9 @@ typedef NS_ENUM(NSUInteger, TFPPrintPhase) {
 @property (readonly) double printProgress;
 @property (readonly) TFPPrintPhase currentPhase;
 @property (readonly) double phaseProgress;
+@property (readonly) TFPPrintLayer *currentLayer;
+@property (readonly) NSUInteger layerCount;
+
+@property (copy) void(^willMoveHandler)(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate, TFPGCode *code);
+@property (copy) void(^layerChangeHandler)();
 @end

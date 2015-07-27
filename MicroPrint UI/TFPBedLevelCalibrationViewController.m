@@ -79,7 +79,6 @@
 	};
 	
 	self.operation.didStopAtCornerHandler = ^(TFPBedLevelCalibrationCorner corner){
-		NSLog(@"corner");
 		weakSelf.currentCorner = corner;
 		[weakSelf switchToAdjustmentMode];
 	};

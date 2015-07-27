@@ -10,23 +10,85 @@
 #import "TFPGCodeProgram.h"
 #import "TFPPrintSettingsViewController.h"
 #import "Extras.h"
+#import "TFPGCodeHelpers.h"
+#import "TFPPrinterManager.h"
 
 
 @interface TFPGCodeDocument ()
+@property (readwrite) TFPCuboid boundingBox;
+@property (readwrite) BOOL hasBoundingBox;
+@property (readwrite) NSDictionary *curaProfile;
+
+@property NSWindowController *loadingWindowController;
 @end
 
 
 @implementation TFPGCodeDocument
 
 
-- (void)makeWindowControllers {
-	// Override to return the Storyboard file name of the document.
-	[self addWindowController:[[NSStoryboard storyboardWithName:@"Main" bundle:nil] instantiateControllerWithIdentifier:@"PrintWindowController"]];
+- (instancetype)init {
+	if(!(self = [super init])) return nil;
+	
+	self.selectedPrinter = [TFPPrinterManager sharedManager].printers.firstObject;
+	self.filamentType = TFPFilamentTypePLA;
+	self.useWaveBonding = YES;
+	
+	return self;
 }
 
 
-- (BOOL)readFromData:(NSData *)data ofType:(NSString *)typeName error:(NSError **)outError {
-	self.data = data;
+- (void)makeWindowControllers {
+	NSWindowController *windowController = [[NSStoryboard storyboardWithName:@"Main" bundle:nil] instantiateControllerWithIdentifier:@"PrintWindowController"];
+	
+	((TFPPrintSettingsViewController*)windowController.contentViewController).document = self;
+	
+	[self addWindowController:windowController];
+}
+
+
++ (BOOL)canConcurrentlyReadDocumentsOfType:(NSString *)typeName {
+	return YES;
+}
+
+
+- (BOOL)readFromURL:(NSURL *)absoluteURL ofType:(NSString *)typeName error:(NSError **)outError {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		self.loadingWindowController = [[NSStoryboard storyboardWithName:@"Main" bundle:nil] instantiateControllerWithIdentifier:@"LoadingWindowController"];
+		[self.loadingWindowController showWindow:nil];
+	});
+	
+	void(^stopLoading)() = ^{
+		dispatch_async(dispatch_get_main_queue(), ^{
+			[self.loadingWindowController close];
+		});
+	};
+	
+	TFPGCodeProgram *program = [[TFPGCodeProgram alloc] initWithFileURL:absoluteURL error:outError];
+	if(!program) {		
+		stopLoading();
+		return NO;
+	}
+	
+	if(![program validateForM3D:outError]) {
+		stopLoading();
+		return NO;
+	}
+	
+	stopLoading();
+	
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+		TFPCuboid boundingBox = [program measureBoundingBox];
+		dispatch_async(dispatch_get_main_queue(), ^{
+			self.boundingBox = boundingBox;
+			self.hasBoundingBox = YES;
+		});
+		
+		NSDictionary *profile = [program curaProfileValues];
+		dispatch_async(dispatch_get_main_queue(), ^{
+			self.curaProfile = profile;
+		});
+	});
+	
 	return YES;
 }
 
@@ -46,8 +108,9 @@
 }
 
 
-- (void)test:(NSScriptCommand*)command {
-	TFLog(@"test! %@", command);
+- (void)close {
+	self.printSettingsViewController.document = nil;
+	[super close];
 }
 
 

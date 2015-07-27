@@ -278,6 +278,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, unsafe_unretained, nullable) id<ORSSerialPortDelegate> delegate;
 #endif
 
+@property dispatch_queue_t delegateQueue;
+
+
 /** ---------------------------------------------------------------------------------------
  * @name Request/Response Properties
  *  ---------------------------------------------------------------------------------------
@@ -329,6 +332,10 @@ NS_ASSUME_NONNULL_BEGIN
  *  Can be presented to the user, e.g. in a serial port selection pop up menu.
  */
 @property (copy, readonly) NSString *name;
+
+
+@property (copy, readonly) NSNumber *USBVendorID;
+@property (copy, readonly) NSNumber *USBProductID;
 
 /** ---------------------------------------------------------------------------------------
  * @name Configuring the Serial Port

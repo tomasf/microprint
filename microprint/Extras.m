@@ -5,7 +5,14 @@
 //
 
 #import "Extras.h"
+#import "zlib.h"
 @import MachO;
+
+
+NSString *const TFPErrorDomain = @"TFPErrorDomain";
+NSString *const TFPErrorGCodeStringKey = @"GCodeString";
+NSString *const TFPErrorGCodeKey = @"GCode";
+NSString *const TFPErrorGCodeLineKey = @"GCodeLine";
 
 
 @implementation NSArray (TFExtras)
@@ -108,60 +115,71 @@
 }
 
 
-@end
-
-
-
-
-#import "ORSSerialPort.h"
-#import <IOKit/usb/USB.h>
-#import <IOKit/usb/IOUSBLib.h>
-#import <IOKit/serial/IOSerialKeys.h>
-
-
-@implementation ORSSerialPort (TFExtras)
-
-
-// Return value must be released with IOObjectRelease
-static io_object_t IOEntryAncestorConformingTo(io_object_t object, const io_name_t className) {
-	IOObjectRetain(object); // released later
+- (NSData *)tf_dataByDecodingDeflate {
+	NSData *data = self;
+	if ([data length] == 0) return data;
 	
-	for(;;) {
-		io_object_t parent = 0;
-		IORegistryEntryGetParentEntry(object, kIOServicePlane, &parent);
-		IOObjectRelease(object);
-		if(!parent) {
-			break;
-		}
-		if(IOObjectConformsTo(parent, className)) {
-			return parent;
-		}
-		object = parent;
+	NSUInteger full_length = [data length];
+	NSUInteger half_length = [data length] / 2;
+	
+	NSMutableData *decompressed = [NSMutableData dataWithLength:full_length + half_length];
+	BOOL done = NO;
+	int status;
+	
+	z_stream strm;
+	strm.next_in = (Bytef *)[data bytes];
+	strm.avail_in = (uInt)[data length];
+	strm.total_out = 0;
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	
+	if (inflateInit2(&strm, (15+32)) != Z_OK) return nil;
+	while (!done) {
+		// Make sure we have enough room and reset the lengths.
+		if (strm.total_out >= [decompressed length])
+			[decompressed increaseLengthBy: half_length];
+		strm.next_out = [decompressed mutableBytes] + strm.total_out;
+		strm.avail_out = (uInt)([decompressed length] - strm.total_out);
+		
+		// Inflate another chunk.
+		status = inflate (&strm, Z_SYNC_FLUSH);
+		if (status == Z_STREAM_END) done = YES;
+		else if (status != Z_OK) break;
 	}
-	return 0;
-}
-
-
-
-- (BOOL)getUSBVendorID:(uint16_t*)vendorID productID:(uint16_t*)productID {
-	io_object_t USBInterface = IOEntryAncestorConformingTo(self.IOKitDevice, kIOUSBInterfaceClassName);
-	if(!USBInterface) {
-		return NO;
+	if (inflateEnd (&strm) != Z_OK) return nil;
+	
+	// Set real length.
+	if (done) {
+		[decompressed setLength:strm.total_out];
+		return [NSData dataWithData: decompressed];
+	} else {
+		return nil;
 	}
-	
-	NSNumber *vendorIDNumber = CFBridgingRelease(IORegistryEntryCreateCFProperty(USBInterface, CFSTR(kUSBVendorID), kCFAllocatorDefault, 0));
-	NSNumber *productIDNumber = CFBridgingRelease(IORegistryEntryCreateCFProperty(USBInterface, CFSTR(kUSBProductID), kCFAllocatorDefault, 0));
-	
-	*vendorID = vendorIDNumber.unsignedShortValue;
-	*productID = productIDNumber.unsignedShortValue;
-	
-	IOObjectRelease(USBInterface);
-	return vendorIDNumber && productIDNumber;
 }
 
 
 @end
 
+
+@implementation NSIndexSet (TFExtras)
+
+
++ (NSIndexSet*)tf_indexSetWithIndexes:(NSInteger)firstIndex, ... {
+	va_list list;
+	va_start(list, firstIndex);
+	
+	NSMutableIndexSet *indexes = [NSMutableIndexSet indexSetWithIndex:firstIndex];
+	NSInteger index;
+	while((index = va_arg(list, int)) >= 0) {
+		[indexes addIndex:index];
+	}
+	
+	va_end(list);
+	return indexes;
+}
+
+
+@end
 
 
 void TFLog(NSString *format, ...) {
@@ -214,4 +232,9 @@ NSString *TFPGetInputLine() {
 
 void TFPEraseLastLine() {
 	printf("\x1b[A\x1b[K");
+}
+
+
+void TFAssertMainThread() {
+	NSCAssert([NSThread isMainThread], @"Whoa. This should be on the main thread but isn't!");
 }

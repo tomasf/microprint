@@ -17,6 +17,7 @@
 
 @interface TFPDryRunPrinter ()
 @property TFP3DVector *simulatedPosition;
+@property double feedRate;
 @property BOOL relativeMode;
 @end
 
@@ -34,13 +35,14 @@
 }
 
 
-- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSString *value))block {
+- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSString *value))block responseQueue:(dispatch_queue_t)queue {
 	NSInteger G = [code valueForField:'G' fallback:-1];
 	TFLog(@"* Sent: %@", code);
 	NSTimeInterval duration = 0.02;
 	
 	if(G == 0 || G == 1) {
-		TFP3DVector *movement = [code movementVector];
+		TFP3DVector *movement = [[code movementVector] vectorByDefaultingToValues:self.simulatedPosition];
+		self.feedRate = [code valueForField:'F' fallback:self.feedRate];
 		
 		if(self.relativeMode) {
 			movement = [TFP3DVector vectorWithX:@(self.simulatedPosition.x.doubleValue + movement.x.doubleValue)
@@ -49,7 +51,10 @@
 		}
 		
 		double distance = [self.simulatedPosition distanceToPoint:movement];
-		duration = MAX(duration, distance / 100.0);
+		
+		double calculatedSpeed = (6288.78 * (self.feedRate-830))/((self.feedRate-828.465) * (self.feedRate+79.5622));
+		duration = distance / calculatedSpeed;
+		duration /= self.speedMultiplier;
 		self.simulatedPosition = movement;
 		
 	} else if(G == 90) {
@@ -59,10 +64,13 @@
 		self.relativeMode = YES;
 	}
 	
-	dispatch_after(dispatch_time(0, duration * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-		block(YES, nil);
+	dispatch_after(dispatch_time(0, duration * NSEC_PER_SEC), queue, ^{
+		if(block) {
+			block(YES, nil);
+		}
 	});
 }
+
 
 - (TFPPrinterColor)color {
 	return TFPPrinterColorOther;
@@ -104,6 +112,12 @@
 	TFLog(@"Dry run setBedOffsets: %@", TFPBedLevelOffsetsDescription(offsets));
 	[super setBedOffsets:offsets completionHandler:completionHandler];
 }
+
+
+- (double)speedMultiplier {
+	return 10;
+}
+
 
 
 @end

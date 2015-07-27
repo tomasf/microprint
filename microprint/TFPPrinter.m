@@ -18,6 +18,7 @@
 
 @interface TFPPrinter () <ORSSerialPortDelegate>
 @property (readwrite) ORSSerialPort *serialPort;
+@property dispatch_queue_t serialPortQueue;
 @property (readwrite, copy) NSString *identifier;
 
 @property BOOL connectionFinished;
@@ -46,8 +47,11 @@
 - (instancetype)initWithSerialPort:(ORSSerialPort*)serialPort {
 	if(!(self = [super init])) return nil;
 	
+	self.serialPortQueue = dispatch_queue_create("se.tomasf.microprint.serialPortQueue", DISPATCH_QUEUE_SERIAL);
+	
 	self.serialPort = serialPort;
 	self.serialPort.delegate = self;
+	self.serialPort.delegateQueue = self.serialPortQueue;
 	
 	self.identifier = self.serialPort.path;
 	
@@ -94,10 +98,6 @@
 }
 
 
-- (void)serialPortWasRemovedFromSystem:(ORSSerialPort * __nonnull)serialPort {
-}
-
-
 - (void)callEstablishBlocksWithError:(NSError*)error {
 	self.pendingConnection = NO;
 	
@@ -111,40 +111,62 @@
 
 
 - (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSString *value))block {
-	block = [block copy] ?: (id)^(BOOL a, NSString *b) {};
+	[self sendGCode:code responseHandler:block responseQueue:dispatch_get_main_queue()];
+}
+
+
+- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSString *value))block responseQueue:(dispatch_queue_t)queue {
+	void(^outerBlock)(BOOL,NSString*) = ^(BOOL success, NSString *value){
+		if(block) dispatch_async(queue, ^{
+			block(success, value);
+		});
+	};
 	
 	if(self.verboseMode) {
 		TFLog(@"< %@", code);
 	}
-
-	[self.serialPort sendData:code.repetierV2Representation];
 	
-	if([code hasField:'N']) {
-		self.numberedResponseListenerBlocks[@((NSUInteger)[code valueForField:'N'])] = block;
-	}else{
-		[self.unnumberedResponseListenerBlocks addObject:block];
-	}
+	NSData *data = code.repetierV2Representation;
+
+	dispatch_async(self.serialPortQueue, ^{
+		[self.serialPort sendData:data];
+		
+		if([code hasField:'N']) {
+			self.numberedResponseListenerBlocks[@((NSUInteger)[code valueForField:'N'])] = outerBlock;
+		}else{
+			[self.unnumberedResponseListenerBlocks addObject:outerBlock];
+		}
+	});
 }
 
 
-- (void)runGCodeProgram:(TFPGCodeProgram *)program offset:(NSUInteger)offset completionHandler:(void (^)(BOOL))completionHandler {
+- (void)runGCodeProgram:(TFPGCodeProgram *)program offset:(NSUInteger)offset completionHandler:(void (^)(BOOL))completionHandler responseQueue:(dispatch_queue_t)queue {
 	if(offset < program.lines.count) {
 		TFPGCode *code = program.lines[offset];
 		[self sendGCode:code responseHandler:^(BOOL success, NSString *value) {
 			if(success) {
-				[self runGCodeProgram:program offset:offset+1 completionHandler:completionHandler];
+				[self runGCodeProgram:program offset:offset+1 completionHandler:completionHandler responseQueue:queue];
 			}else{
-				completionHandler(NO);
+				dispatch_async(queue, ^{
+					completionHandler(NO);
+				});
 			}
-		}];
+		} responseQueue:queue];
 	}else{
-		completionHandler(YES);
+		dispatch_async(queue, ^{
+			completionHandler(YES);
+		});
 	}
 }
 
 
+- (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success))completionHandler responseQueue:(dispatch_queue_t)queue {
+	[self runGCodeProgram:program offset:0 completionHandler:completionHandler responseQueue:queue];
+}
+
+
 - (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success))completionHandler {
-	[self runGCodeProgram:program offset:0 completionHandler:completionHandler];
+	[self runGCodeProgram:program completionHandler:completionHandler responseQueue:dispatch_get_main_queue()];
 }
 
 
@@ -220,14 +242,19 @@
 
 
 - (void)processTemperatureUpdate:(double)temperature {
-	if(temperature != self.heaterTemperature) {
-		self.heaterTemperature = temperature;
-	}
+	// On serial port queue here
+	dispatch_async(dispatch_get_main_queue(), ^{
+		if(temperature != self.heaterTemperature) {
+			self.heaterTemperature = temperature;
+		}
+	});
 }
 
 
 - (void)handleResendRequest:(NSUInteger)lineNumber {
+	// On serial port queue here
 	if(self.resendHandler) {
+		// Client's responsibility to dispatch in resend handler
 		self.resendHandler(lineNumber);
 	}else{
 		TFLog(@"Unhandled resend request for line %d", (int)lineNumber);
@@ -236,6 +263,8 @@
 
 
 - (void)processIncomingString:(NSString*)incomingLine {
+	// On serial port queue here
+	
 	TFStringScanner *scanner = [TFStringScanner scannerWithString:incomingLine];
 	if(self.verboseMode) {
 		TFLog(@"> %@", incomingLine);
@@ -300,6 +329,8 @@
 
 
 - (void)processIncomingData {
+	// On serial port thread here
+	
 	if(self.pendingConnection && self.incomingData.length == 1 && *(char*)self.incomingData.bytes == '?') {
 		TFLog(@"Switching from bootloader to firmware mode...");
 
@@ -318,12 +349,6 @@
 		NSString *string = [[NSString alloc] initWithData:line encoding:NSUTF8StringEncoding];
 		[self processIncomingString:string];
 	}
-}
-
-
-- (void)serialPort:(ORSSerialPort * __nonnull)serialPort didReceiveData:(NSData * __nonnull)data {
-	[self.incomingData appendData:data];
-	[self processIncomingData];
 }
 
 
@@ -477,6 +502,10 @@
 }
 
 
+- (double)speedMultiplier {
+	return 1;
+}
+
 
 #pragma mark - Serial port delegate
 
@@ -508,9 +537,23 @@
 
 - (void)serialPort:(ORSSerialPort *)serialPort didEncounterError:(NSError *)error {
 	if(self.pendingConnection) {
-		[self callEstablishBlocksWithError:error];
+		dispatch_async(dispatch_get_main_queue(), ^{
+			[self callEstablishBlocksWithError:error];
+		});
 	}
 }
+
+
+- (void)serialPort:(ORSSerialPort * __nonnull)serialPort didReceiveData:(NSData * __nonnull)data {
+	[self.incomingData appendData:data];
+	[self processIncomingData];
+}
+
+
+- (void)serialPortWasRemovedFromSystem:(ORSSerialPort * __nonnull)serialPort {
+}
+
+
 
 
 @end

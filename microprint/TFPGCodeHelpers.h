@@ -57,11 +57,50 @@
 
 // Utilities
 + (NSDictionary*)dictionaryFromResponseValueString:(NSString*)string;
+
+@property (readonly) NSInteger layerIndexFromComment;
 @end
 
 
+typedef NS_ENUM(NSUInteger, TFPPrintPhase) {
+	TFPPrintPhaseInvalid,
+	TFPPrintPhasePreamble,
+	TFPPrintPhaseAdhesion,
+	TFPPrintPhaseModel,
+	TFPPrintPhasePostamble,
+};
+
+
+@interface TFPPrintLayer : NSObject
+@property (readonly) NSInteger layerIndex;
+@property (readonly) TFPPrintPhase phase;
+@property (readonly) NSRange lineRange;
+@property (readonly) double minZ;
+@property (readonly) double maxZ;
+@end
+
+
+typedef struct {
+	double x;
+	double y;
+	double z;
+	double xSize;
+	double ySize;
+	double zSize;
+} TFPCuboid;
+
 
 @interface TFPGCodeProgram (TFPHelpers)
-- (TFP3DVector*)measureSize;
-- (void)enumerateMovesWithBlock:(void(^)(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate))block;
+- (TFPCuboid)measureBoundingBox;
+
+- (void)enumerateMovesWithBlock:(void(^)(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate, TFPGCode *code, NSUInteger index))block;
+
+- (BOOL)validateForM3D:(NSError**)error;
+- (NSDictionary*)curaProfileValues;
+
+// Keys are NSNumber-wrapped TFPPrintPhases
+// Values are NSValue-wrapped NSRanges
+- (NSDictionary*)determinePhaseRanges;
+
+- (NSArray*)determineLayers;
 @end

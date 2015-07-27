@@ -14,6 +14,45 @@
 
 
 + (TFPGCodeProgram*)testBorderProgram {
+	static TFPGCodeProgram *program;
+	if(!program) {
+		NSString *string = (@"M106 \n"
+							@"M109 S215 \n"
+							@"G90 \n"
+							@"G0 X1 Y9.5 Z0.15 F900 \n"
+							@"G0 Z0.4 E6 \n"
+							@"G4 S3 \n"
+							@"G0 E6.3 \n"
+							@"G0 X102.9 Y9.5 Z0.4 E42.73402 \n"
+							@"G4 S3 \n"
+							@"G0 E43.03402 \n"
+							@"G0 X102.9 Y99 Z0.4 E75.03445 \n"
+							@"G4 S3 \n"
+							@"G0 E75.33446 \n"
+							@"G0 X1 Y99 Z0.4 E111.7685 \n"
+							@"G4 S3 \n"
+							@"G0 E112.0685 \n"
+							@"G0 X1 Y9.5 Z0.4 E144.0689 \n"
+							@"G4 S3 \n"
+							@"G0 E144.3689 \n"
+							@"G0 X-0.5 Y8 Z0.4 E145.8858 \n"
+							@"G0 X-2 Y6.5 Z2.4 E151.1951 \n"
+							@"G0 E148.1951 \n"
+							@"G0 X102.9 Y99 Z20 \n"
+							);
+		program = [[TFPGCodeProgram alloc] initWithString:string error:nil];
+	}
+	return program;
+}
+
+
+
+/*
+ 
+ // Turns out the bed compensation doesn't work in relative mode. Sigh.
+ 
+ 
++ (TFPGCodeProgram*)testBorderProgram {
 	const double minX = 1;
 	const double minY = 9.5;
 	const double maxX = 102.9;
@@ -40,6 +79,7 @@
 	
 	NSArray *codes = @[
 					   [TFPGCode absoluteModeCode],
+					   [TFPGCode codeForHeaterTemperature:temperature waitUntilDone:NO],
 					   [TFPGCode moveHomeCode],
 					   [TFPGCode moveWithPosition:[TFP3DVector vectorWithX:@(minX) Y:@(minY) Z:@(initialZ)] withRawFeedRate:feedrate],
 					   [TFPGCode turnOnFanCode],
@@ -82,7 +122,7 @@
 	
 	return [[TFPGCodeProgram alloc] initWithLines:codes];
 }
-
+*/
 
 
 @end

@@ -16,21 +16,30 @@
 #import "TFPPrintingProgressViewController.h"
 #import "TFPGCodeHelpers.h"
 #import "Extras.h"
+#import "TFPScriptManager.h"
+@import QuartzCore;
+
+
+static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
+
 
 
 @interface TFPPrintSettingsViewController () <NSMenuDelegate>
 @property IBOutlet NSPopUpButton *printerMenuButton;
+@property IBOutlet NSPopUpButton *scriptMenuButton;
+
 @property IBOutlet NSTextField *temperatureTextField;
 @property IBOutlet NSTextField *dimensionsLabel;
 
+@property IBOutlet NSButton *printButton;
+
+@property IBOutlet NSView *advancedSettingsView;
+@property (nonatomic) BOOL showAdvancedSettings;
+@property IBOutlet NSLayoutConstraint *advancedSettingsConstraint;
+@property NSLayoutConstraint *basicSettingsConstraint;
+@property IBOutlet NSButton *advancedDisclosureButton;
+
 @property TFPPrinterManager *printerManager;
-
-@property TFPPrinter *selectedPrinter;
-@property TFPFilamentType filamentType;
-@property NSNumber *temperature;
-@property BOOL useWaveBonding;
-
-@property TFP3DVector *printSize;
 
 @property TFPPrintingProgressViewController *printingProgressViewController;
 @end
@@ -44,12 +53,17 @@
 	if(!(self = [super initWithCoder:coder])) return nil;
 	
 	self.printerManager = [TFPPrinterManager sharedManager];
-	self.selectedPrinter = self.printerManager.printers.firstObject;
-	
-	self.filamentType = TFPFilamentTypePLA;
-	self.useWaveBonding = YES;
 	
 	return self;
+}
+
+
+- (void)viewDidLoad {
+	[super viewDidLoad];
+	
+	self.basicSettingsConstraint = [NSLayoutConstraint constraintWithItem:self.printButton attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.printerMenuButton attribute:NSLayoutAttributeBottom multiplier:1 constant:20];
+	
+	[self setShowAdvancedSettings:[[NSUserDefaults standardUserDefaults] boolForKey:showAdvancedSettingsKey] animated:NO];
 }
 
 
@@ -60,23 +74,16 @@
 	self.printerMenuButton.menu.delegate = self;
 	[self updatePrinterMenuImages];
 	
-	[self addObserver:self keyPath:@[@"temperature", @"filamentType"] options:NSKeyValueObservingOptionInitial block:^(MAKVONotification *notification) {
+	[self addObserver:self keyPath:@[@"document.temperature", @"document.filamentType"] options:NSKeyValueObservingOptionInitial block:^(MAKVONotification *notification) {
 		[weakSelf updateTemperaturePlaceholder];
 	}];
 	
-	TFPGCodeProgram *program = self.program;
-	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-		TFP3DVector *size = [program measureSize];
-		
-		dispatch_async(dispatch_get_main_queue(), ^{
-			weakSelf.printSize = size;
-		});
-	});
+	[self updateScriptMenu];
 }
 
 
 - (NSString*)printDimensionsString {
-	if(self.printSize) {
+	if(self.document.boundingBox.xSize > 0) {
 		NSNumberFormatter *formatter = [NSNumberFormatter new];
 		formatter.positiveSuffix = @" mm";
 		formatter.minimumFractionDigits = 2;
@@ -84,9 +91,9 @@
 		formatter.minimumIntegerDigits = 1;
 		
 		return [NSString stringWithFormat:@"X:  %@\nY:  %@\nZ:  %@",
-				[formatter stringFromNumber:self.printSize.x],
-				[formatter stringFromNumber:self.printSize.y],
-				[formatter stringFromNumber:self.printSize.z]];
+				[formatter stringFromNumber:@(self.document.boundingBox.xSize)],
+				[formatter stringFromNumber:@(self.document.boundingBox.ySize)],
+				[formatter stringFromNumber:@(self.document.boundingBox.zSize)]];
 		
 	}else{
 		return @"Measuring…\n\n";;
@@ -95,7 +102,7 @@
 
 
 + (NSSet *)keyPathsForValuesAffectingPrintDimensionsString {
-	return @[@"printSize"].tf_set;
+	return @[@"document.hasBoundingBox"].tf_set;
 }
 
 
@@ -111,7 +118,7 @@
 
 - (void)updateTemperaturePlaceholder {
 	dispatch_async(dispatch_get_main_queue(), ^{
-		int temperature = [TFPFilament filamentForType:self.filamentType].defaultTemperature;
+		int temperature = [TFPFilament filamentForType:self.document.filamentType].defaultTemperature;
 		NSString *string = [NSString stringWithFormat:@"%d", temperature];
 		self.temperatureTextField.placeholderString = string;
 	});
@@ -123,21 +130,16 @@
 }
 
 
-- (TFPGCodeDocument*)document {
-	return [[NSDocumentController sharedDocumentController] documentForWindow:self.view.window];
-}
-
-
 - (TFPPrintParameters*)printParameters {
 	TFPPrintParameters *parameters = [TFPPrintParameters new];
-	parameters.maxZ = self.printSize.z.doubleValue;
+	parameters.boundingBox = self.document.boundingBox;
 	
-	parameters.filament = [TFPFilament filamentForType:self.filamentType];
-	if(self.temperature) {
-		parameters.idealTemperature = self.temperature.doubleValue;
+	parameters.filament = [TFPFilament filamentForType:self.document.filamentType];
+	if(self.document.temperature) {
+		parameters.idealTemperature = self.document.temperature.doubleValue;
 	}
 	
-	parameters.useWaveBonding = self.useWaveBonding;
+	parameters.useWaveBonding = self.document.useWaveBonding;
 	return parameters;
 }
 
@@ -145,24 +147,42 @@
 - (IBAction)print:(id)sender {
 	__weak __typeof__(self) weakSelf = self;
 	
-	TFPPrintParameters *params = [self printParameters];
+	TFPPrintingProgressViewController *viewController = [self.storyboard instantiateControllerWithIdentifier:@"PrintingProgressViewController"];
+	viewController.printer = self.document.selectedPrinter;
+	viewController.printParameters = [self printParameters];
+	viewController.GCodeFileURL = self.document.fileURL;
 	
-	[self.selectedPrinter fillInOffsetAndBacklashValuesInPrintParameters:params completionHandler:^(BOOL success) {
-		NSWindowController *printingProgressWindowController = [self.storyboard instantiateControllerWithIdentifier:@"printingProgressWindowController"];
+	self.printingProgressViewController = viewController;
+	[self presentViewControllerAsSheet:viewController];
+	[viewController start];
+	
+	viewController.endHandler = ^(BOOL didFinish){		
+		if(didFinish && weakSelf.document.completionScriptURL) {
+			NSDictionary *error;
+			BOOL success = [[TFPScriptManager sharedManager] runScriptFile:weakSelf.document.completionScriptURL printName:self.document.displayName duration:weakSelf.printingProgressViewController.elapsedTimeString errorInfo:&error];
+			if(!success) {
+				NSMutableDictionary *userInfo = [NSMutableDictionary new];
+				userInfo[NSLocalizedDescriptionKey] = error[NSAppleScriptErrorMessage] ?: @"Script execution failed.";
+				if (error[NSAppleScriptErrorNumber]) {
+					userInfo[NSLocalizedRecoverySuggestionErrorKey] = [NSString stringWithFormat:@"AppleScript error %@", error[NSAppleScriptErrorNumber]];
+				}
+				NSError *error = [NSError errorWithDomain:TFPErrorDomain code:TFPScriptExecutionError userInfo:userInfo];
+				[weakSelf presentError:error];
+			}
+		}
 		
-		TFPPrintingProgressViewController *viewController = (TFPPrintingProgressViewController*)printingProgressWindowController.window.contentViewController;
-		viewController.printer = self.selectedPrinter;
-		viewController.program = self.program;
-		viewController.printParameters = params;
-		
-		self.printingProgressViewController = viewController;
-		[self presentViewControllerAsSheet:viewController];
-		[viewController start];
-		
-		viewController.endHandler = ^{
-			weakSelf.printingProgressViewController = nil;
-		};
-	}];
+		weakSelf.printingProgressViewController = nil;
+	};
+}
+
+
+- (BOOL)canPrint {
+	return self.document.selectedPrinter != nil && self.document.boundingBox.xSize > 0;
+}
+
+
++ (NSSet *)keyPathsForValuesAffectingCanPrint {
+	return @[@"document.selectedPrinter", @"document.hasBoundingBox"].tf_set;
 }
 
 
@@ -181,6 +201,189 @@
 	}else{
 		return [super setValue:value forUndefinedKey:key];
 	}
+}
+
+
+
+#pragma mark - Cura Profile
+
+
+
+- (NSArray*)profileKeysToDisplay {
+	return @[@"layer_height", @"wall_thickness", @"fill_density", @"platform_adhesion", @"support"];
+}
+
+
+- (NSString*)displayNameForProfileKey:(NSString*)key {
+	return @{
+			 @"layer_height": @"Layer Height",
+			 @"wall_thickness": @"Wall Thickness",
+			 @"fill_density": @"Fill Density",
+			 
+			 @"platform_adhesion": @"Bed Adhesion",
+			 @"support": @"Support",
+			 }[key];
+}
+
+
+- (NSString*)displayStringForProfileValue:(NSString*)value key:(NSString*)key {
+	NSNumberFormatter *mmFormatter = [NSNumberFormatter new];
+	mmFormatter.minimumIntegerDigits = 1;
+	mmFormatter.minimumFractionDigits = 2;
+	mmFormatter.maximumFractionDigits = 2;
+	mmFormatter.positiveSuffix = @" mm";
+	mmFormatter.negativeSuffix = @" mm";
+	
+	double doubleValue = value.doubleValue;
+	
+	if([key isEqual:@"layer_height"] || [key isEqual:@"wall_thickness"]) {
+		return [mmFormatter stringFromNumber:@(doubleValue)];
+
+	}else if([key isEqual:@"fill_density"]) {
+		return [value stringByAppendingString:@"%"];
+	
+	}else if([key isEqual:@"platform_adhesion"] || [key isEqual:@"support"]) {
+		return value;
+	
+	}else{
+		return nil;
+	}
+}
+
+
++ (NSSet *)keyPathsForValuesAffectingProfileKeysString {
+	return @[@"document.curaProfile"].tf_set;
+}
+
+
++ (NSSet *)keyPathsForValuesAffectingProfileValuesString {
+	return @[@"document.curaProfile"].tf_set;
+}
+
+
+- (NSString*)profileKeysString {
+	if(!self.document.curaProfile) {
+		return @"No Profile";
+	}
+	
+	return [[[self profileKeysToDisplay] tf_mapWithBlock:^NSString*(NSString *key) {
+		return [[self displayNameForProfileKey:key] stringByAppendingString:@":"];
+	}] componentsJoinedByString:@"\n"];
+}
+
+
+- (NSString*)profileValuesString {
+	if(!self.document.curaProfile) {
+		return @"";
+	}
+	
+	return [[[self profileKeysToDisplay] tf_mapWithBlock:^NSString*(NSString *key) {
+		NSString *value = self.document.curaProfile[key];
+		return [self displayStringForProfileValue:value key:key];
+	}] componentsJoinedByString:@"\n"];
+}
+
+
+#pragma mark - Scripts
+
+
+- (NSMenuItem*)fileMenuItemForURL:(NSURL*)URL {
+	NSDictionary *resourceValues = [URL resourceValuesForKeys:@[NSURLEffectiveIconKey, NSURLLocalizedNameKey] error:nil];
+	NSMenuItem *item = [[NSMenuItem alloc] initWithTitle:resourceValues[NSURLLocalizedNameKey] action:@selector(selectScriptFile:) keyEquivalent:@""];
+	item.target = self;
+	item.representedObject = URL;
+	
+	NSImage *image = [resourceValues[NSURLEffectiveIconKey] copy];
+	image.size = CGSizeMake(16, 16);
+	item.image = image;
+	
+	return item;
+}
+
+
+- (void)selectScriptFile:(NSMenuItem*)item {
+	self.document.completionScriptURL = item.representedObject;
+	[self updateScriptMenu];
+}
+
+
+- (void)chooseScript:(NSMenuItem*)item {
+	NSOpenPanel *panel = [[TFPScriptManager sharedManager] openPanelForSelectingScript];
+	[panel beginSheetModalForWindow:self.view.window completionHandler:^(NSInteger result) {
+		if(result == NSFileHandlingPanelOKButton) {
+			self.document.completionScriptURL = panel.URL;
+			[[TFPScriptManager sharedManager] addRecentScript:panel.URL];
+		}
+		[self updateScriptMenu];
+	}];
+}
+
+
+- (void)updateScriptMenu {
+	NSMenu *menu = [NSMenu new];
+	
+	NSMenuItem *selectedItem = [[NSMenuItem alloc] initWithTitle:@"None" action:@selector(selectScriptFile:) keyEquivalent:@""];
+	selectedItem.target = self;
+	[menu addItem:selectedItem];
+	
+	if(self.document.completionScriptURL) {
+		[menu addItem:[NSMenuItem separatorItem]];
+
+		NSMenuItem *item = [self fileMenuItemForURL:self.document.completionScriptURL];
+		[menu addItem:item];
+		selectedItem = item;
+	}
+	
+	NSArray *recents = [[TFPScriptManager sharedManager].recentScripts tf_rejectWithBlock:^BOOL(NSURL *recentURL) {
+		return [recentURL isEqual:self.document.completionScriptURL];
+	}];
+	
+	if(recents.count) {
+		[menu addItem:[NSMenuItem separatorItem]];
+		NSMenuItem *recentsHeader = [[NSMenuItem alloc] initWithTitle:@"Recent Scripts" action:NSSelectorFromString(@"something") keyEquivalent:@""];
+		recentsHeader.enabled = NO;
+		[menu addItem:recentsHeader];
+	}
+	
+	for(NSURL *recentURL in recents) {
+		[menu addItem:[self fileMenuItemForURL:recentURL]];
+	}
+	
+	
+	[menu addItem:[NSMenuItem separatorItem]];
+	NSMenuItem *chooseItem = [[NSMenuItem alloc] initWithTitle:@"Choose…" action:@selector(chooseScript:) keyEquivalent:@""];
+	chooseItem.target = self;
+	[menu addItem:chooseItem];
+	
+	self.scriptMenuButton.menu = menu;
+	[self.scriptMenuButton selectItem:selectedItem];
+}
+
+
+- (void)setShowAdvancedSettings:(BOOL)showAdvancedSettings animated:(BOOL)animate {
+	self.showAdvancedSettings = showAdvancedSettings;
+	self.advancedDisclosureButton.state = showAdvancedSettings ? NSOnState : NSOffState;
+	[[NSUserDefaults standardUserDefaults] setBool:showAdvancedSettings forKey:showAdvancedSettingsKey];
+	
+	[self.view.window makeFirstResponder:nil];
+	
+	CGFloat advancedViewHeight = self.advancedSettingsView.frame.size.height;
+	CGFloat extraHeight = showAdvancedSettings ? 0 : -advancedViewHeight;
+	CGFloat margin = 20;
+	
+	[NSAnimationContext runAnimationGroup:^(NSAnimationContext *context) {
+		context.duration = animate ? 0.25 : 0;
+		context.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+		
+		self.advancedSettingsConstraint.animator.constant = margin + extraHeight;
+		self.advancedSettingsView.animator.hidden = !showAdvancedSettings;
+	} completionHandler:nil];
+	
+}
+
+
+- (IBAction)toggleShowAdvanced:(id)sender {
+	[self setShowAdvancedSettings:!self.showAdvancedSettings animated:YES];
 }
 
 

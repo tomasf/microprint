@@ -20,6 +20,8 @@ static const uint16_t lineNumberWrapAround = 100;
 
 
 @interface TFPPrintJob ()
+@property dispatch_queue_t printQueue;
+
 @property TFPPrintParameters *parameters;
 @property (readwrite) TFPGCodeProgram *program;
 @property IOPMAssertionID powerAssertionID;
@@ -44,6 +46,7 @@ static const uint16_t lineNumberWrapAround = 100;
 - (instancetype)initWithProgram:(TFPGCodeProgram*)program printer:(TFPPrinter*)printer printParameters:(TFPPrintParameters*)params {
 	if(!(self = [super initWithPrinter:printer])) return nil;
 	
+	self.printQueue = dispatch_queue_create("se.tomasf.microprint.printJob", DISPATCH_QUEUE_SERIAL);
 	self.program = program;
 	self.parameters = params;
 	
@@ -78,18 +81,19 @@ static const uint16_t lineNumberWrapAround = 100;
 }
 
 
+// Called on print queue
 - (void)sendCode:(TFPGCode*)code completionHandler:(void(^)())completionHandler {
 	if(code.hasFields) {
 		[self.printer sendGCode:code responseHandler:^(BOOL success, NSString *value) {
 			completionHandler();
-		}];
+		} responseQueue:self.printQueue];
 	}else{
 		completionHandler();
 	}
 }
 
 
-
+// Called on print queue
 - (void)sendGCode:(TFPGCode*)code {
 	__weak __typeof__(self) weakSelf = self;
 	
@@ -102,27 +106,37 @@ static const uint16_t lineNumberWrapAround = 100;
 	
 	[self sendCode:code completionHandler:^{
 		weakSelf.pendingRequestCount--;
-		weakSelf.completedRequests++;
+		dispatch_async(dispatch_get_main_queue(), ^{
+			weakSelf.completedRequests++;
+		});
+		
 		[weakSelf sendMoreIfNeeded];
 		if(weakSelf.parameters.verbose) {
 			TFLog(@"%d of %d codes. Got response for %@ after %.03f s", (int)weakSelf.completedRequests, (int)weakSelf.program.lines.count, code, ((double)(TFNanosecondTime()-sendTime)) / NSEC_PER_SEC);
 		}
 		if(weakSelf.progressBlock && !self.aborted) {
-			weakSelf.progressBlock();
+			dispatch_async(dispatch_get_main_queue(), ^{
+				weakSelf.progressBlock();
+			});
 		}
 	}];
 	
 	NSInteger M = [code valueForField:'M' fallback:-1];
 	if(M == 104 || M == 109) {
-		self.targetTemperature = [code valueForField:'S'];
+		dispatch_async(dispatch_get_main_queue(), ^{
+			self.targetTemperature = [code valueForField:'S'];
+		});
 	}
 }
 
 
-- (TFPGCode*)popNextLine {
+// Called on print queue
+- (TFPGCode*)popNextLine {	
 	while(self.codeOffset < self.program.lines.count && ![self.program.lines[self.codeOffset] hasFields]) {
 		self.codeOffset++;
-		self.completedRequests++;
+		dispatch_async(dispatch_get_main_queue(), ^{
+			self.completedRequests++;
+		});
 	}
 	
 	if(self.codeOffset >= self.program.lines.count) {
@@ -144,6 +158,7 @@ static const uint16_t lineNumberWrapAround = 100;
 }
 
 
+// Called on print queue
 - (void)sendMoreIfNeeded {
 	if(self.aborted) {
 		return;
@@ -157,17 +172,19 @@ static const uint16_t lineNumberWrapAround = 100;
 		[self sendGCode:code];
 	}
 	
-	if(self.completedRequests >= self.program.lines.count) {
-		[self jobDidComplete];
-	}
+	dispatch_async(dispatch_get_main_queue(), ^{
+		if(self.completedRequests >= self.program.lines.count) {
+			[self jobDidComplete];
+		}		
+	});
 }
 
 
+// Called on print queue
 - (void)sendLineNumberReset {
 	TFPGCode *reset = [TFPGCode codeForSettingLineNumber:0];
 	
-	[self.printer sendGCode:reset responseHandler:^(BOOL success, NSString *value) {
-	}];
+	[self.printer sendGCode:reset responseHandler:nil];
 	self.lineNumber = 1;
 	self.sentCodeRegistry[@(0)] = reset;
 }
@@ -185,8 +202,10 @@ static const uint16_t lineNumberWrapAround = 100;
 	
 	self.printer.verboseMode = self.parameters.verbose;
 	
-	[self sendLineNumberReset];
-	[self sendMoreIfNeeded];
+	dispatch_async(self.printQueue, ^{
+		[self sendLineNumberReset];
+		[self sendMoreIfNeeded];
+	});
 	
 	[self.printer addObserver:self keyPath:@"heaterTemperature" options:0 block:^(MAKVONotification *notification) {
 		double temp = weakSelf.printer.heaterTemperature;
@@ -198,16 +217,18 @@ static const uint16_t lineNumberWrapAround = 100;
 	}];
 	
 	self.printer.resendHandler = ^(NSUInteger lineNumber){
-		if(weakSelf.parameters.verbose) {
-			TFLog(@"Re-sending line N%d", (int)lineNumber);
-		}
-		
-		TFPGCode *code = weakSelf.sentCodeRegistry[@(lineNumber)];
-		code = [code codeBySettingField:'N' toValue:lineNumber];
-		
-		// Last block is cancelled, decrement pending to balance
-		weakSelf.pendingRequestCount--;
-		[weakSelf sendGCode:code];
+		dispatch_async(self.printQueue, ^{
+			if(weakSelf.parameters.verbose) {
+				TFLog(@"Re-sending line N%d", (int)lineNumber);
+			}
+			
+			TFPGCode *code = weakSelf.sentCodeRegistry[@(lineNumber)];
+			code = [code codeBySettingField:'N' toValue:lineNumber];
+			
+			// Last block is cancelled, decrement pending to balance
+			weakSelf.pendingRequestCount--;
+			[weakSelf sendGCode:code];
+		});
 	};
 	
 	
@@ -238,20 +259,24 @@ static const uint16_t lineNumberWrapAround = 100;
 	
 	[self.printer runGCodeProgram:[TFPGCodeProgram programWithLines:codes] completionHandler:^(BOOL success) {
 		completionHandler();
-	}];
+	} responseQueue:self.printQueue];
 }
 
 
-- (void)abort {	
-	self.aborted = YES;
-	
-	[self sendAbortSequenceWithCompletionHandler:^{
-		[self jobEnded];
+- (void)abort {
+	dispatch_async(self.printQueue, ^{
+		self.aborted = YES;
 		
-		if(self.abortionBlock) {
-			self.abortionBlock();
-		}
-	}];
+		[self sendAbortSequenceWithCompletionHandler:^{
+			[self jobEnded];
+			
+			dispatch_async(dispatch_get_main_queue(), ^{
+				if(self.abortionBlock) {
+					self.abortionBlock();
+				}
+			});
+		}];
+	});
 }
 
 

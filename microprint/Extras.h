@@ -26,12 +26,26 @@
 @interface NSData (TFExtras)
 @property (readonly) NSData *tf_fletcher16Checksum;
 - (NSUInteger)tf_indexOfData:(NSData*)subdata;
+- (NSData *)tf_dataByDecodingDeflate;
 @end
 
 
-@interface ORSSerialPort (TFExtras)
-- (BOOL)getUSBVendorID:(uint16_t*)vendorID productID:(uint16_t*)productID;
+@interface NSIndexSet (TFExtras)
++ (NSIndexSet*)tf_indexSetWithIndexes:(NSInteger)firstIndex, ...; // Terminate with negative
 @end
+
+
+extern NSString *const TFPErrorDomain;
+extern NSString *const TFPErrorGCodeStringKey;
+extern NSString *const TFPErrorGCodeKey;
+extern NSString *const TFPErrorGCodeLineKey;
+
+
+enum TFPErrorCodes {
+	TFPErrorCodeParseError = 1,
+	TFPErrorCodeIncompatibleCode,
+	TFPScriptExecutionError,
+};
 
 
 extern void TFLog(NSString *format, ...);
@@ -42,3 +56,5 @@ extern CGFloat TFPVectorDot(CGVector a, CGVector b);
 extern void TFPListenForInputLine(void(^block)(NSString *line));
 extern NSString *TFPGetInputLine();
 extern void TFPEraseLastLine();
+
+extern void TFAssertMainThread();

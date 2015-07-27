@@ -18,8 +18,8 @@
 		</class-extension>
 		
 		<class-extension extends="document" description="A G-code file document.">
-            <responds-to name="test">
-                <cocoa method="test:"/>
+            <responds-to name="print">
+                <cocoa method="scripting_print:"/>
             </responds-to>
 			
 			<property name="temperature" code="temp" description="the heater temperature" type="integer"><cocoa key="temperature"/></property>
@@ -27,11 +27,11 @@
 			<property name="filament type" code="filt" description="the filament type to use" type="filament type"><cocoa key="filamentType"/></property>
 			<property name="selected printer" code="pntr" description="the printer to use" type="printer"><cocoa key="selectedPrinter"/></property>
 
-			<property name="printing progress" code="prgr" description="the printing progress, as a number 0-1" type="real">
+			<property name="printing progress" code="prgr" description="the printing progress, as a number 0-1" type="real" access="r">
 				<cocoa key="progress.printingProgress"/>
 			</property>
 			
-			<property name="printing" code="prn?" description="is this document currently printing?" type="boolean">
+			<property name="printing" code="prn?" description="is this document currently printing?" type="boolean" access="r">
 				<cocoa key="printing"/>
 			</property>
         </class-extension>
@@ -44,6 +44,12 @@
 				<cocoa key="serialNumber"/>
 			</property>
 		</class>
+		
+		<command name="print" code="TFMPprnt" description="Print a G-code file document">
+			<direct-parameter description="the document to print">
+				<type type="document"/>
+			</direct-parameter>
+		</command>
 		
     </suite>
 </dictionary>

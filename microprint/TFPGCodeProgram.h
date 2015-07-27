@@ -18,8 +18,8 @@ typedef struct {
 @interface TFPGCodeProgram : NSObject
 + (instancetype)programWithLines:(NSArray*)lines;
 - (instancetype)initWithLines:(NSArray*)lines;
-- (instancetype)initWithString:(NSString*)string;
-- (instancetype)initWithFileURL:(NSURL*)URL;
+- (instancetype)initWithString:(NSString*)string error:(NSError**)outError;
+- (instancetype)initWithFileURL:(NSURL*)URL error:(NSError**)outError;
 
 @property (copy, readonly) NSArray *lines;
 

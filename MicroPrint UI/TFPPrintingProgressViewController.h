@@ -10,10 +10,12 @@
 @class TFPGCodeProgram, TFPPrinter, TFPPrintParameters;
 
 @interface TFPPrintingProgressViewController : NSViewController
-@property TFPGCodeProgram *program;
+@property NSURL *GCodeFileURL;
 @property TFPPrinter *printer;
 @property TFPPrintParameters *printParameters;
 
 - (void)start;
-@property (copy) void(^endHandler)();
+@property (copy) void(^endHandler)(BOOL didFinishPrint);
+
+- (NSString*)elapsedTimeString;
 @end

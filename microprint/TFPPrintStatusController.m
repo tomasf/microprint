@@ -20,7 +20,8 @@ static const NSInteger minimumPrintCodeOffsetForEstimation = 100;
 @property TFPPrintJob *printJob;
 
 @property TFTimer *timer;
-@property NSMutableDictionary *phaseRanges;
+@property NSDictionary *phaseRanges;
+@property NSArray *layers;
 @property uint64_t printContentStartTime;
 
 @property (readwrite) NSTimeInterval elapsedTime;
@@ -30,6 +31,13 @@ static const NSInteger minimumPrintCodeOffsetForEstimation = 100;
 @property (readwrite) double printProgress;
 @property (readwrite) TFPPrintPhase currentPhase;
 @property (readwrite) double phaseProgress;
+@property (readwrite) NSUInteger layerCount;
+@property (readwrite) TFPPrintLayer *currentLayer;
+
+// Live state
+@property BOOL relativeMode;
+@property TFPAbsolutePosition position;
+@property double feedRate;
 @end
 
 
@@ -44,7 +52,10 @@ static const NSInteger minimumPrintCodeOffsetForEstimation = 100;
 	NSParameterAssert(printJob != nil);
 	
 	self.printJob = printJob;
-	[self determinePhaseRanges];
+	self.phaseRanges = [self.printJob.program determinePhaseRanges];
+	self.layers = [self.printJob.program determineLayers];
+	
+	self.layerCount = [[self.layers valueForKeyPath:@"@max.layerIndex"] integerValue]+1;
 	
 	self.timer = [TFTimer timerWithInterval:1 repeating:YES block:^{
 		[weakSelf periodicalUpdate];
@@ -59,6 +70,8 @@ static const NSInteger minimumPrintCodeOffsetForEstimation = 100;
 
 
 - (void)progressUpdate {
+	TFAssertMainThread();
+	
 	NSUInteger offset = self.printJob.completedRequests;
 	self.currentPhase = [self printPhaseForIndex:offset];
 	NSRange phaseRange = [self rangeForPrintPhase:self.currentPhase];
@@ -91,52 +104,71 @@ static const NSInteger minimumPrintCodeOffsetForEstimation = 100;
 	}else{
 		self.hasRemainingTimeEstimate = NO;
 	}
+	
+	NSInteger previousCodeIndex = (NSInteger)self.printJob.completedRequests - 1;
+	NSUInteger nextCodeIndex = self.printJob.completedRequests;
+	
+	if(previousCodeIndex >= 0) {
+		TFPGCode *previousCode = self.printJob.program.lines[previousCodeIndex];
+		NSInteger G = [previousCode valueForField:'G' fallback:-1];
+		if(G == 90) {
+			self.relativeMode = NO;
+		}else if(G == 91) {
+			self.relativeMode = YES;
+		}
+	}
+	
+	if(nextCodeIndex < self.printJob.program.lines.count) {
+		TFPGCode *upcomingCode = self.printJob.program.lines[nextCodeIndex];
+		
+		TFPAbsolutePosition newPosition = self.position;
+		double newF = self.feedRate;
+		TFP3DVector *vector = upcomingCode.movementVector;
+
+		if(self.relativeMode) {
+			newPosition.x += vector.x.doubleValue;
+			newPosition.y += vector.y.doubleValue;
+			newPosition.z += vector.z.doubleValue;
+			newPosition.e += [upcomingCode valueForField:'E' fallback:0];
+		} else {
+			newPosition.x = vector.x ? vector.x.doubleValue : newPosition.x;
+			newPosition.y = vector.y ? vector.y.doubleValue : newPosition.y;
+			newPosition.z = vector.z ? vector.z.doubleValue : newPosition.z;
+			newPosition.e = [upcomingCode valueForField:'E' fallback:newPosition.e];
+		}
+		
+		newF = [upcomingCode valueForField:'F' fallback:newF];
+		
+		if(self.willMoveHandler) {
+			self.willMoveHandler(self.position, newPosition, newF, upcomingCode);
+		}
+		
+		if(upcomingCode.layerIndexFromComment != NSNotFound) {
+			self.currentLayer = [self printLayerForOffset:nextCodeIndex];
+
+			if(self.layerChangeHandler) {
+				self.layerChangeHandler();
+			}
+		}
+		
+		self.feedRate = newF;
+		self.position = newPosition;
+	}
+}
+
+
+- (TFPPrintLayer*)printLayerForOffset:(NSUInteger)offset {
+	for(TFPPrintLayer *layer in self.layers) {
+		if(NSLocationInRange(offset, layer.lineRange)) {
+			return layer;
+		}
+	}
+	return nil;
 }
 
 
 - (void)periodicalUpdate {
 	self.elapsedTime = self.printJob.elapsedTime;
-}
-
-
-- (void)determinePhaseRanges {
-	__block TFPPrintPhase phase = TFPPrintPhasePreamble;
-	__block NSUInteger startLine = 0;
-	NSMutableDictionary *phaseRanges = [NSMutableDictionary new];
-	
-	[self.printJob.program.lines enumerateObjectsUsingBlock:^(TFPGCode *code, NSUInteger index, BOOL *stop) {
-		if(!code.comment) {
-			return;
-		}
-		NSRange range = NSMakeRange(startLine, index-startLine);
-		
-		if([code.comment hasPrefix:@"LAYER:"]) {
-			NSInteger layerIndex = [[code.comment substringFromIndex:6] integerValue];
-			
-			if(phase == TFPPrintPhasePreamble) {
-				phaseRanges[@(TFPPrintPhasePreamble)] = [NSValue valueWithRange:range];
-				
-				if(layerIndex < 0) {
-					phase = TFPPrintPhaseAdhesion;
-				}else{
-					phase = TFPPrintPhaseModel;
-				}
-				startLine = index;
-			}else if(phase == TFPPrintPhaseAdhesion && layerIndex >= 0) {
-				phaseRanges[@(TFPPrintPhaseAdhesion)] = [NSValue valueWithRange:range];
-				phase = TFPPrintPhaseModel;
-				startLine = index;
-			}
-		}else if([code.comment isEqual:@"POSTAMBLE"]) {
-			phaseRanges[@(TFPPrintPhaseModel)] = [NSValue valueWithRange:range];
-			phase = TFPPrintPhasePostamble;
-			startLine = index;
-		}else if([code.comment isEqual:@"END"]) {
-			phaseRanges[@(TFPPrintPhasePostamble)] = [NSValue valueWithRange:range];
-		}
-	}];
-	
-	self.phaseRanges = phaseRanges;
 }
 
 

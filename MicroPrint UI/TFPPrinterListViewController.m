@@ -31,8 +31,6 @@
 	self.collectionView.maxItemSize = CGSizeMake(0, 100);
 	
 	self.printerManager = [TFPPrinterManager sharedManager];
-	
-	[self.printerManager startDryRunMode];
 }
 
 
