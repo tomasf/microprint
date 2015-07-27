@@ -29,6 +29,7 @@
 #import "TFPBedLevelCalibration.h"
 #import "TFPGCodeHelpers.h"
 #import "TFPTestBorderPrinting.h"
+#import "TFPGCodeHelpers.h"
 
 #import "MAKVONotificationCenter.h"
 #import "GBCli.h"
@@ -414,9 +415,9 @@
 	NSTimeInterval readDuration = (double)(TFNanosecondTime()-start) / NSEC_PER_SEC;
 	TFLog(@"Input G-code program consists of %d lines.", readDuration, (int)program.lines.count, (int)(program.lines.count / readDuration));
 
-	TFP3DVector *size = [program measureSize];
-	TFLog(@"Print dimensions: X: %.02f mm, Y: %.02f mm, Z: %.02f mm", size.x.doubleValue, size.y.doubleValue, size.z.doubleValue);
-	params.maxZ = size.z.doubleValue;
+	TFPCuboid box = [program measureBoundingBox];
+	TFLog(@"Print dimensions: X: %.02f mm, Y: %.02f mm, Z: %.02f mm", box.xSize, box.ySize, box.zSize);
+	params.boundingBox = box;
 
 	return program;
 }
