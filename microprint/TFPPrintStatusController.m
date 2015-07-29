@@ -7,7 +7,7 @@
 //
 
 #import "TFPPrintStatusController.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 
 #import "TFTimer.h"
 #import "MAKVONotificationCenter.h"

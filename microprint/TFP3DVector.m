@@ -5,7 +5,7 @@
 //
 
 #import "TFP3DVector.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 
 
 @interface TFP3DVector ()

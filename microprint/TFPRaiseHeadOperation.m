@@ -7,7 +7,7 @@
 //
 
 #import "TFPRaiseHeadOperation.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
 
 
@@ -51,7 +51,7 @@ static const double raiseStep = 0.5;
 				}
 				
 				[self raiseStepFromZ:Z toLevel:targetHeight completionHandler:^{
-					[self.printer sendGCode:[TFPGCode turnOffMotorsCode] responseHandler:^(BOOL success, NSString *value) {
+					[self.printer sendGCode:[TFPGCode turnOffMotorsCode] responseHandler:^(BOOL success, NSDictionary *value) {
 						if(self.didStopBlock) {
 							self.didStopBlock(YES);
 							[self ended];

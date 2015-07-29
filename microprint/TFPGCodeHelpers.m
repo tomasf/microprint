@@ -7,7 +7,7 @@
 //
 
 #import "TFPGCodeHelpers.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 
 
 @implementation TFPGCode (TFPHelpers)

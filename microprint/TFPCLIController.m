@@ -19,7 +19,7 @@
 
 #import "TFPPrinterManager.h"
 #import "TFPPrinter.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 #import "TFPDryRunPrinter.h"
 #import "TFPPrintJob.h"
 #import "TFPExtrusionOperation.h"

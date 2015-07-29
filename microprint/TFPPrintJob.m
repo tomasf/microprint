@@ -8,7 +8,7 @@
 
 #import "TFPPrintJob.h"
 #import "TFPGCode.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
 
 
@@ -84,7 +84,7 @@ static const uint16_t lineNumberWrapAround = 100;
 // Called on print queue
 - (void)sendCode:(TFPGCode*)code completionHandler:(void(^)())completionHandler {
 	if(code.hasFields) {
-		[self.printer sendGCode:code responseHandler:^(BOOL success, NSString *value) {
+		[self.printer sendGCode:code responseHandler:^(BOOL success, NSDictionary *value) {
 			completionHandler();
 		} responseQueue:self.printQueue];
 	}else{

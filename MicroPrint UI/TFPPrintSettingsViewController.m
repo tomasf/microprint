@@ -15,7 +15,7 @@
 #import "TFPGCodeDocument.h"
 #import "TFPPrintingProgressViewController.h"
 #import "TFPGCodeHelpers.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 #import "TFPScriptManager.h"
 @import QuartzCore;
 

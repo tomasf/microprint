@@ -7,7 +7,7 @@
 //
 
 #import "TFPExtrusionOperation.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
 
 #import "MAKVONotificationCenter.h"
@@ -42,7 +42,7 @@ static const double minimumZLevelForOperation = 25;
 	__weak __typeof__(self) weakSelf = self;
 	double extrusionLength = self.retract ? -extrudeStepLength : extrudeStepLength;
 	
-	[self.printer sendGCode:[TFPGCode codeForExtrusion:extrusionLength withFeedRate:extrudeFeedRate] responseHandler:^(BOOL success, NSString *value) {
+	[self.printer sendGCode:[TFPGCode codeForExtrusion:extrusionLength withFeedRate:extrudeFeedRate] responseHandler:^(BOOL success, NSDictionary *value) {
 		if(weakSelf.stopped) {
 			[weakSelf runEndCode];
 		} else {

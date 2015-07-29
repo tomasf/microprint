@@ -8,7 +8,7 @@
 
 #import "TFPPrintingProgressViewController.h"
 #import "TFPPrintJob.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 #import "TFPGCodeProgram.h"
 #import "TFPPrinter.h"
 #import "TFPPrintParameters.h"

@@ -11,7 +11,7 @@
 #import "TFPPrintParameters.h"
 #import "TFPGCodeProgram.h"
 
-@class TFPOperation;
+@class TFPOperation, TFPPrinterConnection;
 
 
 typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
@@ -28,8 +28,7 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 
 
 @interface TFPPrinter : NSObject
-- (instancetype)initWithSerialPort:(ORSSerialPort*)serialPort;
-@property (readonly) ORSSerialPort *serialPort;
+- (instancetype)initWithConnection:(TFPPrinterConnection*)connection;
 
 @property TFPOperation *currentOperation;
 
@@ -39,12 +38,11 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 @property (readonly) TFPPrinterColor color;
 @property (readonly, copy) NSString *serialNumber;
 @property (readonly, copy) NSString *firmwareVersion;
-@property (readonly, copy) NSString *identifier;
 
 + (NSString*)nameForPrinterColor:(TFPPrinterColor)color;
 
-- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSString *value))block;
-- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSString *value))block responseQueue:(dispatch_queue_t)queue;
+- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSDictionary *value))block;
+- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSDictionary *value))block responseQueue:(dispatch_queue_t)queue;
 - (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success))completionHandler;
 - (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success))completionHandler responseQueue:(dispatch_queue_t)queue;
 
@@ -65,6 +63,7 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 @property (readonly) double heaterTemperature; // Observable
 @property BOOL verboseMode;
 @property (readonly) BOOL pendingConnection;
+- (BOOL)printerShouldBeInvalidatedWithRemovedSerialPorts:(NSArray*)ports;
 
 @property (readonly) double speedMultiplier;
 @end

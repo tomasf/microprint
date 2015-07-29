@@ -9,7 +9,7 @@
 #import "TFPGCodeDocument.h"
 #import "TFPGCodeProgram.h"
 #import "TFPPrintSettingsViewController.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
 #import "TFPPrinterManager.h"
 

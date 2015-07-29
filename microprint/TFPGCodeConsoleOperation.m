@@ -8,7 +8,7 @@
 
 #import "TFPGCodeConsoleOperation.h"
 #import "TFPPrinter.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
 
 
@@ -43,7 +43,7 @@
 				}
 			}
 			
-			[self.printer sendGCode:code responseHandler:^(BOOL success, NSString *value) {
+			[self.printer sendGCode:code responseHandler:^(BOOL success, NSDictionary *value) {
 				if(success) {
 					TFLog(@"ok %@", value ?: @"");
 				}else{
