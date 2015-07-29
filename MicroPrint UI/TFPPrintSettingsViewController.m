@@ -242,7 +242,14 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 	}else if([key isEqual:@"fill_density"]) {
 		return [value stringByAppendingString:@"%"];
 	
-	}else if([key isEqual:@"platform_adhesion"] || [key isEqual:@"support"]) {
+	}else if([key isEqual:@"support"]) {
+		if([value isEqual:@"Touching buildplate"]) {
+			return @"Buildplate";
+		} else {
+			return value;
+		}
+	
+	}else if([key isEqual:@"platform_adhesion"]) {
 		return value;
 	
 	}else{
