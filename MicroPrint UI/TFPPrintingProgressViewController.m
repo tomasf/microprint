@@ -43,6 +43,7 @@ static const CGFloat drawContainerExpandedBottomMargin = 20;
 
 @property NSDateComponentsFormatter *durationFormatter;
 @property NSDateComponentsFormatter *approximateDurationFormatter;
+@property NSDateFormatter *shortTimeFormatter;
 @property NSNumberFormatter *percentFormatter;
 @property NSNumberFormatter *longPercentFormatter;
 
@@ -75,6 +76,10 @@ static const CGFloat drawContainerExpandedBottomMargin = 20;
 	self.longPercentFormatter.numberStyle = NSNumberFormatterPercentStyle;
 	self.longPercentFormatter.maximumFractionDigits = 2;
 	self.longPercentFormatter.minimumFractionDigits = 2;
+	
+	self.shortTimeFormatter = [NSDateFormatter new];
+	self.shortTimeFormatter.dateStyle = NSDateFormatterNoStyle;
+	self.shortTimeFormatter.timeStyle = NSDateFormatterShortStyle;
 	
 	return self;
 }
@@ -350,7 +355,11 @@ static const CGFloat drawContainerExpandedBottomMargin = 20;
 
 - (NSString*)remainingTimeString {
 	if(self.printStatusController.hasRemainingTimeEstimate) {
-		return [self.approximateDurationFormatter stringFromTimeInterval:self.printStatusController.estimatedRemainingTime];
+		NSTimeInterval estimate = self.printStatusController.estimatedRemainingTime;
+		NSString *remainingTime = [self.approximateDurationFormatter stringFromTimeInterval:estimate];
+		NSString *completionTime = [self.shortTimeFormatter stringFromDate:[NSDate dateWithTimeIntervalSinceNow:estimate]];
+		return [NSString stringWithFormat:@"%@ (%@)", remainingTime, completionTime];
+		
 	}else{
 		return @"Calculating…";
 	}
