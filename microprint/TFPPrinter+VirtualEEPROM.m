@@ -7,7 +7,7 @@
 //
 
 #import "TFPPrinter+VirtualEEPROM.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
 
 
@@ -15,20 +15,18 @@
 
 
 - (void)readVirtualEEPROMValueAtIndex:(NSUInteger)index completionHandler:(void(^)(BOOL success, int32_t value))completionHandler {
-	[self sendGCode:[TFPGCode codeForReadingVirtualEEPROMAtIndex:index] responseHandler:^(BOOL success, NSString *value) {
+	[self sendGCode:[TFPGCode codeForReadingVirtualEEPROMAtIndex:index] responseHandler:^(BOOL success, NSDictionary *values) {
 		if(!success) {
 			completionHandler(NO, 0);
 			return;
 		}
-		
-		NSDictionary *values = [TFPGCode dictionaryFromResponseValueString:value];
 		completionHandler(YES, [values[@"DT"] intValue]);
 	}];
 }
 
 
 - (void)writeVirtualEEPROMValueAtIndex:(NSUInteger)index value:(int32_t)value completionHandler:(void(^)(BOOL success))completionHandler {
-	[self sendGCode:[TFPGCode codeForWritingVirtualEEPROMAtIndex:index value:value] responseHandler:^(BOOL success, NSString *value) {
+	[self sendGCode:[TFPGCode codeForWritingVirtualEEPROMAtIndex:index value:value] responseHandler:^(BOOL success, NSDictionary *value) {
 		completionHandler(success);
 	}];
 }

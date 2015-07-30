@@ -7,22 +7,10 @@
 //
 
 #import "TFPGCodeHelpers.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 
 
 @implementation TFPGCode (TFPHelpers)
-
-
-const double maxMMPerSecond = 60.001;
-
-+ (double)convertFeedRate:(double)feedRate {
-	feedRate /= 60;
-	feedRate = MIN(feedRate, maxMMPerSecond);
-	
-	double factor = feedRate / maxMMPerSecond;
-	feedRate = 30 + (1 - factor) * 800;
-	return feedRate;
-}
 
 
 + (NSDictionary*)dictionaryFromResponseValueString:(NSString*)string {
@@ -72,12 +60,8 @@ const double maxMMPerSecond = 60.001;
 }
 
 
-+ (instancetype)moveWithPosition:(TFP3DVector*)position withRawFeedRate:(double)F {
-	return [self moveWithPosition:position extrusion:nil withRawFeedRate:F];
-}
 
-
-+ (instancetype)moveWithPosition:(TFP3DVector*)position extrusion:(NSNumber*)E withRawFeedRate:(double)F {
++ (instancetype)moveWithPosition:(TFP3DVector*)position extrusion:(NSNumber*)E feedRate:(double)F {
 	TFPGCode *code = [TFPGCode codeWithString:@"G0"];
 	
 	if(position.x) {
@@ -100,9 +84,8 @@ const double maxMMPerSecond = 60.001;
 }
 
 
-+ (instancetype)moveWithPosition:(TFP3DVector*)position withFeedRate:(double)F {
-	F = (F > 0) ? [self convertFeedRate:F] : F;
-	return [self moveWithPosition:position withRawFeedRate:F];
++ (instancetype)moveWithPosition:(TFP3DVector*)position feedRate:(double)F {
+	return [self moveWithPosition:position extrusion:nil feedRate:F];
 }
 
 
@@ -127,18 +110,12 @@ const double maxMMPerSecond = 60.001;
 }
 
 
-+ (instancetype)codeForExtrusion:(double)E withRawFeedRate:(double)feedRate {
++ (instancetype)codeForExtrusion:(double)E feedRate:(double)feedRate {
 	TFPGCode *code = [[TFPGCode codeWithField:'G' value:0] codeBySettingField:'E' toValue:E];
 	if(feedRate > 0) {
 		code = [code codeBySettingField:'F' toValue:feedRate];
 	}
 	return code;
-}
-
-
-+ (instancetype)codeForExtrusion:(double)E withFeedRate:(double)feedRate {
-	feedRate = (feedRate > 0) ? [self convertFeedRate:feedRate] : 0;
-	return [self codeForExtrusion:E withRawFeedRate:feedRate];
 }
 
 
@@ -187,10 +164,7 @@ const double maxMMPerSecond = 60.001;
 }
 
 
-+ (instancetype)codeForSettingFeedRate:(double)feedRate raw:(BOOL)raw {
-	if(!raw) {
-		feedRate = [self convertFeedRate:feedRate];
-	}
++ (instancetype)codeForSettingFeedRate:(double)feedRate {
 	return [[TFPGCode codeWithField:'G' value:0] codeBySettingField:'F' toValue:feedRate];
 }
 

@@ -5,7 +5,7 @@
 //
 
 #import "TFPGCode.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 #import "TFDataBuilder.h"
 #import "TFStringScanner.h"
 

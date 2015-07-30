@@ -8,7 +8,7 @@
 
 #import "TFPGCodeConsoleOperation.h"
 #import "TFPPrinter.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
 
 
@@ -20,30 +20,14 @@
 @implementation TFPGCodeConsoleOperation
 
 
-- (instancetype)initWithPrinter:(TFPPrinter*)printer {
-	if(!(self = [super initWithPrinter:printer])) return nil;
-	
-	self.convertFeedRates = YES;
-	
-	return self;
-}
-
-
 - (void)listen {
 	__weak __typeof__(self) weakSelf = self;
 	printf("> ");
 	
 	TFPListenForInputLine(^(NSString *line) {
 		TFPGCode *code = [[TFPGCode alloc] initWithString:line];
-		if(code) {
-			if(self.convertFeedRates) {
-				NSInteger G = [code valueForField:'G' fallback:-1];
-				if((G == 0 || G == 1) && [code hasField:'F']) {
-					code = [code codeBySettingField:'F' toValue:[TFPGCode convertFeedRate:[code valueForField:'F']]];
-				}
-			}
-			
-			[self.printer sendGCode:code responseHandler:^(BOOL success, NSString *value) {
+		if(code) {			
+			[self.printer sendGCode:code responseHandler:^(BOOL success, NSDictionary *value) {
 				if(success) {
 					TFLog(@"ok %@", value ?: @"");
 				}else{

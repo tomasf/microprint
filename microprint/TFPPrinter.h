@@ -11,7 +11,7 @@
 #import "TFPPrintParameters.h"
 #import "TFPGCodeProgram.h"
 
-@class TFPOperation;
+@class TFPOperation, TFPPrinterConnection;
 
 
 typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
@@ -28,8 +28,7 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 
 
 @interface TFPPrinter : NSObject
-- (instancetype)initWithSerialPort:(ORSSerialPort*)serialPort;
-@property (readonly) ORSSerialPort *serialPort;
+- (instancetype)initWithConnection:(TFPPrinterConnection*)connection;
 
 @property TFPOperation *currentOperation;
 
@@ -39,12 +38,11 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 @property (readonly) TFPPrinterColor color;
 @property (readonly, copy) NSString *serialNumber;
 @property (readonly, copy) NSString *firmwareVersion;
-@property (readonly, copy) NSString *identifier;
 
 + (NSString*)nameForPrinterColor:(TFPPrinterColor)color;
 
-- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSString *value))block;
-- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSString *value))block responseQueue:(dispatch_queue_t)queue;
+- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSDictionary *value))block;
+- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSDictionary *value))block responseQueue:(dispatch_queue_t)queue;
 - (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success))completionHandler;
 - (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success))completionHandler responseQueue:(dispatch_queue_t)queue;
 
@@ -60,11 +58,13 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 - (void)setRelativeMode:(BOOL)relative completionHandler:(void(^)(BOOL success))completionHandler;
 - (void)moveToPosition:(TFP3DVector*)position usingFeedRate:(double)F completionHandler:(void(^)(BOOL success))completionHandler;
 
-@property (copy) void(^resendHandler)(NSUInteger lineNumber); // Called on private queue, remember to dispatch!
-
 @property (readonly) double heaterTemperature; // Observable
-@property BOOL verboseMode;
+
 @property (readonly) BOOL pendingConnection;
+- (BOOL)printerShouldBeInvalidatedWithRemovedSerialPorts:(NSArray*)ports;
+
+@property (copy) void(^outgoingCodeBlock)(NSString *string);
+@property (copy) void(^incomingCodeBlock)(NSString *string);
 
 @property (readonly) double speedMultiplier;
 @end

@@ -8,15 +8,12 @@
 
 #import "TFPPrintJob.h"
 #import "TFPGCode.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
-
 
 @import IOKit.pwr_mgt;
 #import "MAKVONotificationCenter.h"
 
-
-static const uint16_t lineNumberWrapAround = 100;
 
 
 @interface TFPPrintJob ()
@@ -27,7 +24,6 @@ static const uint16_t lineNumberWrapAround = 100;
 @property IOPMAssertionID powerAssertionID;
 
 @property NSInteger codeOffset;
-@property NSUInteger lineNumber;
 @property uint64_t startTime;
 
 @property BOOL aborted;
@@ -35,7 +31,6 @@ static const uint16_t lineNumberWrapAround = 100;
 @property double targetTemperature;
 @property NSUInteger pendingRequestCount;
 @property (readwrite) NSUInteger completedRequests;
-@property NSMutableDictionary *sentCodeRegistry;
 @end
 
 
@@ -84,7 +79,7 @@ static const uint16_t lineNumberWrapAround = 100;
 // Called on print queue
 - (void)sendCode:(TFPGCode*)code completionHandler:(void(^)())completionHandler {
 	if(code.hasFields) {
-		[self.printer sendGCode:code responseHandler:^(BOOL success, NSString *value) {
+		[self.printer sendGCode:code responseHandler:^(BOOL success, NSDictionary *value) {
 			completionHandler();
 		} responseQueue:self.printQueue];
 	}else{
@@ -143,16 +138,8 @@ static const uint16_t lineNumberWrapAround = 100;
 		return nil;
 	}
 	
-	if(self.lineNumber == lineNumberWrapAround) {
-		[self sendLineNumberReset];
-	}
-	
 	TFPGCode *code = self.program.lines[self.codeOffset];
 	self.codeOffset++;
-	
-	code = [code codeBySettingLineNumber:self.lineNumber];
-	self.sentCodeRegistry[@(self.lineNumber)] = code;
-	self.lineNumber++;
 	
 	return code;
 }
@@ -180,16 +167,6 @@ static const uint16_t lineNumberWrapAround = 100;
 }
 
 
-// Called on print queue
-- (void)sendLineNumberReset {
-	TFPGCode *reset = [TFPGCode codeForSettingLineNumber:0];
-	
-	[self.printer sendGCode:reset responseHandler:nil];
-	self.lineNumber = 1;
-	self.sentCodeRegistry[@(0)] = reset;
-}
-
-
 - (void)start {
 	[super start];
 	__weak __typeof__(self) weakSelf = self;
@@ -198,12 +175,17 @@ static const uint16_t lineNumberWrapAround = 100;
 	self.pendingRequestCount = 0;
 	self.completedRequests = 0;
 	self.startTime = TFNanosecondTime();
-	self.sentCodeRegistry = [NSMutableDictionary new];
 	
-	self.printer.verboseMode = self.parameters.verbose;
+	if(self.parameters.verbose) {
+		self.printer.incomingCodeBlock = ^(NSString *line){
+			TFLog(@"< %@", line);
+		};
+		self.printer.outgoingCodeBlock = ^(NSString *line){
+			TFLog(@"> %@", line);
+		};
+	}
 	
 	dispatch_async(self.printQueue, ^{
-		[self sendLineNumberReset];
 		[self sendMoreIfNeeded];
 	});
 	
@@ -215,22 +197,6 @@ static const uint16_t lineNumberWrapAround = 100;
 			weakSelf.heatingProgressBlock(weakSelf.targetTemperature, temp);
 		}
 	}];
-	
-	self.printer.resendHandler = ^(NSUInteger lineNumber){
-		dispatch_async(self.printQueue, ^{
-			if(weakSelf.parameters.verbose) {
-				TFLog(@"Re-sending line N%d", (int)lineNumber);
-			}
-			
-			TFPGCode *code = weakSelf.sentCodeRegistry[@(lineNumber)];
-			code = [code codeBySettingField:'N' toValue:lineNumber];
-			
-			// Last block is cancelled, decrement pending to balance
-			weakSelf.pendingRequestCount--;
-			[weakSelf sendGCode:code];
-		});
-	};
-	
 	
 	IOReturn asserted = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoIdleSleep, kIOPMAssertionLevelOn, CFSTR("MicroPrint print job"), &(self->_powerAssertionID));
 	if (asserted != kIOReturnSuccess) {
@@ -246,13 +212,13 @@ static const uint16_t lineNumberWrapAround = 100;
 	
 	NSArray *codes = @[
 					   [TFPGCode relativeModeCode],
-					   [TFPGCode codeForExtrusion:-5 withFeedRate:retractFeedRate],
-					   [TFPGCode moveWithPosition:[TFP3DVector zVector:1] withFeedRate:raiseFeedRate],
-					   [TFPGCode codeForExtrusion:-4 withFeedRate:retractFeedRate],
-					   [TFPGCode moveWithPosition:[TFP3DVector zVector:4] withFeedRate:raiseFeedRate],
+					   [TFPGCode codeForExtrusion:-5 feedRate:retractFeedRate],
+					   [TFPGCode moveWithPosition:[TFP3DVector zVector:1] feedRate:raiseFeedRate],
+					   [TFPGCode codeForExtrusion:-4 feedRate:retractFeedRate],
+					   [TFPGCode moveWithPosition:[TFP3DVector zVector:4] feedRate:raiseFeedRate],
 					   [TFPGCode absoluteModeCode],
 					   
-					   [TFPGCode moveWithPosition:[TFP3DVector yVector:84] withFeedRate:-1],
+					   [TFPGCode moveWithPosition:[TFP3DVector yVector:84] feedRate:-1],
 					   [TFPGCode turnOffFanCode],
 					   [TFPGCode stopCode],
 					   ];
