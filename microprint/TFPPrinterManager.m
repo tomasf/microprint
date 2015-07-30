@@ -7,8 +7,9 @@
 
 #import "TFPPrinterManager.h"
 #import "TFPPrinter.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 #import "TFPDryRunPrinter.h"
+#import "TFPPrinterConnection.h"
 
 #import "MAKVONotificationCenter.h"
 #import "ORSSerialPortManager.h"
@@ -34,16 +35,6 @@ static const uint16_t M3DMicroUSBProductID = 0x2404;
 
 - (void)startDryRunMode {
 	[[self mutableArrayValueForKey:@"printers"] addObject:[TFPDryRunPrinter new]];
-	[self identifyPrinters];
-}
-
-
-- (void)identifyPrinters {
-	for(TFPPrinter *printer in self.printers) {
-		if(!printer.serialNumber) {
-			[printer establishConnectionWithCompletionHandler:nil];
-		}
-	}
 }
 
 
@@ -51,7 +42,8 @@ static const uint16_t M3DMicroUSBProductID = 0x2404;
 	return [[serialPorts tf_selectWithBlock:^BOOL(ORSSerialPort *port) {
 		return port.USBVendorID.unsignedShortValue == M3DMicroUSBVendorID && port.USBProductID.unsignedShortValue == M3DMicroUSBProductID;
 	}] tf_mapWithBlock:^TFPPrinter*(ORSSerialPort *serialPort) {
-		return [[TFPPrinter alloc] initWithSerialPort:serialPort];
+		TFPPrinterConnection *connection = [[TFPPrinterConnection alloc] initWithSerialPort:serialPort];
+		return [[TFPPrinter alloc] initWithConnection:connection];
 	}];
 }
 
@@ -61,19 +53,18 @@ static const uint16_t M3DMicroUSBProductID = 0x2404;
 	__weak __typeof__(self) weakSelf = self;
 	
 	self.printers = [self printersForSerialPorts:[ORSSerialPortManager sharedSerialPortManager].availablePorts];
-	[self identifyPrinters];
 	
 	[[ORSSerialPortManager sharedSerialPortManager] addObserver:self keyPath:@"availablePorts" options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld block:^(MAKVONotification *notification) {
 		NSMutableArray *printers = [weakSelf mutableArrayValueForKey:@"printers"];
 		
 		if(notification.kind == NSKeyValueChangeRemoval) {
-			NSPredicate *wasRemovedPredicate = [NSPredicate predicateWithFormat:@"serialPort IN %@ && pendingConnection = NO", notification.oldValue];
-			
-			[printers removeObjectsInArray:[weakSelf.printers filteredArrayUsingPredicate:wasRemovedPredicate]];
+			NSArray *removedPrinters = [weakSelf.printers tf_selectWithBlock:^BOOL(TFPPrinter *printer) {
+				return [printer printerShouldBeInvalidatedWithRemovedSerialPorts:notification.oldValue];
+			}];
+			[printers removeObjectsInArray:removedPrinters];
 		
 		}else{
 			[printers addObjectsFromArray:[weakSelf printersForSerialPorts:notification.newValue]];
-			[weakSelf identifyPrinters];
 		}
 	}];
 	

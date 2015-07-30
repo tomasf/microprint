@@ -6,7 +6,7 @@
 
 #import "TFPGCodeProgram.h"
 #import "TFPGCode.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 
 @interface TFPGCodeProgram ()
 @property (copy, readwrite) NSArray *lines;

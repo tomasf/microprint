@@ -7,7 +7,7 @@
 
 #import "TFPBasicPreparationPreprocessor.h"
 #import "TFPGCode.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
 
 
@@ -22,7 +22,7 @@
 	  
 	  [TFPGCode absoluteModeCode],
 	  //[TFPGCode turnOnMotorsCode],
-	  [TFPGCode moveWithPosition:[TFP3DVector zVector:5] withRawFeedRate:2900],
+	  [TFPGCode moveWithPosition:[TFP3DVector zVector:5] feedRate:2900],
 	  [TFPGCode moveHomeCode],
 	  //[TFPGCode turnOffMotorsCode],
 	  [TFPGCode codeForHeaterTemperature:parameters.idealTemperature waitUntilDone:YES],
@@ -30,10 +30,10 @@
 	  
 	  //[TFPGCode turnOnMotorsCode],
 	  [TFPGCode relativeModeCode],
-	  [TFPGCode codeForExtrusion:7.5 withRawFeedRate:2000],
+	  [TFPGCode codeForExtrusion:7.5 feedRate:2000],
 	  [TFPGCode resetExtrusionCode],
 	  [TFPGCode absoluteModeCode],
-	  [TFPGCode codeForSettingFeedRate:2400 raw:YES],
+	  [TFPGCode codeForSettingFeedRate:2400],
 	];
 	
 	double raiseHeight;
@@ -53,14 +53,14 @@
 	  [TFPGCode codeWithComment:@"POSTAMBLE"],
 	  
 	  [TFPGCode relativeModeCode],
-	  [TFPGCode codeForExtrusion:-1 withRawFeedRate:2000],
-	  [TFPGCode moveWithPosition:[TFP3DVector xyVectorWithX:5 y:5] withRawFeedRate:2000],
-	  [TFPGCode codeForExtrusion:-8 withRawFeedRate:2000],
+	  [TFPGCode codeForExtrusion:-1 feedRate:2000],
+	  [TFPGCode moveWithPosition:[TFP3DVector xyVectorWithX:5 y:5] feedRate:2000],
+	  [TFPGCode codeForExtrusion:-8 feedRate:2000],
 	  [TFPGCode codeForTurningOffHeater],
 
-	  [TFPGCode moveWithPosition:[TFP3DVector zVector:raiseHeight] withRawFeedRate:2900],
+	  [TFPGCode moveWithPosition:[TFP3DVector zVector:raiseHeight] feedRate:2900],
 	  [TFPGCode absoluteModeCode],
-	  [TFPGCode moveWithPosition:backPosition withRawFeedRate:-1],
+	  [TFPGCode moveWithPosition:backPosition feedRate:-1],
 	  
 	  [TFPGCode turnOffFanCode],
 	  [TFPGCode turnOffMotorsCode],
@@ -72,6 +72,7 @@
 		NSInteger M = [line valueForField:'M' fallback:-1];
 		return (M == 104 || M == 106 || M == 107 || M == 109);
 	};
+	
 	
 	NSMutableArray *output = [NSMutableArray new];
 	[output addObjectsFromArray:preamble];

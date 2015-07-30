@@ -10,10 +10,13 @@
 #import "TFPPrinterOperationsViewController.h"
 #import "TFPBedLevelSettingsViewController.h"
 #import "TFPBacklashSettingsViewController.h"
+#import "TFPConsoleViewController.h"
+#import "TFPExtras.h"
 
 
 @interface TFPPrinterCollectionViewItem ()
 @property NSWindowController *calibrationWindowController;
+@property NSWindowController *consoleWindowController;
 @end
 
 
@@ -23,8 +26,14 @@
 - (IBAction)showFilamentOptions:(NSButton*)button {
 	if([NSApp currentEvent].modifierFlags & NSAlternateKeyMask) {
 		TFPPrinter *printer = self.representedObject;
-		printer.verboseMode = !printer.verboseMode;
-		NSLog(@"Verbose mode %@", printer.verboseMode ? @"on" : @"off");
+		printer.incomingCodeBlock = ^(NSString *line){
+			TFLog(@"< %@", line);
+		};
+		printer.outgoingCodeBlock = ^(NSString *line){
+			TFLog(@"> %@", line);
+		};
+		
+		TFLog(@"Enabled printer communication logging");
 		return;
 	}
 	
@@ -46,6 +55,14 @@
 	viewController2.printer = self.representedObject;
 
 	[self.calibrationWindowController.window makeKeyAndOrderFront:nil];
+}
+
+
+- (IBAction)openConsole:(id)sender {
+	NSWindowController *windowController = [self.view.window.contentViewController.storyboard instantiateControllerWithIdentifier:@"consoleWindowController"];
+	[(TFPConsoleViewController*)windowController.contentViewController setPrinter:self.representedObject];
+	[windowController showWindow:nil];
+	self.consoleWindowController = windowController;
 }
 
 

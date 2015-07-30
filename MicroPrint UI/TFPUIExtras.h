@@ -1,5 +1,5 @@
 //
-//  TFPUIExtras.h
+//  TFPUITFPExtras.h
 //  microprint
 //
 //  Created by Tomas Franzén on Tue 2015-07-14.

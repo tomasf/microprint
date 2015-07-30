@@ -10,7 +10,4 @@
 #import "TFPOperation.h"
 
 @interface TFPGCodeConsoleOperation : TFPOperation
-- (void)start;
-
-@property BOOL convertFeedRates;
 @end

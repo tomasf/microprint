@@ -4,7 +4,7 @@
 //
 //
 
-#import "Extras.h"
+#import "TFPExtras.h"
 #import "zlib.h"
 @import MachO;
 
@@ -15,7 +15,7 @@ NSString *const TFPErrorGCodeKey = @"GCode";
 NSString *const TFPErrorGCodeLineKey = @"GCodeLine";
 
 
-@implementation NSArray (TFExtras)
+@implementation NSArray (TFPExtras)
 
 - (NSArray*)tf_mapWithBlock:(id(^)(id object))function {
 	NSMutableArray *array = [NSMutableArray new];
@@ -56,7 +56,7 @@ NSString *const TFPErrorGCodeLineKey = @"GCodeLine";
 
 
 
-@implementation NSDecimalNumber (TFExtras)
+@implementation NSDecimalNumber (TFPExtras)
 
 - (NSDecimalNumber *)tf_squareRoot {
 	if ([self compare:[NSDecimalNumber zero]] == NSOrderedAscending) {
@@ -90,7 +90,7 @@ NSString *const TFPErrorGCodeLineKey = @"GCodeLine";
 
 
 
-@implementation NSData (TFExtras)
+@implementation NSData (TFPExtras)
 
 - (NSData*)tf_fletcher16Checksum {
 	uint8_t check1 = 0;
@@ -161,7 +161,7 @@ NSString *const TFPErrorGCodeLineKey = @"GCodeLine";
 @end
 
 
-@implementation NSIndexSet (TFExtras)
+@implementation NSIndexSet (TFPExtras)
 
 
 + (NSIndexSet*)tf_indexSetWithIndexes:(NSInteger)firstIndex, ... {
@@ -237,4 +237,13 @@ void TFPEraseLastLine() {
 
 void TFAssertMainThread() {
 	NSCAssert([NSThread isMainThread], @"Whoa. This should be on the main thread but isn't!");
+}
+
+
+void TFMainThread(void(^block)()) {
+	if([NSThread isMainThread]) {
+		block();
+	}else{
+		dispatch_async(dispatch_get_main_queue(), block);
+	}
 }

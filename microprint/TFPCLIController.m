@@ -10,16 +10,9 @@
 #import "TFPGCode.h"
 #import "TFPGCodeProgram.h"
 
-#import "TFPFeedRateConversionPreprocessor.h"
-#import "TFPBasicPreparationPreprocessor.h"
-#import "TFPBedCompensationPreprocessor.h"
-#import "TFPBacklashPreprocessor.h"
-#import "TFPThermalBondingPreprocessor.h"
-#import "TFPWaveBondingPreprocessor.h"
-
 #import "TFPPrinterManager.h"
 #import "TFPPrinter.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 #import "TFPDryRunPrinter.h"
 #import "TFPPrintJob.h"
 #import "TFPExtrusionOperation.h"
@@ -90,7 +83,6 @@
 	[factoryDefaults setBool:NO forKey:@"dryrun"];
 	[factoryDefaults setBool:NO forKey:@"help"];
 	[factoryDefaults setBool:NO forKey:@"verbose"];
-	[factoryDefaults setBool:NO forKey:@"rawFeedRates"];
 	
 	GBSettings *settings = [GBSettings settingsWithName:@"CmdLine" parent:factoryDefaults];
 	
@@ -106,7 +98,6 @@
 	[parser registerOption:@"dryrun" shortcut:0 requirement:GBValueNone];
 	[parser registerOption:@"help" shortcut:0 requirement:GBValueNone];
 	[parser registerOption:@"verbose" shortcut:0 requirement:GBValueNone];
-	[parser registerOption:@"rawFeedRates" shortcut:0 requirement:GBValueNone];
 	
 	[parser registerOption:@"wavebonding" shortcut:0 requirement:GBValueNone];
 	[parser registerOption:@"backlash" shortcut:0 requirement:GBValueNone];
@@ -169,13 +160,13 @@
 	TFLog(@"");
 	
 	TFLog(@"Commands:");
-	TFLog(@"  print <gcode-path> [--temperature 215] [--filament PLA] [--backlash] [--backlashSpeed 1200] [--wavebonding]");
+	TFLog(@"  print <gcode-path> [--temperature 215] [--filament PLA] [--backlash] [--wavebonding]");
 	TFLog(@"    Prints a G-code file.");
 	
 	TFLog(@"  preprocess <gcode-path> [--output path]");
 	TFLog(@"    Applies pre-processing to a G-code file and writes it to a file or stdout. Also accepts same options as 'print'.");
 
-	TFLog(@"  console [--rawFeedRates]");
+	TFLog(@"  console");
 	TFLog(@"    Starts an interactive console where you can send arbitrary G-codes to the printer.");
 	
 	//TFLog(@"  bedlevel [--start 2] [--target 0.3]");
@@ -350,7 +341,6 @@
 		
 	}else if([command isEqual:@"console"]) {
 		TFPGCodeConsoleOperation *consoleOperation = [[TFPGCodeConsoleOperation alloc] initWithPrinter:self.printer];
-		consoleOperation.convertFeedRates = ![settings boolForKey:@"rawFeedRates"];
 		[consoleOperation start];
 		self.operation = consoleOperation;
 		
@@ -370,7 +360,7 @@
 
 
 - (void)home {
-	[self.printer sendGCode:[TFPGCode codeWithString:@"G28"] responseHandler:^(BOOL success, NSString *value) {
+	[self.printer sendGCode:[TFPGCode codeWithString:@"G28"] responseHandler:^(BOOL success, NSDictionary *value) {
 		[self.printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, NSNumber *E) {
 			TFLog(@"%@", position);
 			exit(EXIT_SUCCESS);
@@ -386,9 +376,9 @@
 	TFPGCode *motorsOff = [TFPGCode codeWithString:@"M18"];
 	TFPGCode *fansOff = [TFPGCode codeWithString:@"M107"];
 	
-	[printer sendGCode:heaterOff responseHandler:^(BOOL success, NSString *value) {
-		[printer sendGCode:fansOff responseHandler:^(BOOL success, NSString *value) {
-			[printer sendGCode:motorsOff responseHandler:^(BOOL success, NSString *value) {
+	[printer sendGCode:heaterOff responseHandler:^(BOOL success, NSDictionary *value) {
+		[printer sendGCode:fansOff responseHandler:^(BOOL success, NSDictionary *value) {
+			[printer sendGCode:motorsOff responseHandler:^(BOOL success, NSDictionary *value) {
 				exit(EXIT_SUCCESS);
 			}];
 		}];
