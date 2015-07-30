@@ -124,7 +124,7 @@ const double adjustmentAmount = 0.05;
 																	   [TFPGCode absoluteModeCode],
 																	   ]];
 	
-	[weakSelf.printer runGCodeProgram:preparation completionHandler:^(BOOL success) {
+	[weakSelf.printer runGCodeProgram:preparation completionHandler:^(BOOL success, NSArray *valueDictionaries) {
 		[weakSelf promptForZFromPositions:positions index:0 zOffset:raiseLevel completionHandler:^(NSArray *zValues) {
 			NSAssert(zValues.count == positions.count, @"Invalid prompt position response");
 			

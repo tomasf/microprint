@@ -223,7 +223,7 @@
 					   [TFPGCode stopCode],
 					   ];
 	
-	[self.printer runGCodeProgram:[TFPGCodeProgram programWithLines:codes] completionHandler:^(BOOL success) {
+	[self.printer runGCodeProgram:[TFPGCodeProgram programWithLines:codes] completionHandler:^(BOOL success, NSArray *valueDictionaries) {
 		completionHandler();
 	} responseQueue:self.printQueue];
 }

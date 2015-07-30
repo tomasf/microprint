@@ -12,24 +12,6 @@
 
 @implementation TFPGCode (TFPHelpers)
 
-
-+ (NSDictionary*)dictionaryFromResponseValueString:(NSString*)string {
-	NSMutableDictionary *dictionary = [NSMutableDictionary new];
-	NSArray *parts = [string componentsSeparatedByString:@" "];
-	
-	for(NSString *part in parts) {
-		NSUInteger colonIndex = [part rangeOfString:@":"].location;
-		if(colonIndex != NSNotFound) {
-			NSString *key = [part substringToIndex:colonIndex];
-			NSString *value = [part substringFromIndex:colonIndex+1];
-			dictionary[key] = value;
-		}
-	}
-	return dictionary;
-}
-
-
-
 - (instancetype)codeBySettingLineNumber:(uint16_t)lineNumber {
 	return [self codeBySettingField:'N' toValue:lineNumber];
 }

@@ -53,27 +53,14 @@
 
 
 - (void)readVirtualEEPROMValuesAtIndexes:(NSArray*)indexes completionHandler:(void(^)(BOOL success, NSArray *values))completionHandler {
-	NSUInteger firstIndex = [indexes.firstObject unsignedIntegerValue];
-	[self readVirtualEEPROMValueAtIndex:firstIndex completionHandler:^(BOOL success, int32_t value) {
-		if(!success) {
-			completionHandler(NO, nil);
-		}
-		NSMutableArray *values = [@[@(value)] mutableCopy];
-		
-		NSArray *rest = [indexes subarrayWithRange:NSMakeRange(1, indexes.count-1)];
-		if(rest.count) {
-			[self readVirtualEEPROMValuesAtIndexes:rest completionHandler:^(BOOL success, NSArray *subvalues) {
-				if(!success) {
-					completionHandler(NO, nil);
-					return;
-				}
-				[values addObjectsFromArray:subvalues];
-
+	NSMutableArray *values = [NSMutableArray new];
+	[indexes enumerateObjectsUsingBlock:^(NSNumber *indexNumber, NSUInteger index, BOOL *stop) {
+		[self readVirtualEEPROMValueAtIndex:indexNumber.integerValue completionHandler:^(BOOL success, int32_t value) {
+			[values addObject:@(value)];
+			if(index == indexes.count-1) {
 				completionHandler(YES, values);
-			}];
-		}else{
-			completionHandler(YES, values);
-		}
+			}
+		}];
 	}];
 }
 
@@ -93,25 +80,15 @@
 }
 
 
-- (void)writeVirtualEEPROMValues:(NSArray*)values forKeys:(NSArray*)keys completionHandler:(void(^)(BOOL success))completionHandler {
-	NSUInteger firstIndex = [keys.firstObject unsignedIntegerValue];
-	int32_t firstValue = [values.firstObject intValue];
-	
-	[self writeVirtualEEPROMValueAtIndex:firstIndex value:firstValue completionHandler:^(BOOL success) {
-		if(!success) {
-			completionHandler(NO);
-			return;
-		}
-		NSArray *restKeys = [keys subarrayWithRange:NSMakeRange(1, keys.count-1)];
-		NSArray *restValues = [values subarrayWithRange:NSMakeRange(1, values.count-1)];
+- (void)writeVirtualEEPROMValues:(NSArray*)values forIndexes:(NSArray*)keys completionHandler:(void(^)(BOOL success))completionHandler {
+	[keys enumerateObjectsUsingBlock:^(NSNumber *indexNumber, NSUInteger index, BOOL *stop) {
+		uint32_t value = [values[index] unsignedIntValue];
 		
-		if(restKeys.count) {
-			[self writeVirtualEEPROMValues:restValues forKeys:restKeys completionHandler:^(BOOL success) {
-				completionHandler(success);
-			}];
-		}else{
-			completionHandler(success);
-		}
+		[self writeVirtualEEPROMValueAtIndex:indexNumber.unsignedIntegerValue value:value completionHandler:^(BOOL success) {
+			if(index == keys.count-1) {
+				completionHandler(YES);
+			}
+		}];
 	}];
 }
 
@@ -124,7 +101,7 @@
 		[values addObject:value];
 	}];
 	
-	[self writeVirtualEEPROMValues:values forKeys:keys completionHandler:completionHandler];
+	[self writeVirtualEEPROMValues:values forIndexes:keys completionHandler:completionHandler];
 }
 
 

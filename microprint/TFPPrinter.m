@@ -35,6 +35,7 @@ static const NSUInteger maxLineNumber = 100;
 @property (readwrite) double heaterTemperature;
 
 @property NSMutableDictionary *responseListenerBlocks;
+@property (copy) void(^lastResponseListenerBlock)(BOOL success, NSDictionary *value);
 
 @property NSMutableArray *codeQueue;
 @property BOOL waitingForResponse;
@@ -157,6 +158,8 @@ static const NSUInteger maxLineNumber = 100;
 		[self.connection sendGCode:code];
 		self.waitingForResponse = YES;
 		
+		self.lastResponseListenerBlock = self.responseListenerBlocks[@((NSInteger)[code valueForField:'N'])];
+		
 		if(self.outgoingCodeBlock) {
 			dispatch_async(dispatch_get_main_queue(), ^{
 				self.outgoingCodeBlock(code.ASCIIRepresentation);
@@ -208,44 +211,46 @@ static const NSUInteger maxLineNumber = 100;
 		TFPGCode *code = [inputCode codeBySettingLineNumber:lineNumber];
 		code = [self adjustLine:code];
 		
-		[self.codeQueue addObject:code];
-		[self dequeueCode];
-		
 		if(outerBlock) {
 			self.responseListenerBlocks[@(lineNumber)] = outerBlock;
 		}else{
 			[self.responseListenerBlocks removeObjectForKey:@(lineNumber)];
 		}
+		
+		[self.codeQueue addObject:code];
+		[self dequeueCode];
 	});
 }
 
 
-- (void)runGCodeProgram:(TFPGCodeProgram *)program offset:(NSUInteger)offset completionHandler:(void (^)(BOOL))completionHandler responseQueue:(dispatch_queue_t)queue {
-	if(offset < program.lines.count) {
-		TFPGCode *code = program.lines[offset];
+- (void)runGCodeProgram:(TFPGCodeProgram *)program previousValues:(NSArray*)previousValues completionHandler:(void (^)(BOOL success, NSArray *valueDictionaries))completionHandler responseQueue:(dispatch_queue_t)queue {
+	if(previousValues.count < program.lines.count) {
+		TFPGCode *code = program.lines[previousValues.count];
 		[self sendGCode:code responseHandler:^(BOOL success, NSDictionary *value) {
 			if(success) {
-				[self runGCodeProgram:program offset:offset+1 completionHandler:completionHandler responseQueue:queue];
+				NSMutableArray *newValues = [previousValues mutableCopy];
+				[newValues addObject:value];
+				[self runGCodeProgram:program previousValues:newValues completionHandler:completionHandler responseQueue:queue];
 			}else{
 				dispatch_async(queue, ^{
-					completionHandler(NO);
+					completionHandler(NO, previousValues);
 				});
 			}
 		} responseQueue:queue];
 	}else{
 		dispatch_async(queue, ^{
-			completionHandler(YES);
+			completionHandler(YES, previousValues);
 		});
 	}
 }
 
 
-- (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success))completionHandler responseQueue:(dispatch_queue_t)queue {
-	[self runGCodeProgram:program offset:0 completionHandler:completionHandler responseQueue:queue];
+- (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success, NSArray *valueDictionaries))completionHandler responseQueue:(dispatch_queue_t)queue {
+	[self runGCodeProgram:program previousValues:@[] completionHandler:completionHandler responseQueue:queue];
 }
 
 
-- (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success))completionHandler {
+- (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success, NSArray *valueDictionaries))completionHandler {
 	[self runGCodeProgram:program completionHandler:completionHandler responseQueue:dispatch_get_main_queue()];
 }
 
@@ -338,16 +343,21 @@ static const NSUInteger maxLineNumber = 100;
 			[self dequeueCode];
 
 			if(lineNumber < 0) {
-				TFLog(@"This should never happen! Achtung!");
-				return;
+				if(self.lastResponseListenerBlock) {
+					void(^block)(BOOL, NSDictionary*) = self.lastResponseListenerBlock;
+					if(block) {
+						self.lastResponseListenerBlock = nil;
+						block(YES, value);
+					}
+				}
+				
+			}else{
+				void(^block)(BOOL, NSDictionary*) = self.responseListenerBlocks[@(lineNumber)];
+				if(block) {
+					[self.responseListenerBlocks removeObjectForKey:@(lineNumber)];
+					block(YES, value);
+				}
 			}
-			
-			void(^block)(BOOL, NSDictionary*) = self.responseListenerBlocks[@(lineNumber)];
-			if(block) {
-				[self.responseListenerBlocks removeObjectForKey:@(lineNumber)];
-				block(YES, value);
-			}
-			
 			break;
 		}
 		case TFPPrinterMessageTypeResendRequest:

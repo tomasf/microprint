@@ -67,7 +67,7 @@ static const double minimumZLevelForOperation = 25;
 																[TFPGCode turnOffMotorsCode],
 																]];
 	
-	[self.printer runGCodeProgram:end completionHandler:^(BOOL success) {
+	[self.printer runGCodeProgram:end completionHandler:^(BOOL success, NSArray *valueDictionaries) {
 		if(weakSelf.extrusionStoppedBlock) {
 			weakSelf.extrusionStoppedBlock();
 		}
@@ -101,7 +101,7 @@ static const double minimumZLevelForOperation = 25;
 																	   ]];
 	
 	
-	[printer runGCodeProgram:prep completionHandler:^(BOOL success) {
+	[printer runGCodeProgram:prep completionHandler:^(BOOL success, NSArray *valueDictionaries) {
 		[printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, NSNumber *E) {
 			TFP3DVector *raisedPosition = [TFP3DVector zVector:MAX(position.z.doubleValue, minimumZLevelForOperation)];
 			
@@ -119,7 +119,7 @@ static const double minimumZLevelForOperation = 25;
 					weakSelf.heatingStartedBlock();
 				}
 				
-				[printer runGCodeProgram:heatAndWait completionHandler:^(BOOL success) {
+				[printer runGCodeProgram:heatAndWait completionHandler:^(BOOL success, NSArray *valueDictionaries) {
 					[token remove];
 					if(weakSelf.stopped) {
 						[weakSelf runEndCode];

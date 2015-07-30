@@ -52,9 +52,6 @@
 + (instancetype)codeForReadingVirtualEEPROMAtIndex:(NSUInteger)valueIndex;
 + (instancetype)codeForWritingVirtualEEPROMAtIndex:(NSUInteger)valueIndex value:(int32_t)value;
 
-// Utilities
-+ (NSDictionary*)dictionaryFromResponseValueString:(NSString*)string;
-
 @property (readonly) NSInteger layerIndexFromComment;
 @end
 
