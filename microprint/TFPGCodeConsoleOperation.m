@@ -28,11 +28,6 @@
 		TFPGCode *code = [[TFPGCode alloc] initWithString:line];
 		if(code) {			
 			[self.printer sendGCode:code responseHandler:^(BOOL success, NSDictionary *value) {
-				if(success) {
-					TFLog(@"ok %@", value ?: @"");
-				}else{
-					TFLog(@"Error: %@", value);
-				}
 				[weakSelf listen];
 			}];
 		}else{
@@ -46,6 +41,10 @@
 
 - (void)start {
 	setbuf(stdout, NULL);
+	
+	self.printer.incomingCodeBlock = ^(NSString *line){
+		TFLog(@"  %@", line);
+	};
 	
 	[self listen];
 }

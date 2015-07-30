@@ -37,7 +37,6 @@
 
 - (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSDictionary *value))block responseQueue:(dispatch_queue_t)queue {
 	NSInteger G = [code valueForField:'G' fallback:-1];
-	TFLog(@"* Sent: %@", code);
 	NSTimeInterval duration = 0.02;
 	
 	if(G == 0 || G == 1) {

@@ -10,13 +10,6 @@
 #import "TFPGCode.h"
 #import "TFPGCodeProgram.h"
 
-#import "TFPFeedRateConversionPreprocessor.h"
-#import "TFPBasicPreparationPreprocessor.h"
-#import "TFPBedCompensationPreprocessor.h"
-#import "TFPBacklashPreprocessor.h"
-#import "TFPThermalBondingPreprocessor.h"
-#import "TFPWaveBondingPreprocessor.h"
-
 #import "TFPPrinterManager.h"
 #import "TFPPrinter.h"
 #import "TFPExtras.h"
@@ -167,7 +160,7 @@
 	TFLog(@"");
 	
 	TFLog(@"Commands:");
-	TFLog(@"  print <gcode-path> [--temperature 215] [--filament PLA] [--backlash] [--backlashSpeed 1200] [--wavebonding]");
+	TFLog(@"  print <gcode-path> [--temperature 215] [--filament PLA] [--backlash] [--wavebonding]");
 	TFLog(@"    Prints a G-code file.");
 	
 	TFLog(@"  preprocess <gcode-path> [--output path]");
@@ -367,7 +360,7 @@
 
 
 - (void)home {
-	[self.printer sendGCode:[TFPGCode codeWithString:@"G28"] responseHandler:^(BOOL success, NSString *value) {
+	[self.printer sendGCode:[TFPGCode codeWithString:@"G28"] responseHandler:^(BOOL success, NSDictionary *value) {
 		[self.printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, NSNumber *E) {
 			TFLog(@"%@", position);
 			exit(EXIT_SUCCESS);
@@ -383,9 +376,9 @@
 	TFPGCode *motorsOff = [TFPGCode codeWithString:@"M18"];
 	TFPGCode *fansOff = [TFPGCode codeWithString:@"M107"];
 	
-	[printer sendGCode:heaterOff responseHandler:^(BOOL success, NSString *value) {
-		[printer sendGCode:fansOff responseHandler:^(BOOL success, NSString *value) {
-			[printer sendGCode:motorsOff responseHandler:^(BOOL success, NSString *value) {
+	[printer sendGCode:heaterOff responseHandler:^(BOOL success, NSDictionary *value) {
+		[printer sendGCode:fansOff responseHandler:^(BOOL success, NSDictionary *value) {
+			[printer sendGCode:motorsOff responseHandler:^(BOOL success, NSDictionary *value) {
 				exit(EXIT_SUCCESS);
 			}];
 		}];

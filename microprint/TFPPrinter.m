@@ -78,7 +78,6 @@ static const NSUInteger maxLineNumber = 100;
 	self.pendingConnection = YES;
 	
 	[self.connection openWithCompletionHandler:^(NSError *error) {
-		NSLog(@"open %@", error);
 		self.pendingConnection = NO;
 		
 		if(error) {
@@ -88,7 +87,6 @@ static const NSUInteger maxLineNumber = 100;
 			[self.establishmentBlocks removeAllObjects];
 		}else{
 			[weakSelf identifyWithCompletionHandler:^(BOOL success) {
-				NSLog(@"identify");
 			}];
 		}
 	}];

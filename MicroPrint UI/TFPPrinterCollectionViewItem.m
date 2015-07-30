@@ -10,11 +10,13 @@
 #import "TFPPrinterOperationsViewController.h"
 #import "TFPBedLevelSettingsViewController.h"
 #import "TFPBacklashSettingsViewController.h"
+#import "TFPConsoleViewController.h"
 #import "TFPExtras.h"
 
 
 @interface TFPPrinterCollectionViewItem ()
 @property NSWindowController *calibrationWindowController;
+@property NSWindowController *consoleWindowController;
 @end
 
 
@@ -53,6 +55,14 @@
 	viewController2.printer = self.representedObject;
 
 	[self.calibrationWindowController.window makeKeyAndOrderFront:nil];
+}
+
+
+- (IBAction)openConsole:(id)sender {
+	NSWindowController *windowController = [self.view.window.contentViewController.storyboard instantiateControllerWithIdentifier:@"consoleWindowController"];
+	[(TFPConsoleViewController*)windowController.contentViewController setPrinter:self.representedObject];
+	[windowController showWindow:nil];
+	self.consoleWindowController = windowController;
 }
 
 
