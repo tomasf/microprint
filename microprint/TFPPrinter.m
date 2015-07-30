@@ -17,6 +17,9 @@
 #import "TFPPrinterConnection.h"
 
 
+static const NSUInteger maxLineNumber = 100;
+
+
 @interface TFPPrinter ()
 @property TFPPrinterConnection *connection;
 @property dispatch_queue_t communicationQueue;
@@ -31,11 +34,13 @@
 
 @property (readwrite) double heaterTemperature;
 
-@property NSMutableArray *unnumberedResponseListenerBlocks;
-@property NSMutableDictionary *numberedResponseListenerBlocks;
+@property NSMutableDictionary *responseListenerBlocks;
 
 @property NSMutableArray *codeQueue;
 @property BOOL waitingForResponse;
+
+@property NSUInteger lineNumberCounter;
+@property NSMutableDictionary *codeRegistry;
 @end
 
 
@@ -56,11 +61,10 @@
 	
 	self.communicationQueue = dispatch_queue_create("se.tomasf.microprint.serialPortQueue", DISPATCH_QUEUE_SERIAL);
 		
-	self.unnumberedResponseListenerBlocks = [NSMutableArray new];
-	self.numberedResponseListenerBlocks = [NSMutableDictionary new];
+	self.responseListenerBlocks = [NSMutableDictionary new];
 	self.establishmentBlocks = [NSMutableArray new];
 	self.codeQueue = [NSMutableArray new];
-	
+	self.codeRegistry = [NSMutableDictionary new];
 	self.pendingConnection = YES;
 	
 	[self.connection openWithCompletionHandler:^(NSError *error) {
@@ -114,11 +118,26 @@
 }
 
 
+// On communication queue here
+- (void)handleResendRequest:(NSUInteger)lineNumber {
+	TFPGCode *code = self.codeRegistry[@(lineNumber)];
+	TFLog(@"Got resend request for line %@", code);
+	
+	if(code) {
+		[self.codeQueue insertObject:code atIndex:0];
+		[self dequeueCode];
+	} else {
+		// Deep shit
+	}
+}
+
+
 - (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSDictionary *value))block {
 	[self sendGCode:code responseHandler:block responseQueue:dispatch_get_main_queue()];
 }
 
 
+// On communication queue here
 - (void)dequeueCode {
 	if(self.waitingForResponse) {
 		return;
@@ -133,25 +152,41 @@
 }
 
 
-- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSDictionary *value))block responseQueue:(dispatch_queue_t)queue {
-	void(^outerBlock)(BOOL,NSDictionary*) = ^(BOOL success, NSDictionary *value){
-		if(block) dispatch_async(queue, ^{
-			block(success, value);
-		});
-	};
+- (NSUInteger)consumeLineNumber {
+	NSUInteger line = self.lineNumberCounter;
 	
-	if(self.verboseMode) {
-		TFLog(@"< %@", code);
+	self.lineNumberCounter++;
+	if(self.lineNumberCounter > maxLineNumber) {
+		self.lineNumberCounter = 0;
+		[self sendGCode:[TFPGCode codeForSettingLineNumber:0] responseHandler:nil];
 	}
 	
+	return line;
+}
+
+
+- (void)sendGCode:(TFPGCode*)inputCode responseHandler:(void(^)(BOOL success, NSDictionary *value))block responseQueue:(dispatch_queue_t)queue {
+	void(^outerBlock)(BOOL,NSDictionary*) = block ? ^(BOOL success, NSDictionary *value){
+		dispatch_async(queue, ^{
+			block(success, value);
+		});
+	} : nil;
+	
 	dispatch_async(self.communicationQueue, ^{
+		NSUInteger lineNumber = [self consumeLineNumber];
+		TFPGCode *code = [inputCode codeBySettingLineNumber:lineNumber];
+		
 		[self.codeQueue addObject:code];
 		[self dequeueCode];
 		
-		if([code hasField:'N']) {
-			self.numberedResponseListenerBlocks[@((NSUInteger)[code valueForField:'N'])] = outerBlock;
+		if(outerBlock) {
+			self.responseListenerBlocks[@(lineNumber)] = outerBlock;
 		}else{
-			[self.unnumberedResponseListenerBlocks addObject:outerBlock];
+			[self.responseListenerBlocks removeObjectForKey:@(lineNumber)];
+		}
+		
+		if(self.verboseMode) {
+			TFLog(@"< %@", code);
 		}
 	});
 }
@@ -268,29 +303,25 @@
 
 - (void)handleMessage:(TFPPrinterMessageType)type lineNumber:(NSInteger)lineNumber value:(id)value {
 	// On communication queue here
-
+	
 	switch(type) {
-		case TFPPrinterMessageTypeConfirmation:
+		case TFPPrinterMessageTypeConfirmation: {
 			self.waitingForResponse = NO;
 			[self dequeueCode];
 			
-			if(lineNumber > -1) {
-				void(^block)(BOOL, NSDictionary*) = self.numberedResponseListenerBlocks[@(lineNumber)];
-				if(block) {
-					[self.numberedResponseListenerBlocks removeObjectForKey:@(lineNumber)];
-					block(YES, value);
-				}else{
-					TFLog(@"Unhandled OK response for N%d", (int)lineNumber);
-				}
-			}else{
-				if(self.unnumberedResponseListenerBlocks.count) {
-					void(^block)(BOOL, NSDictionary*) = self.unnumberedResponseListenerBlocks.firstObject;
-					[self.unnumberedResponseListenerBlocks removeObjectAtIndex:0];
-					block(YES, value);
-				}
+			if(lineNumber < 0) {
+				TFLog(@"This should never happen! Achtung!");
+				return;
 			}
-			break;
 			
+			void(^block)(BOOL, NSDictionary*) = self.responseListenerBlocks[@(lineNumber)];
+			if(block) {
+				[self.responseListenerBlocks removeObjectForKey:@(lineNumber)];
+				block(YES, value);
+			}
+			
+			break;
+		}
 		case TFPPrinterMessageTypeResendRequest:
 			[self handleResendRequest:lineNumber];
 			break;
@@ -311,18 +342,6 @@
 		case TFPPrinterMessageTypeInvalid: break;
 	}
 }
-
-
-- (void)handleResendRequest:(NSUInteger)lineNumber {
-	// On communication queue here
-	if(self.resendHandler) {
-		// Client's responsibility to dispatch in resend handler
-		self.resendHandler(lineNumber);
-	}else{
-		TFLog(@"Unhandled resend request for line %d", (int)lineNumber);
-	}
-}
-
 
 
 - (void)fetchBedOffsetsWithCompletionHandler:(void(^)(BOOL success, TFPBedLevelOffsets offsets))completionHandler {

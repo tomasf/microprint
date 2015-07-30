@@ -58,8 +58,6 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 - (void)setRelativeMode:(BOOL)relative completionHandler:(void(^)(BOOL success))completionHandler;
 - (void)moveToPosition:(TFP3DVector*)position usingFeedRate:(double)F completionHandler:(void(^)(BOOL success))completionHandler;
 
-@property (copy) void(^resendHandler)(NSUInteger lineNumber); // Called on private queue, remember to dispatch!
-
 @property (readonly) double heaterTemperature; // Observable
 @property BOOL verboseMode;
 @property (readonly) BOOL pendingConnection;

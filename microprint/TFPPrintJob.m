@@ -11,12 +11,9 @@
 #import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
 
-
 @import IOKit.pwr_mgt;
 #import "MAKVONotificationCenter.h"
 
-
-static const uint16_t lineNumberWrapAround = 100;
 
 
 @interface TFPPrintJob ()
@@ -27,7 +24,6 @@ static const uint16_t lineNumberWrapAround = 100;
 @property IOPMAssertionID powerAssertionID;
 
 @property NSInteger codeOffset;
-@property NSUInteger lineNumber;
 @property uint64_t startTime;
 
 @property BOOL aborted;
@@ -35,7 +31,6 @@ static const uint16_t lineNumberWrapAround = 100;
 @property double targetTemperature;
 @property NSUInteger pendingRequestCount;
 @property (readwrite) NSUInteger completedRequests;
-@property NSMutableDictionary *sentCodeRegistry;
 @end
 
 
@@ -143,16 +138,8 @@ static const uint16_t lineNumberWrapAround = 100;
 		return nil;
 	}
 	
-	if(self.lineNumber == lineNumberWrapAround) {
-		[self sendLineNumberReset];
-	}
-	
 	TFPGCode *code = self.program.lines[self.codeOffset];
 	self.codeOffset++;
-	
-	code = [code codeBySettingLineNumber:self.lineNumber];
-	self.sentCodeRegistry[@(self.lineNumber)] = code;
-	self.lineNumber++;
 	
 	return code;
 }
@@ -180,16 +167,6 @@ static const uint16_t lineNumberWrapAround = 100;
 }
 
 
-// Called on print queue
-- (void)sendLineNumberReset {
-	TFPGCode *reset = [TFPGCode codeForSettingLineNumber:0];
-	
-	[self.printer sendGCode:reset responseHandler:nil];
-	self.lineNumber = 1;
-	self.sentCodeRegistry[@(0)] = reset;
-}
-
-
 - (void)start {
 	[super start];
 	__weak __typeof__(self) weakSelf = self;
@@ -198,12 +175,10 @@ static const uint16_t lineNumberWrapAround = 100;
 	self.pendingRequestCount = 0;
 	self.completedRequests = 0;
 	self.startTime = TFNanosecondTime();
-	self.sentCodeRegistry = [NSMutableDictionary new];
 	
 	self.printer.verboseMode = self.parameters.verbose;
 	
 	dispatch_async(self.printQueue, ^{
-		[self sendLineNumberReset];
 		[self sendMoreIfNeeded];
 	});
 	
@@ -215,22 +190,6 @@ static const uint16_t lineNumberWrapAround = 100;
 			weakSelf.heatingProgressBlock(weakSelf.targetTemperature, temp);
 		}
 	}];
-	
-	self.printer.resendHandler = ^(NSUInteger lineNumber){
-		dispatch_async(self.printQueue, ^{
-			if(weakSelf.parameters.verbose) {
-				TFLog(@"Re-sending line N%d", (int)lineNumber);
-			}
-			
-			TFPGCode *code = weakSelf.sentCodeRegistry[@(lineNumber)];
-			code = [code codeBySettingField:'N' toValue:lineNumber];
-			
-			// Last block is cancelled, decrement pending to balance
-			weakSelf.pendingRequestCount--;
-			[weakSelf sendGCode:code];
-		});
-	};
-	
 	
 	IOReturn asserted = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoIdleSleep, kIOPMAssertionLevelOn, CFSTR("MicroPrint print job"), &(self->_powerAssertionID));
 	if (asserted != kIOReturnSuccess) {
