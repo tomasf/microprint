@@ -59,6 +59,16 @@ static const NSUInteger maxLineNumber = 100;
 		});
 	};
 	
+	self.connection.rawLineHandler = ^(NSString *string) {
+		if(weakSelf.incomingCodeBlock) {
+			dispatch_async(dispatch_get_main_queue(), ^{
+				if(![string isEqual:@"wait"]) {
+					weakSelf.incomingCodeBlock(string);
+				}
+			});
+		}
+	};
+	
 	self.communicationQueue = dispatch_queue_create("se.tomasf.microprint.serialPortQueue", DISPATCH_QUEUE_SERIAL);
 		
 	self.responseListenerBlocks = [NSMutableDictionary new];
@@ -149,8 +159,10 @@ static const NSUInteger maxLineNumber = 100;
 		[self.connection sendGCode:code];
 		self.waitingForResponse = YES;
 		
-		if(self.verboseMode) {
-			TFLog(@"< %@", code);
+		if(self.outgoingCodeBlock) {
+			dispatch_async(dispatch_get_main_queue(), ^{
+				self.outgoingCodeBlock(code.ASCIIRepresentation);
+			});
 		}
 	}
 }
@@ -326,11 +338,7 @@ static const NSUInteger maxLineNumber = 100;
 		case TFPPrinterMessageTypeConfirmation: {
 			self.waitingForResponse = NO;
 			[self dequeueCode];
-			
-			if(self.verboseMode) {
-				TFLog(@"> OK %@", value);
-			}
-			
+
 			if(lineNumber < 0) {
 				TFLog(@"This should never happen! Achtung!");
 				return;
@@ -356,9 +364,7 @@ static const NSUInteger maxLineNumber = 100;
 			break;
 			
 		case TFPPrinterMessageTypeUnknown:
-			if(self.verboseMode) {
-				TFLog(@"Unhandled input: %@", value);
-			}
+			TFLog(@"Unhandled input: %@", value);
 			break;
 			
 		case TFPPrinterMessageTypeInvalid: break;

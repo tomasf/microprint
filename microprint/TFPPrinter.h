@@ -59,9 +59,12 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 - (void)moveToPosition:(TFP3DVector*)position usingFeedRate:(double)F completionHandler:(void(^)(BOOL success))completionHandler;
 
 @property (readonly) double heaterTemperature; // Observable
-@property BOOL verboseMode;
+
 @property (readonly) BOOL pendingConnection;
 - (BOOL)printerShouldBeInvalidatedWithRemovedSerialPorts:(NSArray*)ports;
+
+@property (copy) void(^outgoingCodeBlock)(NSString *string);
+@property (copy) void(^incomingCodeBlock)(NSString *string);
 
 @property (readonly) double speedMultiplier;
 @end

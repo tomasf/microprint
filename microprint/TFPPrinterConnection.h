@@ -35,7 +35,9 @@ typedef NS_ENUM(NSUInteger, TFPPrinterConnectionState) {
 - (void)openWithCompletionHandler:(void(^)(NSError *error))completionHandler;
 - (void)sendGCode:(TFPGCode*)code;
 
-@property (copy) void(^messageHandler)(TFPPrinterMessageType type, NSInteger lineNumber, id value); // Called on private queue, remember to dispatch!
-
 @property (readonly) TFPPrinterConnectionState state;
+
+// Blocks are called on a private queue, remember to dispatch!
+@property (copy) void(^messageHandler)(TFPPrinterMessageType type, NSInteger lineNumber, id value);
+@property (copy) void(^rawLineHandler)(NSString *line);
 @end

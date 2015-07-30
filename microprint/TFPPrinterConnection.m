@@ -88,6 +88,10 @@
 - (void)processIncomingString:(NSString*)incomingLine {
 	// On serial port queue here
 	
+	if(self.rawLineHandler) {
+		self.rawLineHandler(incomingLine);
+	}
+	
 	TFStringScanner *scanner = [TFStringScanner scannerWithString:incomingLine];
 	TFPPrinterMessageType type = TFPPrinterMessageTypeInvalid;
 	NSInteger lineNumber = -1;

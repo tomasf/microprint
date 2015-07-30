@@ -176,7 +176,14 @@
 	self.completedRequests = 0;
 	self.startTime = TFNanosecondTime();
 	
-	self.printer.verboseMode = self.parameters.verbose;
+	if(self.parameters.verbose) {
+		self.printer.incomingCodeBlock = ^(NSString *line){
+			TFLog(@"< %@", line);
+		};
+		self.printer.outgoingCodeBlock = ^(NSString *line){
+			TFLog(@"> %@", line);
+		};
+	}
 	
 	dispatch_async(self.printQueue, ^{
 		[self sendMoreIfNeeded];

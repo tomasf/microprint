@@ -73,6 +73,7 @@
 		return (M == 104 || M == 106 || M == 107 || M == 109);
 	};
 	
+	
 	NSMutableArray *output = [NSMutableArray new];
 	[output addObjectsFromArray:preamble];
 	[output addObjectsFromArray:[self.program.lines tf_rejectWithBlock:setsTemperatureOrFanSpeed]];

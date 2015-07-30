@@ -10,6 +10,7 @@
 #import "TFPPrinterOperationsViewController.h"
 #import "TFPBedLevelSettingsViewController.h"
 #import "TFPBacklashSettingsViewController.h"
+#import "TFPExtras.h"
 
 
 @interface TFPPrinterCollectionViewItem ()
@@ -23,8 +24,14 @@
 - (IBAction)showFilamentOptions:(NSButton*)button {
 	if([NSApp currentEvent].modifierFlags & NSAlternateKeyMask) {
 		TFPPrinter *printer = self.representedObject;
-		printer.verboseMode = !printer.verboseMode;
-		NSLog(@"Verbose mode %@", printer.verboseMode ? @"on" : @"off");
+		printer.incomingCodeBlock = ^(NSString *line){
+			TFLog(@"< %@", line);
+		};
+		printer.outgoingCodeBlock = ^(NSString *line){
+			TFLog(@"> %@", line);
+		};
+		
+		TFLog(@"Enabled printer communication logging");
 		return;
 	}
 	
