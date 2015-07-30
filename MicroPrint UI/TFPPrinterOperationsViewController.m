@@ -9,6 +9,7 @@
 #import "TFPPrinterOperationsViewController.h"
 #import "TFPExtrusionOperation.h"
 #import "TFPRaiseHeadOperation.h"
+#import "TFPZeroBedOperation.h"
 
 
 @interface TFPPrinterOperationsViewController ()
@@ -19,6 +20,7 @@
 @property IBOutlet NSButton *extrudeButton;
 @property IBOutlet NSButton *raiseButton;
 @property IBOutlet NSButton *closeButton;
+@property IBOutlet NSButton *zeroHeadButton;
 
 @property IBOutlet NSProgressIndicator *progressIndicator;
 @property IBOutlet NSTextField *statusLabel;
@@ -100,6 +102,29 @@
 	[operation start];
 }
 
+- (void)zeroHead {
+    __weak __typeof__(self) weakSelf = self;
+    TFPZeroBedOperation *operation = [[TFPZeroBedOperation alloc] initWithPrinter:self.printer];
+    self.operation = operation;
+
+    operation.prepStartedBlock = ^{
+        weakSelf.statusLabel.stringValue = @"Preparing…";
+        [weakSelf.progressIndicator setIndeterminate:YES];
+        [weakSelf.progressIndicator startAnimation:nil];
+    };
+    
+    operation.zeroStartedBlock = ^{
+        weakSelf.statusLabel.stringValue = @"Zeroing… This may take a minute or two";
+    };
+
+    operation.didStopBlock = ^{
+        [weakSelf operationDidStop];
+    };
+
+    self.statusLabel.stringValue = @"Starting…";
+    [operation start];
+}
+
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
@@ -121,7 +146,10 @@
 			
 		}else if(sender == self.raiseButton) {
 			[self raise];
-		}
+            
+        }else if(sender == self.zeroHeadButton) {
+            [self zeroHead];
+        }
 		
 		for(NSButton *button in self.actionButtons) {
 			if(button != sender) {

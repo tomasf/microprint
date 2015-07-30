@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="8121.20" systemVersion="14F6a" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="7706" systemVersion="14F6a" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="8121.20"/>
+        <development version="6300" identifier="xcode"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="7706"/>
         <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
     </dependencies>
     <scenes>
@@ -786,18 +787,18 @@
         <scene sceneID="B6U-jz-k6P">
             <objects>
                 <collectionViewItem storyboardIdentifier="printerItemPrototype" id="bpn-zK-R5E" customClass="TFPPrinterCollectionViewItem" sceneMemberID="viewController">
-                    <view key="view" misplaced="YES" id="nvq-9U-B9C">
+                    <view key="view" id="nvq-9U-B9C">
                         <rect key="frame" x="0.0" y="0.0" width="500" height="92"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="nAD-xB-aed">
+                            <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="nAD-xB-aed">
                                 <rect key="frame" x="20" y="20" width="48" height="52"/>
                                 <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyDown" image="Micro" id="RLt-7o-Te2"/>
                                 <connections>
                                     <binding destination="bpn-zK-R5E" name="value" keyPath="representedObject.printerImage" id="G2T-iw-Xfr"/>
                                 </connections>
                             </imageView>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eed-Wx-7lZ">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="eed-Wx-7lZ">
                                 <rect key="frame" x="82" y="48" width="165" height="17"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="GR-15-04-30-01-050-049" id="iQE-eO-7gf">
                                     <font key="font" metaFont="systemBold"/>
@@ -808,7 +809,7 @@
                                     <binding destination="bpn-zK-R5E" name="value" keyPath="representedObject.displayName" id="gum-PS-vNC"/>
                                 </connections>
                             </textField>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="oQT-wp-bzT">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="oQT-wp-bzT">
                                 <rect key="frame" x="82" y="30" width="24" height="14"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Idle" id="3L0-TN-ttb">
                                     <font key="font" metaFont="smallSystem"/>
@@ -819,7 +820,7 @@
                                     <binding destination="bpn-zK-R5E" name="value" keyPath="representedObject.activityString" id="qyA-XK-dYS"/>
                                 </connections>
                             </textField>
-                            <button verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Se4-6Q-m1i">
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Se4-6Q-m1i">
                                 <rect key="frame" x="413" y="44" width="73" height="32"/>
                                 <buttonCell key="cell" type="push" title="Tools" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="4Ob-40-jQT">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -829,7 +830,7 @@
                                     <action selector="showFilamentOptions:" target="bpn-zK-R5E" id="NWp-rL-EsC"/>
                                 </connections>
                             </button>
-                            <button verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hKC-Vy-DiZ">
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="hKC-Vy-DiZ">
                                 <rect key="frame" x="379" y="13" width="107" height="32"/>
                                 <buttonCell key="cell" type="push" title="Calibration" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="oXW-PT-YJc">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -839,7 +840,7 @@
                                     <action selector="openCalibration:" target="bpn-zK-R5E" id="bjt-0J-8Sy"/>
                                 </connections>
                             </button>
-                            <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="nWe-6w-BDX">
+                            <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="100" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="nWe-6w-BDX">
                                 <rect key="frame" x="108" y="29" width="16" height="16"/>
                                 <connections>
                                     <binding destination="bpn-zK-R5E" name="animate" keyPath="representedObject.pendingConnection" id="Jdb-mp-6DW"/>
@@ -1226,7 +1227,7 @@ DQ
         <scene sceneID="Ina-vi-ZDF">
             <objects>
                 <viewController title="View Controller" id="RcU-HJ-V8B" customClass="TFPBedLevelSettingsViewController" sceneMemberID="viewController">
-                    <view key="view" misplaced="YES" id="D9E-nB-26x">
+                    <view key="view" id="D9E-nB-26x">
                         <rect key="frame" x="0.0" y="0.0" width="290" height="396"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
@@ -1238,7 +1239,7 @@ DQ
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
-                            <textField verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kVq-Km-lxU">
+                            <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kVq-Km-lxU">
                                 <rect key="frame" x="20" y="259" width="48" height="22"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="48" id="4tR-yD-qyC"/>
@@ -1257,14 +1258,14 @@ DQ
                                     </binding>
                                 </connections>
                             </textField>
-                            <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="amI-BZ-Gne">
+                            <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="amI-BZ-Gne">
                                 <rect key="frame" x="71" y="256" width="19" height="27"/>
                                 <stepperCell key="cell" continuous="YES" alignment="left" increment="0.01" minValue="-100" maxValue="100" id="ni4-Ml-8Gn"/>
                                 <connections>
                                     <binding destination="RcU-HJ-V8B" name="value" keyPath="backLeftOffset" id="GSE-CK-uns"/>
                                 </connections>
                             </stepper>
-                            <textField verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="RCA-Pn-XQU">
+                            <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="RCA-Pn-XQU">
                                 <rect key="frame" x="203" y="259" width="48" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="12,12" drawsBackground="YES" id="sIU-c9-RbT">
                                     <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="TUO-7m-w5d"/>
@@ -1280,7 +1281,7 @@ DQ
                                     </binding>
                                 </connections>
                             </textField>
-                            <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="W83-no-pz0">
+                            <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="W83-no-pz0">
                                 <rect key="frame" x="254" y="256" width="19" height="27"/>
                                 <stepperCell key="cell" continuous="YES" alignment="left" increment="0.01" minValue="-100" maxValue="100" id="vUq-am-TwT"/>
                                 <connections>
@@ -1356,7 +1357,7 @@ DQ
                                     <binding destination="RcU-HJ-V8B" name="value" keyPath="frontRightOffset" id="Bmx-Hk-5IH"/>
                                 </connections>
                             </stepper>
-                            <imageView horizontalHuggingPriority="1000" verticalHuggingPriority="1000" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="l0b-rj-9Dt">
+                            <imageView horizontalHuggingPriority="1000" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="l0b-rj-9Dt">
                                 <rect key="frame" x="48" y="181" width="195" height="90"/>
                                 <imageCell key="cell" refusesFirstResponder="YES" alignment="left" animates="YES" imageScaling="proportionallyDown" image="Printbed" id="0RN-gc-3mP"/>
                             </imageView>
@@ -1370,7 +1371,7 @@ Lower numbers = closer to the print bed.</string>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
-                            <button verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="GKm-OM-PAV">
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="GKm-OM-PAV">
                                 <rect key="frame" x="57" y="348" width="176" height="32"/>
                                 <buttonCell key="cell" type="push" title="Interactive Calibration" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Oyi-eW-QpI">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -1380,7 +1381,7 @@ Lower numbers = closer to the print bed.</string>
                                     <action selector="interactiveCalibration:" target="RcU-HJ-V8B" id="0yV-oF-zqV"/>
                                 </connections>
                             </button>
-                            <box verticalHuggingPriority="750" misplaced="YES" title="Box" boxType="separator" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="kfY-eb-Jop">
+                            <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="kfY-eb-Jop">
                                 <rect key="frame" x="20" y="299" width="250" height="5"/>
                                 <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
                                 <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
@@ -1400,7 +1401,7 @@ DQ
                                     <binding destination="RcU-HJ-V8B" name="enabled" keyPath="hasChanges" id="wHN-ba-eKY"/>
                                 </connections>
                             </button>
-                            <button verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ch9-Rt-oll">
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ch9-Rt-oll">
                                 <rect key="frame" x="73" y="315" width="144" height="32"/>
                                 <buttonCell key="cell" type="push" title="Print Test Border" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="zUD-32-xU3">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -1609,11 +1610,11 @@ DQ
             <objects>
                 <viewController storyboardIdentifier="extrusionViewController" id="ayc-Bv-sK5" customClass="TFPPrinterOperationsViewController" sceneMemberID="viewController">
                     <view key="view" id="qAH-BV-hsl">
-                        <rect key="frame" x="0.0" y="0.0" width="360" height="196"/>
+                        <rect key="frame" x="0.0" y="0.0" width="360" height="238"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Rc7-fT-LDU">
-                                <rect key="frame" x="14" y="148" width="142" height="32"/>
+                                <rect key="frame" x="14" y="190" width="142" height="32"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="130" id="65N-ZO-eDd"/>
                                 </constraints>
@@ -1626,7 +1627,7 @@ DQ
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="WF0-jv-jU8">
-                                <rect key="frame" x="14" y="115" width="142" height="32"/>
+                                <rect key="frame" x="14" y="157" width="142" height="32"/>
                                 <buttonCell key="cell" type="push" title="Extrude Filament" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="IPE-0D-SAC">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -1635,11 +1636,11 @@ DQ
                                     <action selector="buttonAction:" target="ayc-Bv-sK5" id="XUN-GM-PFo"/>
                                 </connections>
                             </button>
-                            <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" maxValue="1" doubleValue="1" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="5Wv-Kg-6jz">
-                                <rect key="frame" x="20" y="53" width="16" height="16"/>
+                            <progressIndicator horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" maxValue="1" doubleValue="1" displayedWhenStopped="NO" bezeled="NO" indeterminate="YES" controlSize="small" style="spinning" translatesAutoresizingMaskIntoConstraints="NO" id="5Wv-Kg-6jz">
+                                <rect key="frame" x="20" y="65" width="16" height="16"/>
                             </progressIndicator>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="tNf-bB-ArI">
-                                <rect key="frame" x="42" y="52" width="300" height="17"/>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="tNf-bB-ArI">
+                                <rect key="frame" x="42" y="94" width="300" height="17"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="left" id="1ds-MR-MAg">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -1647,7 +1648,7 @@ DQ
                                 </textFieldCell>
                             </textField>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ZF2-Yk-cHa">
-                                <rect key="frame" x="14" y="82" width="142" height="32"/>
+                                <rect key="frame" x="14" y="124" width="142" height="32"/>
                                 <buttonCell key="cell" type="push" title="Raise Print Head" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="hmU-6N-WnI">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -1656,8 +1657,18 @@ DQ
                                     <action selector="buttonAction:" target="ayc-Bv-sK5" id="8wZ-OR-HIt"/>
                                 </connections>
                             </button>
+                            <button verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="XGc-h4-ZG7">
+                                <rect key="frame" x="14" y="91" width="142" height="32"/>
+                                <buttonCell key="cell" type="push" title="Find Bed Zero" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="TGn-8q-l7O">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="buttonAction:" target="ayc-Bv-sK5" id="1in-o2-FJG"/>
+                                </connections>
+                            </button>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="GJM-lC-zQc">
-                                <rect key="frame" x="160" y="158" width="182" height="14"/>
+                                <rect key="frame" x="160" y="200" width="182" height="14"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Removal of installed filament" id="NFa-hm-C8b">
                                     <font key="font" metaFont="smallSystem"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -1665,7 +1676,7 @@ DQ
                                 </textFieldCell>
                             </textField>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="IBW-b1-8jy">
-                                <rect key="frame" x="160" y="125" width="134" height="14"/>
+                                <rect key="frame" x="160" y="167" width="134" height="14"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Insertion of new filament" id="hvL-OC-X8x">
                                     <font key="font" metaFont="smallSystem"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -1685,6 +1696,14 @@ DQ
                                     <action selector="dismissController:" target="ayc-Bv-sK5" id="bsj-os-Luq"/>
                                 </connections>
                             </button>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="V0e-e6-O7D">
+                                <rect key="frame" x="160" y="101" width="125" height="14"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Finds zero head height" id="KuX-AA-Ln5">
+                                    <font key="font" metaFont="smallSystem"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
                         </subviews>
                         <constraints>
                             <constraint firstItem="Rc7-fT-LDU" firstAttribute="baseline" secondItem="GJM-lC-zQc" secondAttribute="baseline" id="0ki-bG-eqg"/>
@@ -1693,12 +1712,12 @@ DQ
                             <constraint firstItem="WF0-jv-jU8" firstAttribute="top" secondItem="Rc7-fT-LDU" secondAttribute="bottom" constant="12" id="Gj5-3J-8NV"/>
                             <constraint firstItem="Rc7-fT-LDU" firstAttribute="width" secondItem="WF0-jv-jU8" secondAttribute="width" id="Guh-1C-emi"/>
                             <constraint firstItem="ZF2-Yk-cHa" firstAttribute="top" secondItem="WF0-jv-jU8" secondAttribute="bottom" constant="12" id="JIS-IQ-BbK"/>
-                            <constraint firstItem="5Wv-Kg-6jz" firstAttribute="top" secondItem="ZF2-Yk-cHa" secondAttribute="bottom" constant="20" id="P6g-8U-s67"/>
                             <constraint firstItem="5Wv-Kg-6jz" firstAttribute="centerY" secondItem="tNf-bB-ArI" secondAttribute="centerY" id="PTw-vN-YmU"/>
                             <constraint firstItem="WF0-jv-jU8" firstAttribute="leading" secondItem="qAH-BV-hsl" secondAttribute="leading" constant="20" id="Rgw-n7-aKm"/>
                             <constraint firstItem="GJM-lC-zQc" firstAttribute="leading" secondItem="Rc7-fT-LDU" secondAttribute="trailing" constant="12" id="Z85-zq-2fG"/>
                             <constraint firstItem="Rc7-fT-LDU" firstAttribute="leading" secondItem="qAH-BV-hsl" secondAttribute="leading" constant="20" id="fiF-0w-JAe"/>
                             <constraint firstItem="IBW-b1-8jy" firstAttribute="baseline" secondItem="WF0-jv-jU8" secondAttribute="baseline" id="gOt-GZ-MTm"/>
+                            <constraint firstItem="5Wv-Kg-6jz" firstAttribute="top" secondItem="XGc-h4-ZG7" secondAttribute="bottom" constant="30" id="lZY-xG-jdi"/>
                             <constraint firstItem="Rc7-fT-LDU" firstAttribute="width" secondItem="ZF2-Yk-cHa" secondAttribute="width" id="ntw-cz-HFu"/>
                             <constraint firstAttribute="trailing" secondItem="GJM-lC-zQc" secondAttribute="trailing" constant="20" id="oDY-W0-wOX"/>
                             <constraint firstAttribute="centerX" secondItem="cph-hT-vPJ" secondAttribute="centerX" id="puA-w7-Glv"/>
@@ -1717,11 +1736,12 @@ DQ
                         <outlet property="raiseButton" destination="ZF2-Yk-cHa" id="N0C-bH-1OH"/>
                         <outlet property="retractButton" destination="Rc7-fT-LDU" id="2BV-7H-sYq"/>
                         <outlet property="statusLabel" destination="tNf-bB-ArI" id="cDR-j8-L0k"/>
+                        <outlet property="zeroHeadButton" destination="XGc-h4-ZG7" id="tRV-Cl-6Pk"/>
                     </connections>
                 </viewController>
                 <customObject id="BDb-ih-ONj" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="576" y="951"/>
+            <point key="canvasLocation" x="590" y="934"/>
         </scene>
         <!--Printing Progress View Controller-->
         <scene sceneID="gSv-o8-Dyf">
@@ -1737,7 +1757,7 @@ DQ
                                     <binding destination="loo-rf-9XD" name="value" keyPath="printStatusController.printProgress" id="aqM-Jd-yiq"/>
                                 </connections>
                             </progressIndicator>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="OKE-bC-0aN">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="OKE-bC-0aN">
                                 <rect key="frame" x="210" y="484" width="69" height="17"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Printing…" id="aeq-d9-bW2">
                                     <font key="font" metaFont="systemBold"/>
@@ -1904,7 +1924,7 @@ DQ
                         <rect key="frame" x="0.0" y="0.0" width="283" height="237"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="xVY-ot-Pu0">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="xVY-ot-Pu0">
                                 <rect key="frame" x="91" y="200" width="101" height="17"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Print Summary" id="15g-Ne-x1h">
                                     <font key="font" metaFont="systemBold"/>
@@ -2111,7 +2131,7 @@ Gw
                                                         <action selector="cancel:" target="meg-yd-2SE" id="UxQ-W0-UhL"/>
                                                     </connections>
                                                 </button>
-                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Rri-KT-pDB">
+                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Rri-KT-pDB">
                                                     <rect key="frame" x="151" y="90" width="111" height="17"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Back-left corner" id="PKg-SY-F1G">
                                                         <font key="font" metaFont="systemBold"/>
