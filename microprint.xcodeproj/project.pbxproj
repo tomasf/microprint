@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0F974CC91B6995FC00376C8B /* TFPZeroBedOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F974CC81B6995FC00376C8B /* TFPZeroBedOperation.m */; };
 		0F974CCA1B6995FC00376C8B /* TFPZeroBedOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F974CC81B6995FC00376C8B /* TFPZeroBedOperation.m */; };
 		C90072AE1B3BF6660097594F /* TFPPrintJob.m in Sources */ = {isa = PBXBuildFile; fileRef = C90072AD1B3BF6660097594F /* TFPPrintJob.m */; };
 		C90072B11B3C51F20097594F /* TFStringScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = C90072B01B3C51F20097594F /* TFStringScanner.m */; };
@@ -690,7 +689,6 @@
 				C9C729E11B516DA900277F1F /* TFPFilament.m in Sources */,
 				C9FD1C4B1B384ED400F98FF1 /* TFPBedCompensationPreprocessor.m in Sources */,
 				C9FD1C591B395FD000F98FF1 /* TFPPrinterManager.m in Sources */,
-				0F974CC91B6995FC00376C8B /* TFPZeroBedOperation.m in Sources */,
 				C9C871B31B59102A0063FACB /* TFPTestBorderPrinting.m in Sources */,
 				C99E87251B3AB4CD0099E79E /* TFPDryRunPrinter.m in Sources */,
 				C92B59DF1B40205F00F38FA7 /* TFPCLIController.m in Sources */,

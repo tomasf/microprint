@@ -11,6 +11,7 @@
 @interface TFPZeroBedOperation : TFPOperation
 @property (copy) void(^prepStartedBlock)();
 @property (copy) void(^zeroStartedBlock)();
+@property (copy) void(^parkStartedBlock)();
 @property (copy) void(^didStopBlock)();
 
 - (void)start;

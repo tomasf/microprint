@@ -21,12 +21,12 @@
 - (void)start {
     [super start];
 
-    const double temperature = 150.0; // Warm it up a bit
+    const double temperature = 150; // Warm it up a bit
 
     const double moveFeedRate = 2900;
 
-    TFP3DVector *parkingLocation = [TFP3DVector vectorWithX:nil Y:@90.0 Z:@10.0];
-    
+    TFP3DVector *parkingLocation = [TFP3DVector vectorWithX:nil Y:@90 Z:@10];
+
     __weak TFPPrinter *printer = self.printer;
     __weak __typeof__(self) weakSelf = self;
 
@@ -39,7 +39,7 @@
     TFPGCodeProgram *zero = [TFPGCodeProgram programWithLines:@[
                                 [TFPGCode codeWithField:'G' value:30],
                                 ]];
-    
+
     TFLog(@"Zero prep");
 
     if(self.prepStartedBlock) {
@@ -49,35 +49,52 @@
 
     [printer runGCodeProgram:prep completionHandler:^(BOOL success) {
 
-        if(self.zeroStartedBlock) {
-            TFLog(@"didStart Zero");
-            weakSelf.zeroStartedBlock();
-        }
+        if (weakSelf.stopped) {
+            [weakSelf doStop];
+        }else{
 
-        [printer runGCodeProgram:zero completionHandler:^(BOOL success) {
+            if(weakSelf.zeroStartedBlock) {
+                TFLog(@"didStart Zero");
+                weakSelf.zeroStartedBlock();
+            }
+            
+            [printer runGCodeProgram:zero completionHandler:^(BOOL success) {
 
-            TFLog(@"Zeroing done, parking...");
-            [printer moveToPosition:parkingLocation usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
-                if(weakSelf.didStopBlock) {
-                    TFLog(@"didStop");
-                    [weakSelf ended];
-                    weakSelf.didStopBlock(YES);
+                if (weakSelf.stopped) {
+                    [weakSelf doStop];
+                }else{
+                    
+                    if(weakSelf.parkStartedBlock) {
+                        TFLog(@"didStart Park");
+                        weakSelf.parkStartedBlock();
+                    }
+                    
+                    TFLog(@"Zeroing done, parking...");
+                    [printer moveToPosition:parkingLocation usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
+                        [weakSelf doStop];
+                    }];
                 }
             }];
-        }];
+        }
     }];
-
-
-
 }
 
 - (void)stop {
     [super stop];
     self.stopped = YES;
+    TFLog(@"Stop requested");
 }
 
 - (NSString *)activityDescription {
     return @"Finding bed zero height";
+}
+
+- (void)doStop {
+    TFLog(@"didStop");
+    [self ended];
+    if(self.didStopBlock) {
+        self.didStopBlock();
+    }
 }
 
 @end

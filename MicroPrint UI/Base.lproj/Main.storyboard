@@ -1696,7 +1696,7 @@ DQ
                                     <action selector="dismissController:" target="ayc-Bv-sK5" id="bsj-os-Luq"/>
                                 </connections>
                             </button>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="V0e-e6-O7D">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="V0e-e6-O7D">
                                 <rect key="frame" x="160" y="101" width="125" height="14"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Finds zero head height" id="KuX-AA-Ln5">
                                     <font key="font" metaFont="smallSystem"/>
@@ -1704,10 +1704,21 @@ DQ
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
+                            <button horizontalHuggingPriority="750" verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="PbD-kW-ynt">
+                                <rect key="frame" x="297" y="95" width="25" height="25"/>
+                                <buttonCell key="cell" type="help" bezelStyle="helpButton" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="REF-Px-Pg8">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="buttonAction:" target="ayc-Bv-sK5" id="skI-KJ-wOc"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <constraints>
                             <constraint firstItem="Rc7-fT-LDU" firstAttribute="baseline" secondItem="GJM-lC-zQc" secondAttribute="baseline" id="0ki-bG-eqg"/>
                             <constraint firstItem="Rc7-fT-LDU" firstAttribute="top" secondItem="qAH-BV-hsl" secondAttribute="top" constant="20" id="2Fs-Kg-SAY"/>
+                            <constraint firstItem="PbD-kW-ynt" firstAttribute="centerY" secondItem="V0e-e6-O7D" secondAttribute="centerY" id="ADy-3v-Tw2"/>
                             <constraint firstItem="tNf-bB-ArI" firstAttribute="leading" secondItem="5Wv-Kg-6jz" secondAttribute="trailing" constant="8" id="AKb-jw-UlF"/>
                             <constraint firstItem="WF0-jv-jU8" firstAttribute="top" secondItem="Rc7-fT-LDU" secondAttribute="bottom" constant="12" id="Gj5-3J-8NV"/>
                             <constraint firstItem="Rc7-fT-LDU" firstAttribute="width" secondItem="WF0-jv-jU8" secondAttribute="width" id="Guh-1C-emi"/>
@@ -1718,6 +1729,7 @@ DQ
                             <constraint firstItem="Rc7-fT-LDU" firstAttribute="leading" secondItem="qAH-BV-hsl" secondAttribute="leading" constant="20" id="fiF-0w-JAe"/>
                             <constraint firstItem="IBW-b1-8jy" firstAttribute="baseline" secondItem="WF0-jv-jU8" secondAttribute="baseline" id="gOt-GZ-MTm"/>
                             <constraint firstItem="5Wv-Kg-6jz" firstAttribute="top" secondItem="XGc-h4-ZG7" secondAttribute="bottom" constant="30" id="lZY-xG-jdi"/>
+                            <constraint firstItem="PbD-kW-ynt" firstAttribute="leading" secondItem="V0e-e6-O7D" secondAttribute="trailing" constant="16" id="lnd-uZ-RiW"/>
                             <constraint firstItem="Rc7-fT-LDU" firstAttribute="width" secondItem="ZF2-Yk-cHa" secondAttribute="width" id="ntw-cz-HFu"/>
                             <constraint firstAttribute="trailing" secondItem="GJM-lC-zQc" secondAttribute="trailing" constant="20" id="oDY-W0-wOX"/>
                             <constraint firstAttribute="centerX" secondItem="cph-hT-vPJ" secondAttribute="centerX" id="puA-w7-Glv"/>
@@ -1737,6 +1749,7 @@ DQ
                         <outlet property="retractButton" destination="Rc7-fT-LDU" id="2BV-7H-sYq"/>
                         <outlet property="statusLabel" destination="tNf-bB-ArI" id="cDR-j8-L0k"/>
                         <outlet property="zeroHeadButton" destination="XGc-h4-ZG7" id="tRV-Cl-6Pk"/>
+                        <outlet property="zeroHeadHelpButton" destination="PbD-kW-ynt" id="heK-HA-Sxy"/>
                     </connections>
                 </viewController>
                 <customObject id="BDb-ih-ONj" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
