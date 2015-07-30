@@ -90,7 +90,6 @@
 	[factoryDefaults setBool:NO forKey:@"dryrun"];
 	[factoryDefaults setBool:NO forKey:@"help"];
 	[factoryDefaults setBool:NO forKey:@"verbose"];
-	[factoryDefaults setBool:NO forKey:@"rawFeedRates"];
 	
 	GBSettings *settings = [GBSettings settingsWithName:@"CmdLine" parent:factoryDefaults];
 	
@@ -106,7 +105,6 @@
 	[parser registerOption:@"dryrun" shortcut:0 requirement:GBValueNone];
 	[parser registerOption:@"help" shortcut:0 requirement:GBValueNone];
 	[parser registerOption:@"verbose" shortcut:0 requirement:GBValueNone];
-	[parser registerOption:@"rawFeedRates" shortcut:0 requirement:GBValueNone];
 	
 	[parser registerOption:@"wavebonding" shortcut:0 requirement:GBValueNone];
 	[parser registerOption:@"backlash" shortcut:0 requirement:GBValueNone];
@@ -175,7 +173,7 @@
 	TFLog(@"  preprocess <gcode-path> [--output path]");
 	TFLog(@"    Applies pre-processing to a G-code file and writes it to a file or stdout. Also accepts same options as 'print'.");
 
-	TFLog(@"  console [--rawFeedRates]");
+	TFLog(@"  console");
 	TFLog(@"    Starts an interactive console where you can send arbitrary G-codes to the printer.");
 	
 	//TFLog(@"  bedlevel [--start 2] [--target 0.3]");
@@ -350,7 +348,6 @@
 		
 	}else if([command isEqual:@"console"]) {
 		TFPGCodeConsoleOperation *consoleOperation = [[TFPGCodeConsoleOperation alloc] initWithPrinter:self.printer];
-		consoleOperation.convertFeedRates = ![settings boolForKey:@"rawFeedRates"];
 		[consoleOperation start];
 		self.operation = consoleOperation;
 		

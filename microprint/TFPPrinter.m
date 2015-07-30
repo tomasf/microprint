@@ -148,6 +148,10 @@ static const NSUInteger maxLineNumber = 100;
 		[self.codeQueue removeObjectAtIndex:0];
 		[self.connection sendGCode:code];
 		self.waitingForResponse = YES;
+		
+		if(self.verboseMode) {
+			TFLog(@"< %@", code);
+		}
 	}
 }
 
@@ -165,6 +169,23 @@ static const NSUInteger maxLineNumber = 100;
 }
 
 
+- (double)convertToM3DSpecificFeedRate:(double)feedRate {
+	double factor = MIN(feedRate / 3600.06, 1.0);
+	return 30 + (1 - factor) * 800;
+}
+
+
+- (TFPGCode*)adjustLine:(TFPGCode*)code {
+	if([code hasField:'G'] && [code hasField:'F']) {
+		double feedRate = code.feedRate;
+		feedRate = [self convertToM3DSpecificFeedRate:feedRate];
+		code = [code codeBySettingField:'F' toValue:feedRate];
+	}
+	
+	return code;
+}
+
+
 - (void)sendGCode:(TFPGCode*)inputCode responseHandler:(void(^)(BOOL success, NSDictionary *value))block responseQueue:(dispatch_queue_t)queue {
 	void(^outerBlock)(BOOL,NSDictionary*) = block ? ^(BOOL success, NSDictionary *value){
 		dispatch_async(queue, ^{
@@ -175,6 +196,7 @@ static const NSUInteger maxLineNumber = 100;
 	dispatch_async(self.communicationQueue, ^{
 		NSUInteger lineNumber = [self consumeLineNumber];
 		TFPGCode *code = [inputCode codeBySettingLineNumber:lineNumber];
+		code = [self adjustLine:code];
 		
 		[self.codeQueue addObject:code];
 		[self dequeueCode];
@@ -183,10 +205,6 @@ static const NSUInteger maxLineNumber = 100;
 			self.responseListenerBlocks[@(lineNumber)] = outerBlock;
 		}else{
 			[self.responseListenerBlocks removeObjectForKey:@(lineNumber)];
-		}
-		
-		if(self.verboseMode) {
-			TFLog(@"< %@", code);
 		}
 	});
 }
@@ -308,6 +326,10 @@ static const NSUInteger maxLineNumber = 100;
 		case TFPPrinterMessageTypeConfirmation: {
 			self.waitingForResponse = NO;
 			[self dequeueCode];
+			
+			if(self.verboseMode) {
+				TFLog(@"> OK %@", value);
+			}
 			
 			if(lineNumber < 0) {
 				TFLog(@"This should never happen! Achtung!");
@@ -481,7 +503,7 @@ static const NSUInteger maxLineNumber = 100;
 		code = [code codeBySettingField:'Z' toValue:position.z.doubleValue];
 	}
 	if(F >= 0) {
-		code = [code codeBySettingField:'F' toValue:[TFPGCode convertFeedRate:F]];
+		code = [code codeBySettingField:'F' toValue:F];
 	}
 
 	[self sendGCode:code responseHandler:^(BOOL success, NSDictionary *value) {

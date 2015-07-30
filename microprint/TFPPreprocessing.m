@@ -10,7 +10,6 @@
 #import "TFPBasicPreparationPreprocessor.h"
 #import "TFPBedCompensationPreprocessor.h"
 #import "TFPBacklashPreprocessor.h"
-#import "TFPFeedRateConversionPreprocessor.h"
 #import "TFPThermalBondingPreprocessor.h"
 #import "TFPWaveBondingPreprocessor.h"
 
@@ -33,7 +32,6 @@
 		program = [[[TFPBacklashPreprocessor alloc] initWithProgram:program] processUsingParameters:params];
 	}
 	
-	program = [[[TFPFeedRateConversionPreprocessor alloc] initWithProgram:program] processUsingParameters:params];
 	return program;
 }
 

@@ -42,7 +42,7 @@ static const double minimumZLevelForOperation = 25;
 	__weak __typeof__(self) weakSelf = self;
 	double extrusionLength = self.retract ? -extrudeStepLength : extrudeStepLength;
 	
-	[self.printer sendGCode:[TFPGCode codeForExtrusion:extrusionLength withFeedRate:extrudeFeedRate] responseHandler:^(BOOL success, NSDictionary *value) {
+	[self.printer sendGCode:[TFPGCode codeForExtrusion:extrusionLength feedRate:extrudeFeedRate] responseHandler:^(BOOL success, NSDictionary *value) {
 		if(weakSelf.stopped) {
 			[weakSelf runEndCode];
 		} else {

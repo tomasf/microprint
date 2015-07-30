@@ -205,13 +205,13 @@
 	
 	NSArray *codes = @[
 					   [TFPGCode relativeModeCode],
-					   [TFPGCode codeForExtrusion:-5 withFeedRate:retractFeedRate],
-					   [TFPGCode moveWithPosition:[TFP3DVector zVector:1] withFeedRate:raiseFeedRate],
-					   [TFPGCode codeForExtrusion:-4 withFeedRate:retractFeedRate],
-					   [TFPGCode moveWithPosition:[TFP3DVector zVector:4] withFeedRate:raiseFeedRate],
+					   [TFPGCode codeForExtrusion:-5 feedRate:retractFeedRate],
+					   [TFPGCode moveWithPosition:[TFP3DVector zVector:1] feedRate:raiseFeedRate],
+					   [TFPGCode codeForExtrusion:-4 feedRate:retractFeedRate],
+					   [TFPGCode moveWithPosition:[TFP3DVector zVector:4] feedRate:raiseFeedRate],
 					   [TFPGCode absoluteModeCode],
 					   
-					   [TFPGCode moveWithPosition:[TFP3DVector yVector:84] withFeedRate:-1],
+					   [TFPGCode moveWithPosition:[TFP3DVector yVector:84] feedRate:-1],
 					   [TFPGCode turnOffFanCode],
 					   [TFPGCode stopCode],
 					   ];
