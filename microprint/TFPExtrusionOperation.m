@@ -7,7 +7,7 @@
 //
 
 #import "TFPExtrusionOperation.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
 
 #import "MAKVONotificationCenter.h"
@@ -42,7 +42,7 @@ static const double minimumZLevelForOperation = 25;
 	__weak __typeof__(self) weakSelf = self;
 	double extrusionLength = self.retract ? -extrudeStepLength : extrudeStepLength;
 	
-	[self.printer sendGCode:[TFPGCode codeForExtrusion:extrusionLength withFeedRate:extrudeFeedRate] responseHandler:^(BOOL success, NSString *value) {
+	[self.printer sendGCode:[TFPGCode codeForExtrusion:extrusionLength feedRate:extrudeFeedRate] responseHandler:^(BOOL success, NSDictionary *value) {
 		if(weakSelf.stopped) {
 			[weakSelf runEndCode];
 		} else {
@@ -67,7 +67,7 @@ static const double minimumZLevelForOperation = 25;
 																[TFPGCode turnOffMotorsCode],
 																]];
 	
-	[self.printer runGCodeProgram:end completionHandler:^(BOOL success) {
+	[self.printer runGCodeProgram:end completionHandler:^(BOOL success, NSArray *valueDictionaries) {
 		if(weakSelf.extrusionStoppedBlock) {
 			weakSelf.extrusionStoppedBlock();
 		}
@@ -101,7 +101,7 @@ static const double minimumZLevelForOperation = 25;
 																	   ]];
 	
 	
-	[printer runGCodeProgram:prep completionHandler:^(BOOL success) {
+	[printer runGCodeProgram:prep completionHandler:^(BOOL success, NSArray *valueDictionaries) {
 		[printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, NSNumber *E) {
 			TFP3DVector *raisedPosition = [TFP3DVector zVector:MAX(position.z.doubleValue, minimumZLevelForOperation)];
 			
@@ -119,7 +119,7 @@ static const double minimumZLevelForOperation = 25;
 					weakSelf.heatingStartedBlock();
 				}
 				
-				[printer runGCodeProgram:heatAndWait completionHandler:^(BOOL success) {
+				[printer runGCodeProgram:heatAndWait completionHandler:^(BOOL success, NSArray *valueDictionaries) {
 					[token remove];
 					if(weakSelf.stopped) {
 						[weakSelf runEndCode];

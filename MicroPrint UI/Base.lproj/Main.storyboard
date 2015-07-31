@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="7706" systemVersion="14F6a" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="7706" systemVersion="14E46" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
     <dependencies>
-        <development version="6300" identifier="xcode"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="7706"/>
         <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
     </dependencies>
@@ -140,6 +139,12 @@
                                             </connections>
                                         </menuItem>
                                         <menuItem isSeparatorItem="YES" id="uyl-h8-XO2"/>
+                                        <menuItem title="Clear" keyEquivalent="k" id="1Dx-bj-wFU">
+                                            <connections>
+                                                <action selector="clearLog:" target="Ady-hI-5gd" id="x7e-4Q-UZR"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="hJl-sw-5ec"/>
                                         <menuItem title="Find" id="4EN-yA-p0u">
                                             <modifierMask key="keyEquivalentModifierMask"/>
                                             <menu key="submenu" title="Find" id="1b7-l0-nxx">
@@ -712,7 +717,7 @@
                                     <rect key="frame" x="1" y="1" width="248" height="158"/>
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
-                                        <collectionView selectable="YES" maxNumberOfColumns="1" id="D2R-gA-4Hh">
+                                        <collectionView selectable="YES" maxNumberOfColumns="1" id="D2R-gA-4Hh" customClass="TFPPrinterListCollectionView">
                                             <rect key="frame" x="0.0" y="0.0" width="248" height="158"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <color key="primaryBackgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -846,6 +851,16 @@
                                     <binding destination="bpn-zK-R5E" name="animate" keyPath="representedObject.pendingConnection" id="Jdb-mp-6DW"/>
                                 </connections>
                             </progressIndicator>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ilc-T0-2wC">
+                                <rect key="frame" x="322" y="44" width="91" height="32"/>
+                                <buttonCell key="cell" type="push" title="Console" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="i5a-vI-N2e">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="openConsole:" target="bpn-zK-R5E" id="tRd-TD-dMq"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <constraints>
                             <constraint firstItem="oQT-wp-bzT" firstAttribute="top" secondItem="eed-Wx-7lZ" secondAttribute="bottom" constant="4" id="2C7-Cy-kq9"/>
@@ -856,13 +871,18 @@
                             <constraint firstItem="hKC-Vy-DiZ" firstAttribute="top" secondItem="Se4-6Q-m1i" secondAttribute="bottom" constant="10" id="Nst-uH-GGu"/>
                             <constraint firstItem="eed-Wx-7lZ" firstAttribute="leading" secondItem="nAD-xB-aed" secondAttribute="trailing" constant="16" id="P9E-Jm-QJt"/>
                             <constraint firstAttribute="trailing" secondItem="hKC-Vy-DiZ" secondAttribute="trailing" constant="20" id="YNf-CP-wqI"/>
+                            <constraint firstItem="Se4-6Q-m1i" firstAttribute="baseline" secondItem="Ilc-T0-2wC" secondAttribute="baseline" id="du8-FP-mS0"/>
                             <constraint firstItem="nWe-6w-BDX" firstAttribute="leading" secondItem="oQT-wp-bzT" secondAttribute="trailing" constant="4" id="gkh-JL-0sd"/>
                             <constraint firstItem="nAD-xB-aed" firstAttribute="top" secondItem="nvq-9U-B9C" secondAttribute="top" constant="20" id="ifD-Vx-ehh"/>
                             <constraint firstItem="nWe-6w-BDX" firstAttribute="centerY" secondItem="oQT-wp-bzT" secondAttribute="centerY" id="lek-Uo-TEK"/>
+                            <constraint firstItem="Se4-6Q-m1i" firstAttribute="leading" secondItem="Ilc-T0-2wC" secondAttribute="trailing" constant="12" id="mBr-IC-RP8"/>
                             <constraint firstAttribute="bottom" secondItem="nAD-xB-aed" secondAttribute="bottom" constant="20" id="o3X-56-j8a"/>
                             <constraint firstItem="nAD-xB-aed" firstAttribute="leading" secondItem="nvq-9U-B9C" secondAttribute="leading" constant="20" id="ua0-um-kTF"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <segue destination="apI-ke-j7Y" kind="show" identifier="console" id="6Ix-eG-3T1"/>
+                    </connections>
                 </collectionViewItem>
                 <customObject id="t54-aV-SLV" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -1199,6 +1219,94 @@ DQ
             </objects>
             <point key="canvasLocation" x="75" y="1230"/>
         </scene>
+        <!--Window Controller-->
+        <scene sceneID="hNg-QE-J96">
+            <objects>
+                <windowController storyboardIdentifier="consoleWindowController" id="apI-ke-j7Y" sceneMemberID="viewController">
+                    <window key="window" title="Console" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="Console" animationBehavior="default" id="Z6M-SU-Cvp">
+                        <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+                        <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+                        <rect key="contentRect" x="425" y="461" width="480" height="270"/>
+                        <rect key="screenRect" x="0.0" y="0.0" width="2560" height="1417"/>
+                    </window>
+                    <connections>
+                        <segue destination="0Ri-2R-8xj" kind="relationship" relationship="window.shadowedContentViewController" id="rjU-uB-XoQ"/>
+                    </connections>
+                </windowController>
+                <customObject id="mVP-Qn-Kyf" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-8" y="1727"/>
+        </scene>
+        <!--Console View Controller-->
+        <scene sceneID="N5C-4F-bjO">
+            <objects>
+                <viewController id="0Ri-2R-8xj" customClass="TFPConsoleViewController" sceneMemberID="viewController">
+                    <view key="view" id="Fza-ew-RBU">
+                        <rect key="frame" x="0.0" y="0.0" width="480" height="276"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <scrollView borderType="none" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ryn-ub-O1o">
+                                <rect key="frame" x="0.0" y="26" width="480" height="250"/>
+                                <clipView key="contentView" id="oBH-Xs-SYX">
+                                    <rect key="frame" x="1" y="1" width="223" height="133"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <subviews>
+                                        <textView editable="NO" importsGraphics="NO" findStyle="bar" incrementalSearchingEnabled="YES" continuousSpellChecking="YES" allowsUndo="YES" verticallyResizable="YES" allowsNonContiguousLayout="YES" quoteSubstitution="YES" dashSubstitution="YES" smartInsertDelete="YES" id="eZg-fA-UAT">
+                                            <rect key="frame" x="0.0" y="0.0" width="223" height="133"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                            <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                            <size key="minSize" width="465" height="250"/>
+                                            <size key="maxSize" width="465" height="10000000"/>
+                                            <color key="insertionPointColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                            <size key="minSize" width="465" height="250"/>
+                                            <size key="maxSize" width="465" height="10000000"/>
+                                        </textView>
+                                    </subviews>
+                                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </clipView>
+                                <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="YES" id="sbN-ax-Pih">
+                                    <rect key="frame" x="-100" y="-100" width="87" height="18"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </scroller>
+                                <scroller key="verticalScroller" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="jfh-LO-cpB">
+                                    <rect key="frame" x="224" y="1" width="15" height="133"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </scroller>
+                            </scrollView>
+                            <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Ulp-8g-Rab">
+                                <rect key="frame" x="0.0" y="0.0" width="480" height="26"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="26" id="NCe-Vq-uzH"/>
+                                </constraints>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="fJa-y0-8Tj">
+                                    <font key="font" size="13" name="Menlo-Regular"/>
+                                    <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                                <connections>
+                                    <action selector="fieldAction:" target="0Ri-2R-8xj" id="QMx-2a-dal"/>
+                                </connections>
+                            </textField>
+                        </subviews>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="Ryn-ub-O1o" secondAttribute="trailing" id="1h1-2E-HZ6"/>
+                            <constraint firstItem="Ulp-8g-Rab" firstAttribute="leading" secondItem="Fza-ew-RBU" secondAttribute="leading" id="9bh-Uc-GRE"/>
+                            <constraint firstAttribute="bottom" secondItem="Ulp-8g-Rab" secondAttribute="bottom" id="Dtv-wt-Cgd"/>
+                            <constraint firstItem="Ulp-8g-Rab" firstAttribute="top" secondItem="Ryn-ub-O1o" secondAttribute="bottom" id="WFt-QR-2YZ"/>
+                            <constraint firstItem="Ryn-ub-O1o" firstAttribute="top" secondItem="Fza-ew-RBU" secondAttribute="top" id="a6l-2c-ngn"/>
+                            <constraint firstAttribute="trailing" secondItem="Ulp-8g-Rab" secondAttribute="trailing" id="wHF-jL-aS7"/>
+                            <constraint firstItem="Ryn-ub-O1o" firstAttribute="leading" secondItem="Fza-ew-RBU" secondAttribute="leading" id="wZH-7x-Jqz"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="inputField" destination="Ulp-8g-Rab" id="cwz-E6-wPP"/>
+                        <outlet property="textView" destination="eZg-fA-UAT" id="JHb-a6-25J"/>
+                    </connections>
+                </viewController>
+                <customObject id="PL4-Hi-pQ1" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="620" y="1709"/>
+        </scene>
         <!--Tab View Controller-->
         <scene sceneID="Fgd-uE-72n">
             <objects>
@@ -1221,7 +1329,7 @@ DQ
                 </tabViewController>
                 <customObject id="iqY-Ip-uWe" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="677" y="1304"/>
+            <point key="canvasLocation" x="677" y="1276"/>
         </scene>
         <!--View Controller-->
         <scene sceneID="Ina-vi-ZDF">
@@ -1245,7 +1353,11 @@ DQ
                                     <constraint firstAttribute="width" constant="48" id="4tR-yD-qyC"/>
                                 </constraints>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="-12,12" drawsBackground="YES" id="MlT-Gm-L82">
-                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="vKU-nQ-F5I"/>
+                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="vKU-nQ-F5I">
+                                        <metadata>
+                                            <real key="inspectorSampleValue" value="1"/>
+                                        </metadata>
+                                    </numberFormatter>
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1268,7 +1380,11 @@ DQ
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="RCA-Pn-XQU">
                                 <rect key="frame" x="203" y="259" width="48" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="12,12" drawsBackground="YES" id="sIU-c9-RbT">
-                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="TUO-7m-w5d"/>
+                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="TUO-7m-w5d">
+                                        <metadata>
+                                            <real key="inspectorSampleValue" value="1"/>
+                                        </metadata>
+                                    </numberFormatter>
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1291,7 +1407,11 @@ DQ
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="SUr-4V-9fE">
                                 <rect key="frame" x="153" y="106" width="48" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="12,12" drawsBackground="YES" id="kxS-3n-b0D">
-                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="Qce-zG-7Ya"/>
+                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="Qce-zG-7Ya">
+                                        <metadata>
+                                            <real key="inspectorSampleValue" value="1"/>
+                                        </metadata>
+                                    </numberFormatter>
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1314,7 +1434,11 @@ DQ
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="NYr-Me-dVU">
                                 <rect key="frame" x="20" y="149" width="48" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="12,12" drawsBackground="YES" id="fLt-cB-4cd">
-                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="mFZ-j8-5Bp"/>
+                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="mFZ-j8-5Bp">
+                                        <metadata>
+                                            <real key="inspectorSampleValue" value="1"/>
+                                        </metadata>
+                                    </numberFormatter>
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1337,7 +1461,11 @@ DQ
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="UPf-I3-bE0">
                                 <rect key="frame" x="203" y="149" width="48" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="12,12" drawsBackground="YES" id="2vp-XV-b8i">
-                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="61s-O1-M2N"/>
+                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="61s-O1-M2N">
+                                        <metadata>
+                                            <real key="inspectorSampleValue" value="1"/>
+                                        </metadata>
+                                    </numberFormatter>
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1484,7 +1612,11 @@ DQ
                                     <constraint firstAttribute="width" constant="44" id="HfB-PB-ynf"/>
                                 </constraints>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="PYD-mn-9tp">
-                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="0Co-ik-XKm"/>
+                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="0Co-ik-XKm">
+                                        <metadata>
+                                            <real key="inspectorSampleValue" value="1"/>
+                                        </metadata>
+                                    </numberFormatter>
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1516,7 +1648,11 @@ DQ
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="o9q-HM-VUG">
                                 <rect key="frame" x="145" y="91" width="44" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="12,12" drawsBackground="YES" id="ueh-lr-naZ">
-                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="Vje-ba-dwD"/>
+                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="Vje-ba-dwD">
+                                        <metadata>
+                                            <real key="inspectorSampleValue" value="1"/>
+                                        </metadata>
+                                    </numberFormatter>
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1540,7 +1676,11 @@ DQ
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="MNI-Ap-ERJ">
                                 <rect key="frame" x="145" y="61" width="44" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="2500" drawsBackground="YES" id="3yj-6t-chP">
-                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" allowsFloats="NO" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" id="58A-Eg-HiQ"/>
+                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" allowsFloats="NO" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" id="58A-Eg-HiQ">
+                                        <metadata>
+                                            <real key="inspectorSampleValue" value="1"/>
+                                        </metadata>
+                                    </numberFormatter>
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>

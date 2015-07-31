@@ -10,7 +10,7 @@
 #import "TFPPrinterManager.h"
 #import "TFPDryRunPrinter.h"
 #import "TFPApplicationDelegate.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 
 
 @interface TFPPrinterListViewController () <NSMenuDelegate>

@@ -13,8 +13,11 @@
 		C92B59DF1B40205F00F38FA7 /* TFPCLIController.m in Sources */ = {isa = PBXBuildFile; fileRef = C92B59DE1B40205F00F38FA7 /* TFPCLIController.m */; };
 		C92B59E21B40252900F38FA7 /* TFPExtrusionOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = C92B59E11B40252900F38FA7 /* TFPExtrusionOperation.m */; };
 		C92B59E51B40272600F38FA7 /* TFPRaiseHeadOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = C92B59E41B40272600F38FA7 /* TFPRaiseHeadOperation.m */; };
+		C94469531B68E3C2008820F4 /* TFPPrinterConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = C94469521B68E3C2008820F4 /* TFPPrinterConnection.m */; };
+		C94469541B68E3C2008820F4 /* TFPPrinterConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = C94469521B68E3C2008820F4 /* TFPPrinterConnection.m */; };
+		C94469571B6A7297008820F4 /* TFPConsoleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C94469561B6A7297008820F4 /* TFPConsoleViewController.m */; };
+		C944695A1B6A7669008820F4 /* TFPPrinterListCollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = C94469591B6A7669008820F4 /* TFPPrinterListCollectionView.m */; };
 		C94F60051B3804CA0074EC41 /* TFPGCodePreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60041B3804CA0074EC41 /* TFPGCodePreprocessor.m */; };
-		C94F60091B38061E0074EC41 /* TFPFeedRateConversionPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60081B38061E0074EC41 /* TFPFeedRateConversionPreprocessor.m */; };
 		C94F60131B3814F30074EC41 /* TFPBasicPreparationPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60121B3814F30074EC41 /* TFPBasicPreparationPreprocessor.m */; };
 		C94F60161B3815290074EC41 /* TFPPrintParameters.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60151B3815290074EC41 /* TFPPrintParameters.m */; };
 		C95F10A21B53E3E200F396B6 /* TFPApplicationDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C95F10A11B53E3E200F396B6 /* TFPApplicationDelegate.m */; };
@@ -27,7 +30,7 @@
 		C95F10C11B53EBC600F396B6 /* TFPDryRunPrinter.m in Sources */ = {isa = PBXBuildFile; fileRef = C99E87241B3AB4CD0099E79E /* TFPDryRunPrinter.m */; };
 		C95F10C21B53EBC900F396B6 /* TFPPrintParameters.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60151B3815290074EC41 /* TFPPrintParameters.m */; };
 		C95F10C31B53EBCB00F396B6 /* TFPFilament.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C729E01B516DA900277F1F /* TFPFilament.m */; };
-		C95F10C41B53EBD000F396B6 /* Extras.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B761B316F0D00343D58 /* Extras.m */; };
+		C95F10C41B53EBD000F396B6 /* TFPExtras.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B761B316F0D00343D58 /* TFPExtras.m */; };
 		C95F10C51B53EBD300F396B6 /* TFP3DVector.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B8F1B31838000343D58 /* TFP3DVector.m */; };
 		C95F10C61B53EBDE00F396B6 /* TFDataBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = C9FD1C451B3831F800F98FF1 /* TFDataBuilder.m */; };
 		C95F10C71B53EBDE00F396B6 /* TFStringScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = C90072B01B3C51F20097594F /* TFStringScanner.m */; };
@@ -45,7 +48,6 @@
 		C95F11091B54107500F396B6 /* TFPBasicPreparationPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60121B3814F30074EC41 /* TFPBasicPreparationPreprocessor.m */; };
 		C95F110A1B54107500F396B6 /* TFPBedCompensationPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C9FD1C4A1B384ED400F98FF1 /* TFPBedCompensationPreprocessor.m */; };
 		C95F110B1B54107500F396B6 /* TFPBacklashPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C99E87271B3ACFD10099E79E /* TFPBacklashPreprocessor.m */; };
-		C95F110C1B54107500F396B6 /* TFPFeedRateConversionPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60081B38061E0074EC41 /* TFPFeedRateConversionPreprocessor.m */; };
 		C95F110D1B54107500F396B6 /* TFPThermalBondingPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C96590E01B3F5CAA009D028F /* TFPThermalBondingPreprocessor.m */; };
 		C95F110E1B54107500F396B6 /* TFPWaveBondingPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C96590E31B3F6469009D028F /* TFPWaveBondingPreprocessor.m */; };
 		C95F110F1B54108400F396B6 /* TFPOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C729E31B5177A700277F1F /* TFPOperation.m */; };
@@ -76,7 +78,6 @@
 		C9B940E11B5E641D00E42864 /* TFPAppleScriptSupport.m in Sources */ = {isa = PBXBuildFile; fileRef = C9B940E01B5E641D00E42864 /* TFPAppleScriptSupport.m */; };
 		C9B940EB1B61008700E42864 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C9B940EA1B61008700E42864 /* libz.dylib */; };
 		C9B940EC1B61014600E42864 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C9B940EA1B61008700E42864 /* libz.dylib */; };
-		C9B940EF1B61123100E42864 /* Automator.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9B940ED1B6111F600E42864 /* Automator.framework */; };
 		C9B940F21B61139B00E42864 /* TFPScriptManager.m in Sources */ = {isa = PBXBuildFile; fileRef = C9B940F11B61139B00E42864 /* TFPScriptManager.m */; };
 		C9C729C81B4E96CB00277F1F /* TFPPreprocessing.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C729C71B4E96CB00277F1F /* TFPPreprocessing.m */; };
 		C9C729E11B516DA900277F1F /* TFPFilament.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C729E01B516DA900277F1F /* TFPFilament.m */; };
@@ -92,7 +93,7 @@
 		C9C871BB1B5AD2070063FACB /* TFPBedLevelCalibrationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C871BA1B5AD2070063FACB /* TFPBedLevelCalibrationViewController.m */; };
 		C9E59B6C1B316AF400343D58 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B6B1B316AF400343D58 /* main.m */; };
 		C9E59B741B316BE800343D58 /* TFPGCode.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B731B316BE800343D58 /* TFPGCode.m */; };
-		C9E59B771B316F0D00343D58 /* Extras.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B761B316F0D00343D58 /* Extras.m */; };
+		C9E59B771B316F0D00343D58 /* TFPExtras.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B761B316F0D00343D58 /* TFPExtras.m */; };
 		C9E59B7A1B31700B00343D58 /* TFPGCodeProgram.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B791B31700B00343D58 /* TFPGCodeProgram.m */; };
 		C9E59B901B31838000343D58 /* TFP3DVector.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B8F1B31838000343D58 /* TFP3DVector.m */; };
 		C9FD1C461B3831F800F98FF1 /* TFDataBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = C9FD1C451B3831F800F98FF1 /* TFDataBuilder.m */; };
@@ -130,10 +131,14 @@
 		C92B59E11B40252900F38FA7 /* TFPExtrusionOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPExtrusionOperation.m; sourceTree = "<group>"; };
 		C92B59E31B40272600F38FA7 /* TFPRaiseHeadOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPRaiseHeadOperation.h; sourceTree = "<group>"; };
 		C92B59E41B40272600F38FA7 /* TFPRaiseHeadOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPRaiseHeadOperation.m; sourceTree = "<group>"; };
+		C94469511B68E3C2008820F4 /* TFPPrinterConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPPrinterConnection.h; sourceTree = "<group>"; };
+		C94469521B68E3C2008820F4 /* TFPPrinterConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPPrinterConnection.m; sourceTree = "<group>"; };
+		C94469551B6A7297008820F4 /* TFPConsoleViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPConsoleViewController.h; sourceTree = "<group>"; };
+		C94469561B6A7297008820F4 /* TFPConsoleViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPConsoleViewController.m; sourceTree = "<group>"; };
+		C94469581B6A7669008820F4 /* TFPPrinterListCollectionView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPPrinterListCollectionView.h; sourceTree = "<group>"; };
+		C94469591B6A7669008820F4 /* TFPPrinterListCollectionView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPPrinterListCollectionView.m; sourceTree = "<group>"; };
 		C94F60031B3804CA0074EC41 /* TFPGCodePreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPGCodePreprocessor.h; sourceTree = "<group>"; };
 		C94F60041B3804CA0074EC41 /* TFPGCodePreprocessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPGCodePreprocessor.m; sourceTree = "<group>"; };
-		C94F60071B38061E0074EC41 /* TFPFeedRateConversionPreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPFeedRateConversionPreprocessor.h; sourceTree = "<group>"; };
-		C94F60081B38061E0074EC41 /* TFPFeedRateConversionPreprocessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPFeedRateConversionPreprocessor.m; sourceTree = "<group>"; };
 		C94F60111B3814F30074EC41 /* TFPBasicPreparationPreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPBasicPreparationPreprocessor.h; sourceTree = "<group>"; };
 		C94F60121B3814F30074EC41 /* TFPBasicPreparationPreprocessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPBasicPreparationPreprocessor.m; sourceTree = "<group>"; };
 		C94F60141B3815290074EC41 /* TFPPrintParameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPPrintParameters.h; sourceTree = "<group>"; };
@@ -188,7 +193,6 @@
 		C9B940DF1B5E641D00E42864 /* TFPAppleScriptSupport.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPAppleScriptSupport.h; sourceTree = "<group>"; };
 		C9B940E01B5E641D00E42864 /* TFPAppleScriptSupport.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPAppleScriptSupport.m; sourceTree = "<group>"; };
 		C9B940EA1B61008700E42864 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
-		C9B940ED1B6111F600E42864 /* Automator.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Automator.framework; path = System/Library/Frameworks/Automator.framework; sourceTree = SDKROOT; };
 		C9B940F01B61139B00E42864 /* TFPScriptManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPScriptManager.h; sourceTree = "<group>"; };
 		C9B940F11B61139B00E42864 /* TFPScriptManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPScriptManager.m; sourceTree = "<group>"; };
 		C9C729C61B4E96CB00277F1F /* TFPPreprocessing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPPreprocessing.h; sourceTree = "<group>"; };
@@ -215,8 +219,8 @@
 		C9E59B6B1B316AF400343D58 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		C9E59B721B316BE800343D58 /* TFPGCode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPGCode.h; sourceTree = "<group>"; };
 		C9E59B731B316BE800343D58 /* TFPGCode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPGCode.m; sourceTree = "<group>"; };
-		C9E59B751B316F0D00343D58 /* Extras.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Extras.h; sourceTree = "<group>"; };
-		C9E59B761B316F0D00343D58 /* Extras.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Extras.m; sourceTree = "<group>"; };
+		C9E59B751B316F0D00343D58 /* TFPExtras.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPExtras.h; sourceTree = "<group>"; };
+		C9E59B761B316F0D00343D58 /* TFPExtras.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPExtras.m; sourceTree = "<group>"; };
 		C9E59B781B31700B00343D58 /* TFPGCodeProgram.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPGCodeProgram.h; sourceTree = "<group>"; };
 		C9E59B791B31700B00343D58 /* TFPGCodeProgram.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPGCodeProgram.m; sourceTree = "<group>"; };
 		C9E59B8E1B31838000343D58 /* TFP3DVector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFP3DVector.h; sourceTree = "<group>"; };
@@ -244,7 +248,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C9B940EF1B61123100E42864 /* Automator.framework in Frameworks */,
 				C9B940EB1B61008700E42864 /* libz.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -273,8 +276,6 @@
 				C9FD1C4A1B384ED400F98FF1 /* TFPBedCompensationPreprocessor.m */,
 				C99E87261B3ACFD10099E79E /* TFPBacklashPreprocessor.h */,
 				C99E87271B3ACFD10099E79E /* TFPBacklashPreprocessor.m */,
-				C94F60071B38061E0074EC41 /* TFPFeedRateConversionPreprocessor.h */,
-				C94F60081B38061E0074EC41 /* TFPFeedRateConversionPreprocessor.m */,
 				C96590DF1B3F5CAA009D028F /* TFPThermalBondingPreprocessor.h */,
 				C96590E01B3F5CAA009D028F /* TFPThermalBondingPreprocessor.m */,
 				C96590E21B3F6469009D028F /* TFPWaveBondingPreprocessor.h */,
@@ -291,12 +292,16 @@
 				C95F10A11B53E3E200F396B6 /* TFPApplicationDelegate.m */,
 				C95F10A51B53E3E200F396B6 /* TFPPrinterListViewController.h */,
 				C95F10A61B53E3E200F396B6 /* TFPPrinterListViewController.m */,
+				C94469581B6A7669008820F4 /* TFPPrinterListCollectionView.h */,
+				C94469591B6A7669008820F4 /* TFPPrinterListCollectionView.m */,
 				C95F111D1B5536D200F396B6 /* TFPPrinterCollectionViewItem.h */,
 				C95F111E1B5536D200F396B6 /* TFPPrinterCollectionViewItem.m */,
 				C95F11201B55443500F396B6 /* TFPPrinterOperationsViewController.h */,
 				C95F11211B55443500F396B6 /* TFPPrinterOperationsViewController.m */,
 				C9C871AC1B582F200063FACB /* Calibration */,
 				C96776E71B56939A00D2D6CB /* Document */,
+				C94469551B6A7297008820F4 /* TFPConsoleViewController.h */,
+				C94469561B6A7297008820F4 /* TFPConsoleViewController.m */,
 				C9B940F01B61139B00E42864 /* TFPScriptManager.h */,
 				C9B940F11B61139B00E42864 /* TFPScriptManager.m */,
 				C9B940DF1B5E641D00E42864 /* TFPAppleScriptSupport.h */,
@@ -323,6 +328,8 @@
 		C96590DB1B3DAAFE009D028F /* Printer */ = {
 			isa = PBXGroup;
 			children = (
+				C94469511B68E3C2008820F4 /* TFPPrinterConnection.h */,
+				C94469521B68E3C2008820F4 /* TFPPrinterConnection.m */,
 				C9FD1C5E1B39618300F98FF1 /* TFPPrinter.h */,
 				C9FD1C5F1B39618300F98FF1 /* TFPPrinter.m */,
 				C9C871A41B57B1270063FACB /* TFPPrinter+VirtualEEPROM.h */,
@@ -373,8 +380,8 @@
 			children = (
 				C9E59B8E1B31838000343D58 /* TFP3DVector.h */,
 				C9E59B8F1B31838000343D58 /* TFP3DVector.m */,
-				C9E59B751B316F0D00343D58 /* Extras.h */,
-				C9E59B761B316F0D00343D58 /* Extras.m */,
+				C9E59B751B316F0D00343D58 /* TFPExtras.h */,
+				C9E59B761B316F0D00343D58 /* TFPExtras.m */,
 			);
 			name = Other;
 			path = microprint;
@@ -446,8 +453,6 @@
 		C9E59B5F1B316AF400343D58 = {
 			isa = PBXGroup;
 			children = (
-				C9B940ED1B6111F600E42864 /* Automator.framework */,
-				C9B940EA1B61008700E42864 /* libz.dylib */,
 				C96590DB1B3DAAFE009D028F /* Printer */,
 				C9C871A31B56A1130063FACB /* Print Job */,
 				C96590DD1B3DAB30009D028F /* Operations */,
@@ -500,6 +505,7 @@
 		C9FD1C5A1B39601900F98FF1 /* External */ = {
 			isa = PBXGroup;
 			children = (
+				C9B940EA1B61008700E42864 /* libz.dylib */,
 				C96776E01B565BC600D2D6CB /* TFTimer.h */,
 				C96776DF1B565BC600D2D6CB /* TFTimer.m */,
 				C9FD1C441B3831F800F98FF1 /* TFDataBuilder.h */,
@@ -622,7 +628,6 @@
 				C9C871A71B57B1270063FACB /* TFPPrinter+VirtualEEPROM.m in Sources */,
 				C95F10C01B53EBC400F396B6 /* TFPPrinterManager.m in Sources */,
 				C95F10A71B53E3E200F396B6 /* TFPPrinterListViewController.m in Sources */,
-				C95F110C1B54107500F396B6 /* TFPFeedRateConversionPreprocessor.m in Sources */,
 				C9C871B01B582F340063FACB /* TFPBacklashSettingsViewController.m in Sources */,
 				C95F10C61B53EBDE00F396B6 /* TFDataBuilder.m in Sources */,
 				C95F11131B54108400F396B6 /* TFPRaiseHeadOperation.m in Sources */,
@@ -630,6 +635,7 @@
 				C95F11191B55183100F396B6 /* TFPPrintingProgressViewController.m in Sources */,
 				C9C871B41B59102A0063FACB /* TFPTestBorderPrinting.m in Sources */,
 				C95F11121B54108400F396B6 /* TFPExtrusionOperation.m in Sources */,
+				C944695A1B6A7669008820F4 /* TFPPrinterListCollectionView.m in Sources */,
 				C95F110B1B54107500F396B6 /* TFPBacklashPreprocessor.m in Sources */,
 				C95F10BF1B53EBC100F396B6 /* TFPPrinter.m in Sources */,
 				C9B940E11B5E641D00E42864 /* TFPAppleScriptSupport.m in Sources */,
@@ -640,10 +646,12 @@
 				C95F11081B54107500F396B6 /* TFPGCodePreprocessor.m in Sources */,
 				C95F10C11B53EBC600F396B6 /* TFPDryRunPrinter.m in Sources */,
 				C95F11161B54108400F396B6 /* TFPBedLevelCalibration.m in Sources */,
+				C94469541B68E3C2008820F4 /* TFPPrinterConnection.m in Sources */,
 				C95F10C91B53EBE300F396B6 /* ORSSerialPort.m in Sources */,
 				C95F110D1B54107500F396B6 /* TFPThermalBondingPreprocessor.m in Sources */,
 				C95F110E1B54107500F396B6 /* TFPWaveBondingPreprocessor.m in Sources */,
 				C95F111C1B552AEE00F396B6 /* TFPUIExtras.m in Sources */,
+				C94469571B6A7297008820F4 /* TFPConsoleViewController.m in Sources */,
 				C95F10A41B53E3E200F396B6 /* main.m in Sources */,
 				C95F10C21B53EBC900F396B6 /* TFPPrintParameters.m in Sources */,
 				C95F10CB1B53EBE300F396B6 /* ORSSerialRequest.m in Sources */,
@@ -653,7 +661,7 @@
 				C95F11091B54107500F396B6 /* TFPBasicPreparationPreprocessor.m in Sources */,
 				C95F11141B54108400F396B6 /* TFPGCodeConsoleOperation.m in Sources */,
 				C9B547AF1B5D27210042E867 /* TFPTestBorderProgressViewController.m in Sources */,
-				C95F10C41B53EBD000F396B6 /* Extras.m in Sources */,
+				C95F10C41B53EBD000F396B6 /* TFPExtras.m in Sources */,
 				C95F10C71B53EBDE00F396B6 /* TFStringScanner.m in Sources */,
 				C95F10CE1B53EBEF00F396B6 /* TFPGCodeHelpers.m in Sources */,
 			);
@@ -670,7 +678,6 @@
 				C99E87281B3ACFD10099E79E /* TFPBacklashPreprocessor.m in Sources */,
 				C9C871A61B57B1270063FACB /* TFPPrinter+VirtualEEPROM.m in Sources */,
 				C991C31D1B4DA676005846B9 /* TFPGCodeConsoleOperation.m in Sources */,
-				C94F60091B38061E0074EC41 /* TFPFeedRateConversionPreprocessor.m in Sources */,
 				C96590E41B3F6469009D028F /* TFPWaveBondingPreprocessor.m in Sources */,
 				C92B59E51B40272600F38FA7 /* TFPRaiseHeadOperation.m in Sources */,
 				C9E59B6C1B316AF400343D58 /* main.m in Sources */,
@@ -681,12 +688,13 @@
 				C96776DE1B565A2B00D2D6CB /* TFPPrintStatusController.m in Sources */,
 				C92B59E21B40252900F38FA7 /* TFPExtrusionOperation.m in Sources */,
 				C9FD1C511B395E9600F98FF1 /* ORSSerialPort.m in Sources */,
-				C9E59B771B316F0D00343D58 /* Extras.m in Sources */,
+				C9E59B771B316F0D00343D58 /* TFPExtras.m in Sources */,
 				C9FD1C601B39618300F98FF1 /* TFPPrinter.m in Sources */,
 				C99E87221B3AA56D0099E79E /* GBSettings.m in Sources */,
 				C9C729E41B5177A700277F1F /* TFPOperation.m in Sources */,
 				C9C729E71B51D08800277F1F /* TFPBedLevelCalibration.m in Sources */,
 				C9C729E11B516DA900277F1F /* TFPFilament.m in Sources */,
+				C94469531B68E3C2008820F4 /* TFPPrinterConnection.m in Sources */,
 				C9FD1C4B1B384ED400F98FF1 /* TFPBedCompensationPreprocessor.m in Sources */,
 				C9FD1C591B395FD000F98FF1 /* TFPPrinterManager.m in Sources */,
 				C9C871B31B59102A0063FACB /* TFPTestBorderPrinting.m in Sources */,

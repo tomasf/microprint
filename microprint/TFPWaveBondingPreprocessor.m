@@ -8,7 +8,7 @@
 
 #import "TFPWaveBondingPreprocessor.h"
 #import "TFPGCode.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 
 /*
  static const double WAVE_PERIOD_LENGTH = 5;

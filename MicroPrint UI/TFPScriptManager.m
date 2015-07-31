@@ -7,7 +7,7 @@
 //
 
 #import "TFPScriptManager.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 @import AppKit;
 
 static const NSUInteger maxRecentURLCount = 10;

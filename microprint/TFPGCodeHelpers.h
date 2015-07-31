@@ -19,8 +19,7 @@
 - (instancetype)codeBySettingLineNumber:(uint16_t)lineNumber;
 
 // Feed rates
-+ (double)convertFeedRate:(double)feedRate;
-+ (instancetype)codeForSettingFeedRate:(double)feedRate raw:(BOOL)raw;
++ (instancetype)codeForSettingFeedRate:(double)feedRate;
 
 // Motors
 + (instancetype)turnOnMotorsCode;
@@ -33,13 +32,11 @@
 
 // Moving
 + (instancetype)moveHomeCode;
-+ (instancetype)moveWithPosition:(TFP3DVector*)position extrusion:(NSNumber*)E withRawFeedRate:(double)F;
-+ (instancetype)moveWithPosition:(TFP3DVector*)position withRawFeedRate:(double)F;
-+ (instancetype)moveWithPosition:(TFP3DVector*)position withFeedRate:(double)feedRate;
++ (instancetype)moveWithPosition:(TFP3DVector*)position extrusion:(NSNumber*)E feedRate:(double)F;
++ (instancetype)moveWithPosition:(TFP3DVector*)position feedRate:(double)feedRate;
 
 // Extrusion
-+ (instancetype)codeForExtrusion:(double)E withRawFeedRate:(double)feedRate;
-+ (instancetype)codeForExtrusion:(double)E withFeedRate:(double)feedRate;
++ (instancetype)codeForExtrusion:(double)E feedRate:(double)feedRate;
 + (instancetype)resetExtrusionCode;
 
 // Heater
@@ -54,9 +51,6 @@
 // Virtual EEPROM
 + (instancetype)codeForReadingVirtualEEPROMAtIndex:(NSUInteger)valueIndex;
 + (instancetype)codeForWritingVirtualEEPROMAtIndex:(NSUInteger)valueIndex value:(int32_t)value;
-
-// Utilities
-+ (NSDictionary*)dictionaryFromResponseValueString:(NSString*)string;
 
 @property (readonly) NSInteger layerIndexFromComment;
 @end

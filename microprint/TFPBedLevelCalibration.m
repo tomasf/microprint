@@ -7,7 +7,7 @@
 //
 
 #import "TFPBedLevelCalibration.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
 
 
@@ -66,7 +66,7 @@ const double adjustmentAmount = 0.05;
 	TFP3DVector *moveAwayPosition = [TFP3DVector vectorWithX:@(maxX) Y:@(maxY) Z:@20];
 
 	[weakSelf.printer moveToPosition:moveAwayPosition usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
-		[weakSelf.printer sendGCode:[TFPGCode turnOffMotorsCode] responseHandler:^(BOOL success, NSString *value) {
+		[weakSelf.printer sendGCode:[TFPGCode turnOffMotorsCode] responseHandler:^(BOOL success, NSDictionary *value) {
 			[super ended];
 		}];
 	}];
@@ -124,7 +124,7 @@ const double adjustmentAmount = 0.05;
 																	   [TFPGCode absoluteModeCode],
 																	   ]];
 	
-	[weakSelf.printer runGCodeProgram:preparation completionHandler:^(BOOL success) {
+	[weakSelf.printer runGCodeProgram:preparation completionHandler:^(BOOL success, NSArray *valueDictionaries) {
 		[weakSelf promptForZFromPositions:positions index:0 zOffset:raiseLevel completionHandler:^(NSArray *zValues) {
 			NSAssert(zValues.count == positions.count, @"Invalid prompt position response");
 			
@@ -138,7 +138,7 @@ const double adjustmentAmount = 0.05;
 				weakSelf.didStartMovingHandler();
 				
 				[weakSelf.printer moveToPosition:moveAwayPosition usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
-					[weakSelf.printer sendGCode:[TFPGCode turnOffMotorsCode] responseHandler:^(BOOL success, NSString *value) {
+					[weakSelf.printer sendGCode:[TFPGCode turnOffMotorsCode] responseHandler:^(BOOL success, NSDictionary *value) {
 						[weakSelf ended];
 						weakSelf.didFinishHandler();
 					}];
