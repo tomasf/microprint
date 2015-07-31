@@ -7,7 +7,7 @@
 //
 
 #import "TFPZeroBedOperation.h"
-#import "Extras.h"
+#import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
 
 @interface TFPZeroBedOperation ()
@@ -47,7 +47,7 @@
         self.prepStartedBlock();
     }
 
-    [printer runGCodeProgram:prep completionHandler:^(BOOL success) {
+    [printer runGCodeProgram:prep completionHandler:^(BOOL success, NSArray *valueDictionaries) {
 
         if (weakSelf.stopped) {
             [weakSelf doStop];
@@ -58,7 +58,7 @@
                 weakSelf.zeroStartedBlock();
             }
             
-            [printer runGCodeProgram:zero completionHandler:^(BOOL success) {
+            [printer runGCodeProgram:zero completionHandler:^(BOOL success, NSArray *valueDictionaries) {
 
                 if (weakSelf.stopped) {
                     [weakSelf doStop];
