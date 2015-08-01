@@ -9,6 +9,7 @@
 #import "TFPPrinterOperationsViewController.h"
 #import "TFPExtrusionOperation.h"
 #import "TFPRaiseHeadOperation.h"
+#import "TFPZeroBedOperation.h"
 
 
 @interface TFPPrinterOperationsViewController ()
@@ -19,6 +20,8 @@
 @property IBOutlet NSButton *extrudeButton;
 @property IBOutlet NSButton *raiseButton;
 @property IBOutlet NSButton *closeButton;
+@property IBOutlet NSButton *zeroHeadButton;
+@property IBOutlet NSButton *zeroHeadHelpButton;
 
 @property IBOutlet NSProgressIndicator *progressIndicator;
 @property IBOutlet NSTextField *statusLabel;
@@ -100,39 +103,98 @@
 	[operation start];
 }
 
+- (void)zeroHead {
+    __weak __typeof__(self) weakSelf = self;
+    TFPZeroBedOperation *operation = [[TFPZeroBedOperation alloc] initWithPrinter:self.printer];
+    self.operation = operation;
+
+    operation.prepStartedBlock = ^{
+        weakSelf.statusLabel.stringValue = @"Preparing — warming print head";
+        [weakSelf.progressIndicator setIndeterminate:YES];
+        [weakSelf.progressIndicator startAnimation:nil];
+    };
+    
+    operation.zeroStartedBlock = ^{
+        weakSelf.statusLabel.stringValue = @"Zeroing — This may take two or three minutes.";
+    };
+
+    operation.parkStartedBlock = ^{
+        weakSelf.statusLabel.stringValue = @"Parking…";
+    };
+
+    operation.didStopBlock = ^{
+        [weakSelf operationDidStop];
+    };
+
+    self.statusLabel.stringValue = @"Starting…";
+    [operation start];
+}
+
+- (void)showZeroHelp {
+
+    NSAlert *helpWindow;
+
+    NSArray *helpMessageLines = @[
+                @"The Find Bed Zero operation ensures that the print head zero Z position is right on the print bed.",
+                @"",
+                @"The printer must be on a stable surface and remain undisturbed throughout the entire operation.",
+                @"",
+                @"This will not change your Bed Height Offset settings.",
+                ];
+
+    NSString *helpMessage = [helpMessageLines componentsJoinedByString:@"\n"];
+
+    helpWindow = [[NSAlert alloc] init];
+    helpWindow.alertStyle = NSInformationalAlertStyle;
+    helpWindow.messageText = @"Find Bed Zero";
+    helpWindow.informativeText = helpMessage;
+    [helpWindow runModal];
+}
+
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
-	self.actionButtons = @[self.retractButton, self.extrudeButton, self.raiseButton];
+	self.actionButtons = @[self.retractButton,
+                           self.extrudeButton,
+                           self.raiseButton,
+                           self.zeroHeadButton];
 	self.actionButtonTitles = [self.actionButtons valueForKey:@"title"];
 }
 
 
 - (IBAction)buttonAction:(id)sender {
-	if(self.operation) {
-		[self.operation stop];
-		self.statusLabel.stringValue = @"Stopping…";
-	}else{
-		if(sender == self.retractButton) {
-			[self startRetract:YES];
-			
-		}else if(sender == self.extrudeButton) {
-			[self startRetract:NO];
-			
-		}else if(sender == self.raiseButton) {
-			[self raise];
-		}
-		
-		for(NSButton *button in self.actionButtons) {
-			if(button != sender) {
-				button.enabled = NO;
-			}else{
-				button.title = @"Stop";
-				button.keyEquivalent = @"\r";
-			}
-		}
-		self.closeButton.enabled = NO;
-	}
+    if (sender == self.zeroHeadHelpButton) {    // Help window is modal so no need to disable the buttons
+        [self showZeroHelp];
+    }else{
+        if(self.operation) {
+            [self.operation stop];
+            self.statusLabel.stringValue = @"Stopping…";
+        }else{
+            for(NSButton *button in self.actionButtons) {
+                if(button != sender) {
+                    button.enabled = NO;
+                }else{
+                    button.title = @"Stop";
+                    button.keyEquivalent = @"\r";
+                }
+            }
+            self.closeButton.enabled = NO;
+
+            if(sender == self.retractButton) {
+                [self startRetract:YES];
+
+            }else if(sender == self.extrudeButton) {
+                [self startRetract:NO];
+
+            }else if(sender == self.raiseButton) {
+                [self raise];
+
+            }else if(sender == self.zeroHeadButton) {
+                [self zeroHead];
+                
+            }
+        }
+    }
 }
 
 

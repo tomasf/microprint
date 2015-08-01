@@ -65,7 +65,7 @@
 	
 	dispatch_after(dispatch_time(0, duration * NSEC_PER_SEC), queue, ^{
 		if(block) {
-			block(YES, nil);
+			block(YES, @{});
 		}
 	});
 }

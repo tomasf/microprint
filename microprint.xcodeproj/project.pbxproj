@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0F974CCA1B6995FC00376C8B /* TFPZeroBedOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 0F974CC81B6995FC00376C8B /* TFPZeroBedOperation.m */; };
 		C90072AE1B3BF6660097594F /* TFPPrintJob.m in Sources */ = {isa = PBXBuildFile; fileRef = C90072AD1B3BF6660097594F /* TFPPrintJob.m */; };
 		C90072B11B3C51F20097594F /* TFStringScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = C90072B01B3C51F20097594F /* TFStringScanner.m */; };
 		C92B59DF1B40205F00F38FA7 /* TFPCLIController.m in Sources */ = {isa = PBXBuildFile; fileRef = C92B59DE1B40205F00F38FA7 /* TFPCLIController.m */; };
@@ -118,6 +119,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		0F974CC71B6995FC00376C8B /* TFPZeroBedOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPZeroBedOperation.h; sourceTree = "<group>"; };
+		0F974CC81B6995FC00376C8B /* TFPZeroBedOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPZeroBedOperation.m; sourceTree = "<group>"; };
 		C90072AC1B3BF6660097594F /* TFPPrintJob.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPPrintJob.h; sourceTree = "<group>"; };
 		C90072AD1B3BF6660097594F /* TFPPrintJob.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPPrintJob.m; sourceTree = "<group>"; };
 		C90072AF1B3C51F20097594F /* TFStringScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFStringScanner.h; sourceTree = "<group>"; };
@@ -365,6 +368,8 @@
 				C92B59E41B40272600F38FA7 /* TFPRaiseHeadOperation.m */,
 				C9C729E51B51D08800277F1F /* TFPBedLevelCalibration.h */,
 				C9C729E61B51D08800277F1F /* TFPBedLevelCalibration.m */,
+				0F974CC71B6995FC00376C8B /* TFPZeroBedOperation.h */,
+				0F974CC81B6995FC00376C8B /* TFPZeroBedOperation.m */,
 			);
 			name = Operations;
 			path = microprint;
@@ -615,6 +620,7 @@
 				C95F10CD1B53EBEF00F396B6 /* TFPGCode.m in Sources */,
 				C96776E31B5662D900D2D6CB /* TFPPrintStatusController.m in Sources */,
 				C9C871AB1B58298E0063FACB /* TFPBedLevelSettingsViewController.m in Sources */,
+				0F974CCA1B6995FC00376C8B /* TFPZeroBedOperation.m in Sources */,
 				C95F10CC1B53EBEF00F396B6 /* TFPGCodeProgram.m in Sources */,
 				C95F111F1B5536D200F396B6 /* TFPPrinterCollectionViewItem.m in Sources */,
 				C95F11071B54107500F396B6 /* TFPPreprocessing.m in Sources */,
