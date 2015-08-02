@@ -13,7 +13,7 @@
 #import "MAKVONotificationCenter.h"
 
 
-static const double extrudeStepLength = 10;
+static const double extrudeStepLength = 0.5;
 static const double extrudeFeedRate = 210;
 static const double minimumZLevelForOperation = 25;
 
@@ -31,7 +31,7 @@ static const double minimumZLevelForOperation = 25;
 - (instancetype)initWithPrinter:(TFPPrinter*)printer retraction:(BOOL)retract {
 	if(!(self = [super initWithPrinter:printer])) return nil;
 	
-	self.temperature = 215;
+	self.temperature = 230;
 	self.retract = retract;
 	
 	return self;
