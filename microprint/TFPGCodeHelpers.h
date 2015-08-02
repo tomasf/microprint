@@ -35,6 +35,7 @@
 + (instancetype)moveHomeCode;
 + (instancetype)moveWithPosition:(TFP3DVector*)position extrusion:(NSNumber*)E feedRate:(double)F;
 + (instancetype)moveWithPosition:(TFP3DVector*)position feedRate:(double)feedRate;
++ (instancetype)codeForGettingPosition;
 
 // Extrusion
 + (instancetype)codeForExtrusion:(double)E feedRate:(double)feedRate;

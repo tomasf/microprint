@@ -75,6 +75,11 @@
 }
 
 
++ (instancetype)codeForGettingPosition {
+	return [self codeWithField:'M' value:114];
+}
+
+
 + (instancetype)absoluteModeCode{
 	return [self codeWithString:@"G90"];
 }
