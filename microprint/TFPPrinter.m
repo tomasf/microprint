@@ -170,6 +170,7 @@ static const NSUInteger maxLineNumber = 100;
 	if(code) {
 		[self.codeQueue removeObjectAtIndex:0];
 		[self.connection sendGCode:code];
+
 		self.waitingForResponse = YES;
 		
 		[self.sentCodeLineNumberQueue addObject:@((NSInteger)[code valueForField:'N'])];
@@ -184,14 +185,16 @@ static const NSUInteger maxLineNumber = 100;
 
 
 - (NSUInteger)consumeLineNumber {
-	NSUInteger line = self.lineNumberCounter;
-	
-	self.lineNumberCounter++;
 	if(self.lineNumberCounter > maxLineNumber) {
-		self.lineNumberCounter = 0;
-		[self sendGCode:[TFPGCode codeForSettingLineNumber:0] responseHandler:nil];
+		// Fast-track a line number reset
+		[self.responseListenerBlocks removeObjectForKey:@0];
+		[self.codeQueue addObject:[TFPGCode codeForSettingLineNumber:0]];
+		[self dequeueCode];
+		self.lineNumberCounter = 1;
 	}
-	
+
+	NSUInteger line = self.lineNumberCounter;
+	self.lineNumberCounter++;
 	return line;
 }
 
