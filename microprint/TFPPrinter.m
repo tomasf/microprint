@@ -199,12 +199,32 @@ static const NSUInteger maxLineNumber = 100;
 }
 
 
+- (BOOL)sendReplacementsForGCodeIfNeeded:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSDictionary *value))block responseQueue:(dispatch_queue_t)queue {
+	NSInteger M = [code valueForField:'M' fallback:-1];
+	
+	if(M == 0) {
+		// The Micro's firmware goes mad if you send M0 with a line number and keeps requesting a re-send over and over.
+		// So let's replace it with M18 + M104 S0, which is equivalent and works properly. Sigh.
+
+		[self sendGCode:[TFPGCode turnOffMotorsCode] responseHandler:nil responseQueue:nil];
+		[self sendGCode:[TFPGCode codeForTurningOffHeater] responseHandler:block responseQueue:queue];
+		return YES;
+	}else{
+		return NO;
+	}
+}
+
+
 - (void)sendGCode:(TFPGCode*)inputCode responseHandler:(void(^)(BOOL success, NSDictionary *value))block responseQueue:(dispatch_queue_t)queue {
 	void(^outerBlock)(BOOL,NSDictionary*) = block ? ^(BOOL success, NSDictionary *value){
 		dispatch_async(queue, ^{
 			block(success, value);
 		});
 	} : nil;
+	
+	if([self sendReplacementsForGCodeIfNeeded:inputCode responseHandler:block responseQueue:queue]) {
+		return;
+	}
 	
 	dispatch_async(self.communicationQueue, ^{
 		NSUInteger lineNumber = [self consumeLineNumber];
