@@ -35,7 +35,7 @@ static const NSUInteger maxLineNumber = 100;
 @property (readwrite) double heaterTemperature;
 
 @property NSMutableDictionary *responseListenerBlocks;
-@property (copy) void(^lastResponseListenerBlock)(BOOL success, NSDictionary *value);
+@property NSMutableArray *sentCodeLineNumberQueue;
 
 @property NSMutableArray *codeQueue;
 @property BOOL waitingForResponse;
@@ -76,6 +76,7 @@ static const NSUInteger maxLineNumber = 100;
 	self.establishmentBlocks = [NSMutableArray new];
 	self.codeQueue = [NSMutableArray new];
 	self.codeRegistry = [NSMutableDictionary new];
+	self.sentCodeLineNumberQueue = [NSMutableArray new];
 	self.pendingConnection = YES;
 	
 	[self.connection openWithCompletionHandler:^(NSError *error) {
@@ -127,6 +128,19 @@ static const NSUInteger maxLineNumber = 100;
 }
 
 
+- (void)sendNotice:(NSString*)noticeFormat, ... {
+	va_list list;
+	va_start(list, noticeFormat);
+	NSString *string = [[NSString alloc] initWithFormat:noticeFormat arguments:list];
+	va_end(list);
+	TFMainThread(^{
+		if(self.noticeBlock) {
+			self.noticeBlock(string);
+		}
+	});
+}
+
+
 // On communication queue here
 - (void)handleResendRequest:(NSUInteger)lineNumber {
 	TFPGCode *code = self.codeRegistry[@(lineNumber)];
@@ -158,7 +172,7 @@ static const NSUInteger maxLineNumber = 100;
 		[self.connection sendGCode:code];
 		self.waitingForResponse = YES;
 		
-		self.lastResponseListenerBlock = self.responseListenerBlocks[@((NSInteger)[code valueForField:'N'])];
+		[self.sentCodeLineNumberQueue addObject:@((NSInteger)[code valueForField:'N'])];
 		
 		if(self.outgoingCodeBlock) {
 			dispatch_async(dispatch_get_main_queue(), ^{
@@ -206,6 +220,8 @@ static const NSUInteger maxLineNumber = 100;
 		// The Micro's firmware goes mad if you send M0 with a line number and keeps requesting a re-send over and over.
 		// So let's replace it with M18 + M104 S0, which is equivalent and works properly. Sigh.
 
+		[self sendNotice:@"Issuing replacement for M0."];
+		
 		[self sendGCode:[TFPGCode turnOffMotorsCode] responseHandler:nil responseQueue:nil];
 		[self sendGCode:[TFPGCode codeForTurningOffHeater] responseHandler:block responseQueue:queue];
 		return YES;
@@ -362,21 +378,21 @@ static const NSUInteger maxLineNumber = 100;
 			self.waitingForResponse = NO;
 			[self dequeueCode];
 
+			NSInteger firstLineNumberInSentQueue = -1;
+			if(self.sentCodeLineNumberQueue.count) {
+				firstLineNumberInSentQueue = [self.sentCodeLineNumberQueue.firstObject unsignedIntegerValue];
+				[self.sentCodeLineNumberQueue removeObjectAtIndex:0];
+			}
+			
 			if(lineNumber < 0) {
-				if(self.lastResponseListenerBlock) {
-					void(^block)(BOOL, NSDictionary*) = self.lastResponseListenerBlock;
-					if(block) {
-						self.lastResponseListenerBlock = nil;
-						block(YES, value);
-					}
-				}
-				
-			}else{
-				void(^block)(BOOL, NSDictionary*) = self.responseListenerBlocks[@(lineNumber)];
-				if(block) {
-					[self.responseListenerBlocks removeObjectForKey:@(lineNumber)];
-					block(YES, value);
-				}
+				lineNumber = firstLineNumberInSentQueue;
+				[self sendNotice:@"Missing line number in response. Assuming %ld.", (long)lineNumber];
+			}
+			
+			void(^block)(BOOL, NSDictionary*) = self.responseListenerBlocks[@(lineNumber)];
+			if(block) {
+				[self.responseListenerBlocks removeObjectForKey:@(lineNumber)];
+				block(YES, value);
 			}
 			break;
 		}
@@ -543,6 +559,15 @@ static const NSUInteger maxLineNumber = 100;
 	[self sendGCode:code responseHandler:^(BOOL success, NSDictionary *value) {
 		if(completionHandler) {
 			completionHandler(success);
+		}
+	}];
+}
+
+
+- (void)waitForMoveCompletionWithHandler:(void(^)())completionHandler {
+	[self sendGCode:[TFPGCode waitForMoveCompletionCode] responseHandler:^(BOOL success, NSDictionary *value) {
+		if(completionHandler) {
+			completionHandler();
 		}
 	}];
 }

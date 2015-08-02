@@ -57,6 +57,7 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 
 - (void)setRelativeMode:(BOOL)relative completionHandler:(void(^)(BOOL success))completionHandler;
 - (void)moveToPosition:(TFP3DVector*)position usingFeedRate:(double)F completionHandler:(void(^)(BOOL success))completionHandler;
+- (void)waitForMoveCompletionWithHandler:(void(^)())completionHandler;
 
 @property (readonly) double heaterTemperature; // Observable
 
@@ -65,6 +66,7 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 
 @property (copy) void(^outgoingCodeBlock)(NSString *string);
 @property (copy) void(^incomingCodeBlock)(NSString *string);
+@property (copy) void(^noticeBlock)(NSString *string);
 
 @property (readonly) double speedMultiplier;
 @end

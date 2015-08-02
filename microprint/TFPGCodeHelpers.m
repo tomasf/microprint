@@ -37,10 +37,14 @@
 }
 
 
-+ (instancetype)waitCodeWithDuration:(NSUInteger)seconds {
-	return [[TFPGCode codeWithField:'G' value:4] codeBySettingField:'S' toValue:seconds];
++ (instancetype)waitCodeWithDuration:(NSTimeInterval)seconds {
+	return [[TFPGCode codeWithField:'G' value:4] codeBySettingField:'P' toValue:(int)(seconds * 1000)];
 }
 
+
++ (instancetype)waitForMoveCompletionCode {
+	return [self waitCodeWithDuration:0];
+}
 
 
 + (instancetype)moveWithPosition:(TFP3DVector*)position extrusion:(NSNumber*)E feedRate:(double)F {
