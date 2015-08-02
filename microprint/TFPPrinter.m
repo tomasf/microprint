@@ -408,6 +408,11 @@ static const NSUInteger maxLineNumber = 100;
 	// On communication queue here
 	
 	switch(type) {
+		case TFPPrinterMessageTypeSkipNotice: // We re-used a line number, so the printer skipped it. Pretend it's a confirmation.
+			[self sendNotice:@"Got a skip notice for %d!", (int)lineNumber];
+			value = @{};
+			// nobreak
+			
 		case TFPPrinterMessageTypeConfirmation: {
 			self.waitingForResponse = NO;
 			[self dequeueCode];
