@@ -170,6 +170,10 @@
             [self.operation stop];
             self.statusLabel.stringValue = @"Stopping…";
         }else{
+			if(self.printer.currentOperation) {
+				return;
+			}
+			
             for(NSButton *button in self.actionButtons) {
                 if(button != sender) {
                     button.enabled = NO;
