@@ -19,6 +19,7 @@
 		C944695A1B6A7669008820F4 /* TFPPrinterListCollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = C94469591B6A7669008820F4 /* TFPPrinterListCollectionView.m */; };
 		C94469631B6E6E4C008820F4 /* TFPPrinterHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = C94469621B6E6E4C008820F4 /* TFPPrinterHelpers.m */; };
 		C94469641B6E6E4C008820F4 /* TFPPrinterHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = C94469621B6E6E4C008820F4 /* TFPPrinterHelpers.m */; };
+		C94469691B70283E008820F4 /* microprint.icns in Resources */ = {isa = PBXBuildFile; fileRef = C94469681B70283E008820F4 /* microprint.icns */; };
 		C94F60051B3804CA0074EC41 /* TFPGCodePreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60041B3804CA0074EC41 /* TFPGCodePreprocessor.m */; };
 		C94F60131B3814F30074EC41 /* TFPBasicPreparationPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60121B3814F30074EC41 /* TFPBasicPreparationPreprocessor.m */; };
 		C94F60161B3815290074EC41 /* TFPPrintParameters.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60151B3815290074EC41 /* TFPPrintParameters.m */; };
@@ -141,6 +142,7 @@
 		C94469591B6A7669008820F4 /* TFPPrinterListCollectionView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPPrinterListCollectionView.m; sourceTree = "<group>"; };
 		C94469611B6E6E4C008820F4 /* TFPPrinterHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPPrinterHelpers.h; sourceTree = "<group>"; };
 		C94469621B6E6E4C008820F4 /* TFPPrinterHelpers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPPrinterHelpers.m; sourceTree = "<group>"; };
+		C94469681B70283E008820F4 /* microprint.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = microprint.icns; sourceTree = "<group>"; };
 		C94F60031B3804CA0074EC41 /* TFPGCodePreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPGCodePreprocessor.h; sourceTree = "<group>"; };
 		C94F60041B3804CA0074EC41 /* TFPGCodePreprocessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPGCodePreprocessor.m; sourceTree = "<group>"; };
 		C94F60111B3814F30074EC41 /* TFPBasicPreparationPreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPBasicPreparationPreprocessor.h; sourceTree = "<group>"; };
@@ -311,6 +313,7 @@
 				C9B940DF1B5E641D00E42864 /* TFPAppleScriptSupport.h */,
 				C9B940E01B5E641D00E42864 /* TFPAppleScriptSupport.m */,
 				C95F10A81B53E3E200F396B6 /* Images.xcassets */,
+				C94469681B70283E008820F4 /* microprint.icns */,
 				C95F10AA1B53E3E200F396B6 /* Main.storyboard */,
 				C9B940DD1B5E5DFB00E42864 /* MicroPrint.sdef */,
 				C95F109E1B53E3E200F396B6 /* Supporting Files */,
@@ -606,6 +609,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C95F10A91B53E3E200F396B6 /* Images.xcassets in Resources */,
+				C94469691B70283E008820F4 /* microprint.icns in Resources */,
 				C95F10AC1B53E3E200F396B6 /* Main.storyboard in Resources */,
 				C9B940DE1B5E5DFB00E42864 /* MicroPrint.sdef in Resources */,
 			);
@@ -739,7 +743,6 @@
 		C95F10B91B53E3E300F396B6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Developer ID Application";
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -755,7 +758,6 @@
 		C95F10BA1B53E3E300F396B6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Developer ID Application";
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = "MicroPrint UI/Info.plist";
