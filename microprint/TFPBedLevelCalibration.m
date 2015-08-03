@@ -82,23 +82,26 @@ const double adjustmentAmount = 0.05;
 	self.didStartMovingHandler();
 	[weakSelf.printer moveToPosition:offsetPosition usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
 		[weakSelf.printer moveToPosition:position usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
-			weakSelf.currentLevel = position.z.doubleValue;
-			
-			weakSelf.didStopAtCornerHandler(positionIndex);
-			weakSelf.continueBlock = ^(double newZ){
+			[weakSelf.printer waitForMoveCompletionWithHandler:^{
+				weakSelf.currentLevel = position.z.doubleValue;
 				
-				NSArray *remainingPositions = [vectors subarrayWithRange:NSMakeRange(1, vectors.count-1)];
-				if(remainingPositions.count) {
-					[weakSelf promptForZFromPositions:remainingPositions index:positionIndex+1 zOffset:zOffset completionHandler:^(NSArray *zValues) {
-						NSMutableArray *values = [@[@(newZ)] mutableCopy];
-						[values addObjectsFromArray:zValues];
-						completionHandler(values);
-					}];
+				weakSelf.didStopAtCornerHandler(positionIndex);
+				weakSelf.continueBlock = ^(double newZ){
 					
-				}else{
-					completionHandler(@[@(newZ)]);
-				}
-			};
+					NSArray *remainingPositions = [vectors subarrayWithRange:NSMakeRange(1, vectors.count-1)];
+					if(remainingPositions.count) {
+						[weakSelf promptForZFromPositions:remainingPositions index:positionIndex+1 zOffset:zOffset completionHandler:^(NSArray *zValues) {
+							NSMutableArray *values = [@[@(newZ)] mutableCopy];
+							[values addObjectsFromArray:zValues];
+							completionHandler(values);
+						}];
+						
+					}else{
+						completionHandler(@[@(newZ)]);
+					}
+				};
+				
+			}];
 		}];
 	}];
 }
@@ -139,8 +142,8 @@ const double adjustmentAmount = 0.05;
 				
 				[weakSelf.printer moveToPosition:moveAwayPosition usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
 					[weakSelf.printer sendGCode:[TFPGCode turnOffMotorsCode] responseHandler:^(BOOL success, NSDictionary *value) {
-						[weakSelf ended];
 						weakSelf.didFinishHandler();
+						[weakSelf ended];
 					}];
 				}];
 			}];

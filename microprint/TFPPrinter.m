@@ -16,6 +16,8 @@
 #import "TFPPrinter+VirtualEEPROM.h"
 #import "TFPPrinterConnection.h"
 
+#import "MAKVONotificationCenter.h"
+
 
 static const NSUInteger maxLineNumber = 100;
 
@@ -33,9 +35,10 @@ static const NSUInteger maxLineNumber = 100;
 @property (readwrite, copy) NSString *firmwareVersion;
 
 @property (readwrite) double heaterTemperature;
+@property (readwrite) BOOL hasValidZLevel;
 
 @property NSMutableDictionary *responseListenerBlocks;
-@property (copy) void(^lastResponseListenerBlock)(BOOL success, NSDictionary *value);
+@property NSMutableArray *unnumberedResponseBlocks;
 
 @property NSMutableArray *codeQueue;
 @property BOOL waitingForResponse;
@@ -76,10 +79,13 @@ static const NSUInteger maxLineNumber = 100;
 	self.establishmentBlocks = [NSMutableArray new];
 	self.codeQueue = [NSMutableArray new];
 	self.codeRegistry = [NSMutableDictionary new];
+	self.unnumberedResponseBlocks = [NSMutableArray new];
 	self.pendingConnection = YES;
+	self.hasValidZLevel = YES; // Assume valid Z for now
 	
 	[self.connection openWithCompletionHandler:^(NSError *error) {
 		self.pendingConnection = NO;
+		self.lineNumberCounter = 1;
 		
 		if(error) {
 			for(void(^block)(NSError*) in self.establishmentBlocks) {
@@ -89,6 +95,12 @@ static const NSUInteger maxLineNumber = 100;
 		}else{
 			[weakSelf identifyWithCompletionHandler:^(BOOL success) {
 			}];
+		}
+	}];
+	
+	[self addObserver:self keyPath:@"currentOperation" options:0 block:^(MAKVONotification *notification) {
+		if(weakSelf.connectionFinished && !weakSelf.currentOperation) {
+			[weakSelf refreshState];
 		}
 	}];
 	
@@ -123,7 +135,31 @@ static const NSUInteger maxLineNumber = 100;
 			block(nil);
 		}
 		[self.establishmentBlocks removeAllObjects];
+		self.connectionFinished = YES;
+		[self refreshState];
 	}];
+}
+
+
+- (void)refreshState {
+	[self sendGCode:[TFPGCode codeWithField:'M' value:117] responseHandler:^(BOOL success, NSDictionary *value) {
+		if(success && value[@"ZV"]) {
+			self.hasValidZLevel = [value[@"ZV"] integerValue] > 0;
+		}
+	}];
+}
+
+
+- (void)sendNotice:(NSString*)noticeFormat, ... {
+	va_list list;
+	va_start(list, noticeFormat);
+	NSString *string = [[NSString alloc] initWithFormat:noticeFormat arguments:list];
+	va_end(list);
+	TFMainThread(^{
+		if(self.noticeBlock) {
+			self.noticeBlock(string);
+		}
+	});
 }
 
 
@@ -156,9 +192,8 @@ static const NSUInteger maxLineNumber = 100;
 	if(code) {
 		[self.codeQueue removeObjectAtIndex:0];
 		[self.connection sendGCode:code];
+
 		self.waitingForResponse = YES;
-		
-		self.lastResponseListenerBlock = self.responseListenerBlocks[@((NSInteger)[code valueForField:'N'])];
 		
 		if(self.outgoingCodeBlock) {
 			dispatch_async(dispatch_get_main_queue(), ^{
@@ -170,14 +205,16 @@ static const NSUInteger maxLineNumber = 100;
 
 
 - (NSUInteger)consumeLineNumber {
-	NSUInteger line = self.lineNumberCounter;
-	
-	self.lineNumberCounter++;
 	if(self.lineNumberCounter > maxLineNumber) {
-		self.lineNumberCounter = 0;
-		[self sendGCode:[TFPGCode codeForSettingLineNumber:0] responseHandler:nil];
+		// Fast-track a line number reset
+		[self.responseListenerBlocks removeObjectForKey:@0];
+		[self.codeQueue addObject:[TFPGCode codeForSettingLineNumber:0]];
+		[self dequeueCode];
+		self.lineNumberCounter = 1;
 	}
-	
+
+	NSUInteger line = self.lineNumberCounter;
+	self.lineNumberCounter++;
 	return line;
 }
 
@@ -199,22 +236,60 @@ static const NSUInteger maxLineNumber = 100;
 }
 
 
+- (BOOL)sendReplacementsForGCodeIfNeeded:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSDictionary *value))block responseQueue:(dispatch_queue_t)queue {
+	NSInteger M = [code valueForField:'M' fallback:-1];
+	
+	if(M == 0) {
+		// The Micro's firmware goes mad if you send M0 with a line number and keeps requesting a re-send over and over.
+		// So let's replace it with M18 + M104 S0, which is equivalent and works properly. Sigh.
+
+		[self sendNotice:@"Issuing replacement for M0."];
+		
+		[self sendGCode:[TFPGCode turnOffMotorsCode] responseHandler:nil responseQueue:nil];
+		[self sendGCode:[TFPGCode codeForTurningOffHeater] responseHandler:block responseQueue:queue];
+		return YES;
+	}else{
+		return NO;
+	}
+}
+
+
+// This is so bad. Firmware is a huge piece of crap.
+
+- (BOOL)codeNeedsLineNumber:(TFPGCode*)code {
+	NSUInteger M = [code valueForField:'M' fallback:-1];
+	if(M == 117 || M == 618 || M == 115) {
+		return NO;
+	}
+	
+	return YES;
+}
+
+
 - (void)sendGCode:(TFPGCode*)inputCode responseHandler:(void(^)(BOOL success, NSDictionary *value))block responseQueue:(dispatch_queue_t)queue {
 	void(^outerBlock)(BOOL,NSDictionary*) = block ? ^(BOOL success, NSDictionary *value){
 		dispatch_async(queue, ^{
 			block(success, value);
 		});
-	} : nil;
+	} : ^(BOOL success, NSDictionary *value){};
+	
+	if([self sendReplacementsForGCodeIfNeeded:inputCode responseHandler:block responseQueue:queue]) {
+		return;
+	}
 	
 	dispatch_async(self.communicationQueue, ^{
-		NSUInteger lineNumber = [self consumeLineNumber];
-		TFPGCode *code = [inputCode codeBySettingLineNumber:lineNumber];
+		TFPGCode *code = inputCode;
+		NSInteger lineNumber = -1;
+		if([self codeNeedsLineNumber:code]) {
+			lineNumber = [self consumeLineNumber];
+			code = [inputCode codeBySettingLineNumber:lineNumber];
+		}
 		code = [self adjustLine:code];
 		
-		if(outerBlock) {
-			self.responseListenerBlocks[@(lineNumber)] = outerBlock;
+		if(lineNumber < 0) {
+			[self.unnumberedResponseBlocks addObject:outerBlock];
 		}else{
-			[self.responseListenerBlocks removeObjectForKey:@(lineNumber)];
+			self.responseListenerBlocks[@(lineNumber)] = outerBlock;
 		}
 		
 		[self.codeQueue addObject:code];
@@ -252,11 +327,6 @@ static const NSUInteger maxLineNumber = 100;
 
 - (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success, NSArray *valueDictionaries))completionHandler {
 	[self runGCodeProgram:program completionHandler:completionHandler responseQueue:dispatch_get_main_queue()];
-}
-
-
-- (void)sendGCodeString:(NSString*)GCode responseHandler:(void(^)(BOOL success, NSDictionary *value))block {
-	[self sendGCode:[TFPGCode codeWithString:GCode] responseHandler:block];
 }
 
 
@@ -338,25 +408,31 @@ static const NSUInteger maxLineNumber = 100;
 	// On communication queue here
 	
 	switch(type) {
+		case TFPPrinterMessageTypeSkipNotice: // We re-used a line number, so the printer skipped it. Pretend it's a confirmation.
+			[self sendNotice:@"Got a skip notice for %d!", (int)lineNumber];
+			value = @{};
+			// nobreak
+			
 		case TFPPrinterMessageTypeConfirmation: {
 			self.waitingForResponse = NO;
 			[self dequeueCode];
-
+			
+			void(^block)(BOOL, NSDictionary*);
+			
 			if(lineNumber < 0) {
-				if(self.lastResponseListenerBlock) {
-					void(^block)(BOOL, NSDictionary*) = self.lastResponseListenerBlock;
-					if(block) {
-						self.lastResponseListenerBlock = nil;
-						block(YES, value);
-					}
+				if(self.unnumberedResponseBlocks.count < 1) {
+					[self sendNotice:@"Missing unnumbered response block!"];
+				} else {
+					block = self.unnumberedResponseBlocks.firstObject;
+					[self.unnumberedResponseBlocks removeObjectAtIndex:0];
 				}
-				
 			}else{
-				void(^block)(BOOL, NSDictionary*) = self.responseListenerBlocks[@(lineNumber)];
-				if(block) {
-					[self.responseListenerBlocks removeObjectForKey:@(lineNumber)];
-					block(YES, value);
-				}
+				block = self.responseListenerBlocks[@(lineNumber)];
+				[self.responseListenerBlocks removeObjectForKey:@(lineNumber)];
+			}
+			
+			if(block) {
+				block(YES, value);
 			}
 			break;
 		}
@@ -377,154 +453,6 @@ static const NSUInteger maxLineNumber = 100;
 			
 		case TFPPrinterMessageTypeInvalid: break;
 	}
-}
-
-
-- (void)fetchBedOffsetsWithCompletionHandler:(void(^)(BOOL success, TFPBedLevelOffsets offsets))completionHandler {
-	NSArray *indexes = @[@(VirtualEEPROMIndexBedOffsetBackLeft),
-						 @(VirtualEEPROMIndexBedOffsetBackRight),
-						 @(VirtualEEPROMIndexBedOffsetFrontRight),
-						 @(VirtualEEPROMIndexBedOffsetFrontLeft),
-						 @(VirtualEEPROMIndexBedOffsetCommon)];
-	
-	[self readVirtualEEPROMFloatValuesAtIndexes:indexes completionHandler:^(BOOL success, NSArray *values) {
-		TFPBedLevelOffsets offsets;
-		
-		if(!success) {
-			completionHandler(NO, offsets);
-		}
-		
-		offsets.backLeft = [values[0] floatValue];
-		offsets.backRight = [values[1] floatValue];
-		offsets.frontRight = [values[2] floatValue];
-		offsets.frontLeft = [values[3] floatValue];
-		offsets.common = [values[4] floatValue];
-		
-		completionHandler(YES, offsets);
-	}];
-}
-
-
-- (void)setBedOffsets:(TFPBedLevelOffsets)offsets completionHandler:(void(^)(BOOL success))completionHandler {
-	NSDictionary *EEPROMValues = @{
-								   @(VirtualEEPROMIndexBedOffsetBackLeft): @(offsets.backLeft),
-								   @(VirtualEEPROMIndexBedOffsetBackRight): @(offsets.backRight),
-								   @(VirtualEEPROMIndexBedOffsetFrontRight): @(offsets.frontRight),
-								   @(VirtualEEPROMIndexBedOffsetFrontLeft): @(offsets.frontLeft),
-								   @(VirtualEEPROMIndexBedOffsetCommon): @(offsets.common),
-								   };
-	
-	
-	[self writeVirtualEEPROMFloatValues:EEPROMValues completionHandler:^(BOOL success) {
-		if(completionHandler) {
-			completionHandler(success);
-		}
-	}];
-}
-
-
-- (void)fetchBacklashValuesWithCompletionHandler:(void(^)(BOOL success, TFPBacklashValues values))completionHandler {
-	NSArray *indexes = @[@(VirtualEEPROMIndexBacklashCompensationX),
-						 @(VirtualEEPROMIndexBacklashCompensationY),
-						 @(VirtualEEPROMIndexBacklashCompensationSpeed)
-						 ];
-	
-	[self readVirtualEEPROMFloatValuesAtIndexes:indexes completionHandler:^(BOOL success, NSArray *values) {
-		TFPBacklashValues backlash;
-		if(success) {
-			backlash.x = [values[0] floatValue];
-			backlash.y = [values[1] floatValue];
-			backlash.speed = [values[2] floatValue];
-			
-			completionHandler(YES, backlash);
-		}else{
-			completionHandler(NO, backlash);
-		}
-	}];
-}
-
-
-- (void)setBacklashValues:(TFPBacklashValues)values completionHandler:(void(^)(BOOL success))completionHandler {
-	NSDictionary *EEPROMValues = @{
-								   @(VirtualEEPROMIndexBacklashCompensationX): @(values.x),
-								   @(VirtualEEPROMIndexBacklashCompensationY): @(values.y),
-								   @(VirtualEEPROMIndexBacklashCompensationSpeed): @(values.speed),
-								   };
-	
-	[self writeVirtualEEPROMFloatValues:EEPROMValues completionHandler:^(BOOL success) {
-		if(completionHandler) {
-			completionHandler(success);
-		}
-	}];
-}
-
-
-
-- (void)fetchPositionWithCompletionHandler:(void(^)(BOOL success, TFP3DVector *position, NSNumber *E))completionHandler {
-	[self sendGCodeString:@"M114" responseHandler:^(BOOL success, NSDictionary *params) {
-		if(success) {
-			NSNumber *x = params[@"X"] ? @([params[@"X"] doubleValue]) : nil;
-			NSNumber *y = params[@"Y"] ? @([params[@"Y"] doubleValue]) : nil;
-			NSNumber *z = params[@"Z"] ? @([params[@"Z"] doubleValue]) : nil;
-			NSNumber *e = params[@"E"] ? @([params[@"E"] doubleValue]) : nil;
-			
-			TFP3DVector *position = [TFP3DVector vectorWithX:x Y:y Z:z];
-			completionHandler(YES, position, e);
-			
-		}else{
-			completionHandler(NO, nil, 0);
-		}
-	}];
-}
-
-
-- (void)fillInOffsetAndBacklashValuesInPrintParameters:(TFPPrintParameters*)params completionHandler:(void(^)(BOOL success))completionHandler {
-	[self fetchBedOffsetsWithCompletionHandler:^(BOOL success, TFPBedLevelOffsets offsets) {
-		if(!success) {
-			completionHandler(NO);
-			return;
-		}
-		
-		params.bedLevelOffsets = offsets;
-		[self fetchBacklashValuesWithCompletionHandler:^(BOOL success, TFPBacklashValues values) {
-			if(!success) {
-				completionHandler(NO);
-				return;
-			}
-			params.backlashValues = values;
-			completionHandler(YES);
-		}];
-	}];
-}
-
-
-- (void)setRelativeMode:(BOOL)relative completionHandler:(void(^)(BOOL success))completionHandler {
-	[self sendGCodeString:(relative ? @"G91" : @"G90") responseHandler:^(BOOL success, NSDictionary *value) {
-		completionHandler(success);
-	}];
-}
-
-
-- (void)moveToPosition:(TFP3DVector*)position usingFeedRate:(double)F completionHandler:(void(^)(BOOL success))completionHandler {
-	TFPGCode *code = [TFPGCode codeWithString:@"G0"];
-	if(position.x) {
-		code = [code codeBySettingField:'X' toValue:position.x.doubleValue];
-	}
-	if(position.y) {
-		code = [code codeBySettingField:'Y' toValue:position.y.doubleValue];
-	}
-	if(position.z) {
-		code = [code codeBySettingField:'Z' toValue:position.z.doubleValue];
-	}
-	if(F >= 0) {
-		code = [code codeBySettingField:'F' toValue:F];
-	}
-
-	[self sendGCode:code responseHandler:^(BOOL success, NSDictionary *value) {
-		if(completionHandler) {
-			completionHandler(success);
-		}
-	}];
 }
 
 

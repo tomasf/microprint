@@ -17,6 +17,8 @@
 		C94469541B68E3C2008820F4 /* TFPPrinterConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = C94469521B68E3C2008820F4 /* TFPPrinterConnection.m */; };
 		C94469571B6A7297008820F4 /* TFPConsoleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C94469561B6A7297008820F4 /* TFPConsoleViewController.m */; };
 		C944695A1B6A7669008820F4 /* TFPPrinterListCollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = C94469591B6A7669008820F4 /* TFPPrinterListCollectionView.m */; };
+		C94469631B6E6E4C008820F4 /* TFPPrinterHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = C94469621B6E6E4C008820F4 /* TFPPrinterHelpers.m */; };
+		C94469641B6E6E4C008820F4 /* TFPPrinterHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = C94469621B6E6E4C008820F4 /* TFPPrinterHelpers.m */; };
 		C94F60051B3804CA0074EC41 /* TFPGCodePreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60041B3804CA0074EC41 /* TFPGCodePreprocessor.m */; };
 		C94F60131B3814F30074EC41 /* TFPBasicPreparationPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60121B3814F30074EC41 /* TFPBasicPreparationPreprocessor.m */; };
 		C94F60161B3815290074EC41 /* TFPPrintParameters.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60151B3815290074EC41 /* TFPPrintParameters.m */; };
@@ -137,6 +139,8 @@
 		C94469561B6A7297008820F4 /* TFPConsoleViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPConsoleViewController.m; sourceTree = "<group>"; };
 		C94469581B6A7669008820F4 /* TFPPrinterListCollectionView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPPrinterListCollectionView.h; sourceTree = "<group>"; };
 		C94469591B6A7669008820F4 /* TFPPrinterListCollectionView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPPrinterListCollectionView.m; sourceTree = "<group>"; };
+		C94469611B6E6E4C008820F4 /* TFPPrinterHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPPrinterHelpers.h; sourceTree = "<group>"; };
+		C94469621B6E6E4C008820F4 /* TFPPrinterHelpers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPPrinterHelpers.m; sourceTree = "<group>"; };
 		C94F60031B3804CA0074EC41 /* TFPGCodePreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPGCodePreprocessor.h; sourceTree = "<group>"; };
 		C94F60041B3804CA0074EC41 /* TFPGCodePreprocessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPGCodePreprocessor.m; sourceTree = "<group>"; };
 		C94F60111B3814F30074EC41 /* TFPBasicPreparationPreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPBasicPreparationPreprocessor.h; sourceTree = "<group>"; };
@@ -332,6 +336,8 @@
 				C94469521B68E3C2008820F4 /* TFPPrinterConnection.m */,
 				C9FD1C5E1B39618300F98FF1 /* TFPPrinter.h */,
 				C9FD1C5F1B39618300F98FF1 /* TFPPrinter.m */,
+				C94469611B6E6E4C008820F4 /* TFPPrinterHelpers.h */,
+				C94469621B6E6E4C008820F4 /* TFPPrinterHelpers.m */,
 				C9C871A41B57B1270063FACB /* TFPPrinter+VirtualEEPROM.h */,
 				C9C871A51B57B1270063FACB /* TFPPrinter+VirtualEEPROM.m */,
 				C99E87231B3AB4CD0099E79E /* TFPDryRunPrinter.h */,
@@ -664,6 +670,7 @@
 				C95F10C41B53EBD000F396B6 /* TFPExtras.m in Sources */,
 				C95F10C71B53EBDE00F396B6 /* TFStringScanner.m in Sources */,
 				C95F10CE1B53EBEF00F396B6 /* TFPGCodeHelpers.m in Sources */,
+				C94469641B6E6E4C008820F4 /* TFPPrinterHelpers.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -683,6 +690,7 @@
 				C9E59B6C1B316AF400343D58 /* main.m in Sources */,
 				C9C729C81B4E96CB00277F1F /* TFPPreprocessing.m in Sources */,
 				C9FD1C461B3831F800F98FF1 /* TFDataBuilder.m in Sources */,
+				C94469631B6E6E4C008820F4 /* TFPPrinterHelpers.m in Sources */,
 				C99E87201B3AA56D0099E79E /* GBOptionsHelper.m in Sources */,
 				C90072B11B3C51F20097594F /* TFStringScanner.m in Sources */,
 				C96776DE1B565A2B00D2D6CB /* TFPPrintStatusController.m in Sources */,
