@@ -20,6 +20,63 @@
 
 
 static const NSUInteger maxLineNumber = 100;
+const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
+
+
+@interface TFPPrinterGCodeEntry : NSObject
+@property TFPGCode *code;
+@property NSInteger lineNumber;
+
+@property dispatch_queue_t responseQueue;
+@property (copy) void(^responseBlock)(BOOL success, NSDictionary *values);
+@end
+
+
+@implementation TFPPrinterGCodeEntry
+
+
+- (instancetype)initWithCode:(TFPGCode*)code lineNumber:(NSInteger)line responseBlock:(void(^)(BOOL, NSDictionary*))block queue:(dispatch_queue_t)blockQueue {
+	if(!(self = [super init])) return nil;
+	
+	self.code = code;
+	self.lineNumber = line;
+	self.responseBlock = block;
+	self.responseQueue = blockQueue;
+	
+	return self;
+}
+
+
++ (instancetype)lineNumberResetEntry {
+	return [[self alloc] initWithCode:[TFPGCode codeForSettingLineNumber:0] lineNumber:0 responseBlock:nil queue:nil];
+}
+
+
+- (void)deliverConfirmationResponseWithValues:(NSDictionary*)values {
+	if(self.responseBlock) {
+		dispatch_queue_t queue = self.responseQueue ?: dispatch_get_main_queue();
+		dispatch_async(queue, ^{
+			self.responseBlock(YES, values);
+		});
+	}
+}
+
+
+- (void)deliverErrorResponseWithErrorCode:(NSUInteger)code {
+	if(self.responseBlock) {
+		dispatch_queue_t queue = self.responseQueue ?: dispatch_get_main_queue();
+		dispatch_async(queue, ^{
+			self.responseBlock(NO, @{TFPPrinterResponseErrorCodeKey: @(code)});
+		});
+	}
+}
+
+
+@end
+
+
+
+
 
 
 @interface TFPPrinter ()
@@ -37,11 +94,8 @@ static const NSUInteger maxLineNumber = 100;
 @property (readwrite) double heaterTemperature;
 @property (readwrite) BOOL hasValidZLevel;
 
-@property NSMutableDictionary *responseListenerBlocks;
-@property NSMutableArray *unnumberedResponseBlocks;
-
-@property NSMutableArray *codeQueue;
-@property BOOL waitingForResponse;
+@property TFPPrinterGCodeEntry *pendingCodeEntry;
+@property NSMutableArray *queuedCodeEntries;
 
 @property NSUInteger lineNumberCounter;
 @property NSMutableDictionary *codeRegistry;
@@ -75,11 +129,9 @@ static const NSUInteger maxLineNumber = 100;
 	
 	self.communicationQueue = dispatch_queue_create("se.tomasf.microprint.serialPortQueue", DISPATCH_QUEUE_SERIAL);
 		
-	self.responseListenerBlocks = [NSMutableDictionary new];
 	self.establishmentBlocks = [NSMutableArray new];
-	self.codeQueue = [NSMutableArray new];
+	self.queuedCodeEntries = [NSMutableArray new];
 	self.codeRegistry = [NSMutableDictionary new];
-	self.unnumberedResponseBlocks = [NSMutableArray new];
 	self.pendingConnection = YES;
 	self.hasValidZLevel = YES; // Assume valid Z for now
 	
@@ -169,7 +221,8 @@ static const NSUInteger maxLineNumber = 100;
 	TFLog(@"Got resend request for line %@", code);
 	
 	if(code) {
-		[self.codeQueue insertObject:code atIndex:0];
+		TFPPrinterGCodeEntry *entry = [[TFPPrinterGCodeEntry alloc] initWithCode:code lineNumber:lineNumber responseBlock:nil queue:nil];
+		[self.queuedCodeEntries insertObject:entry atIndex:0];
 		[self dequeueCode];
 	} else {
 		// Deep shit
@@ -184,20 +237,19 @@ static const NSUInteger maxLineNumber = 100;
 
 // On communication queue here
 - (void)dequeueCode {
-	if(self.waitingForResponse) {
+	if(self.pendingCodeEntry) {
 		return;
 	}
 	
-	TFPGCode *code = self.codeQueue.firstObject;
-	if(code) {
-		[self.codeQueue removeObjectAtIndex:0];
-		[self.connection sendGCode:code];
-
-		self.waitingForResponse = YES;
+	TFPPrinterGCodeEntry *entry = self.queuedCodeEntries.firstObject;
+	if(entry) {
+		[self.queuedCodeEntries removeObjectAtIndex:0];
+		[self.connection sendGCode:entry.code];
+		self.pendingCodeEntry = entry;
 		
 		if(self.outgoingCodeBlock) {
 			dispatch_async(dispatch_get_main_queue(), ^{
-				self.outgoingCodeBlock(code.ASCIIRepresentation);
+				self.outgoingCodeBlock(entry.code.ASCIIRepresentation);
 			});
 		}
 	}
@@ -207,8 +259,7 @@ static const NSUInteger maxLineNumber = 100;
 - (NSUInteger)consumeLineNumber {
 	if(self.lineNumberCounter > maxLineNumber) {
 		// Fast-track a line number reset
-		[self.responseListenerBlocks removeObjectForKey:@0];
-		[self.codeQueue addObject:[TFPGCode codeForSettingLineNumber:0]];
+		[self.queuedCodeEntries addObject:[TFPPrinterGCodeEntry lineNumberResetEntry]];
 		[self dequeueCode];
 		self.lineNumberCounter = 1;
 	}
@@ -258,7 +309,7 @@ static const NSUInteger maxLineNumber = 100;
 
 - (BOOL)codeNeedsLineNumber:(TFPGCode*)code {
 	NSUInteger M = [code valueForField:'M' fallback:-1];
-	if(M == 117 || M == 618 || M == 115) {
+	if(M == 0 || M == 117 || M == 618 || M == 115) {
 		return NO;
 	}
 	
@@ -267,12 +318,6 @@ static const NSUInteger maxLineNumber = 100;
 
 
 - (void)sendGCode:(TFPGCode*)inputCode responseHandler:(void(^)(BOOL success, NSDictionary *value))block responseQueue:(dispatch_queue_t)queue {
-	void(^outerBlock)(BOOL,NSDictionary*) = block ? ^(BOOL success, NSDictionary *value){
-		dispatch_async(queue, ^{
-			block(success, value);
-		});
-	} : ^(BOOL success, NSDictionary *value){};
-	
 	if([self sendReplacementsForGCodeIfNeeded:inputCode responseHandler:block responseQueue:queue]) {
 		return;
 	}
@@ -283,16 +328,12 @@ static const NSUInteger maxLineNumber = 100;
 		if([self codeNeedsLineNumber:code]) {
 			lineNumber = [self consumeLineNumber];
 			code = [inputCode codeBySettingLineNumber:lineNumber];
+			self.codeRegistry[@(lineNumber)] = code;
 		}
 		code = [self adjustLine:code];
 		
-		if(lineNumber < 0) {
-			[self.unnumberedResponseBlocks addObject:outerBlock];
-		}else{
-			self.responseListenerBlocks[@(lineNumber)] = outerBlock;
-		}
-		
-		[self.codeQueue addObject:code];
+		TFPPrinterGCodeEntry *entry = [[TFPPrinterGCodeEntry alloc] initWithCode:code lineNumber:lineNumber responseBlock:block queue:queue];
+		[self.queuedCodeEntries addObject:entry];
 		[self dequeueCode];
 	});
 }
@@ -414,28 +455,18 @@ static const NSUInteger maxLineNumber = 100;
 			// nobreak
 			
 		case TFPPrinterMessageTypeConfirmation: {
-			self.waitingForResponse = NO;
+			TFPPrinterGCodeEntry *entry = self.pendingCodeEntry;
+			self.pendingCodeEntry = nil;
 			[self dequeueCode];
 			
-			void(^block)(BOOL, NSDictionary*);
-			
-			if(lineNumber < 0) {
-				if(self.unnumberedResponseBlocks.count < 1) {
-					[self sendNotice:@"Missing unnumbered response block!"];
-				} else {
-					block = self.unnumberedResponseBlocks.firstObject;
-					[self.unnumberedResponseBlocks removeObjectAtIndex:0];
-				}
-			}else{
-				block = self.responseListenerBlocks[@(lineNumber)];
-				[self.responseListenerBlocks removeObjectForKey:@(lineNumber)];
+			if(entry.lineNumber != -1 && entry.lineNumber != lineNumber) {
+				[self sendNotice:@"Line number mismatch for pending code entry and response. Response was %d, expected %d (%@)", (int)lineNumber, (int)entry.lineNumber, entry.code];
 			}
 			
-			if(block) {
-				block(YES, value);
-			}
+			[entry deliverConfirmationResponseWithValues:value];
 			break;
 		}
+			
 		case TFPPrinterMessageTypeResendRequest:
 			[self handleResendRequest:lineNumber];
 			break;
@@ -444,8 +475,18 @@ static const NSUInteger maxLineNumber = 100;
 			[self processTemperatureUpdate:[value doubleValue]];
 			break;
 			
-		case TFPPrinterMessageTypeError:
+		case TFPPrinterMessageTypeError: {
+			NSUInteger errorCode = [value unsignedIntegerValue];
+			
+			TFPPrinterGCodeEntry *entry = self.pendingCodeEntry;
+			self.pendingCodeEntry = nil;
+			[self dequeueCode];
+			
+			[self sendNotice:@"Got error %d in response to %@", (int)errorCode, entry.code];
+			
+			[entry deliverErrorResponseWithErrorCode:errorCode];
 			break;
+		}
 			
 		case TFPPrinterMessageTypeUnknown:
 			TFLog(@"Unhandled input: %@", value);
@@ -454,6 +495,28 @@ static const NSUInteger maxLineNumber = 100;
 		case TFPPrinterMessageTypeInvalid: break;
 	}
 }
+
+
++ (NSString*)descriptionForErrorCode:(TFPPrinterResponseErrorCode)code {
+	NSArray *descriptions = @[@"M110 missing line number",
+							  @"Cannot cold extrude",
+							  @"Cannot calibrate in unknown state",
+							  @"Unknown G code",
+							  @"Unknown M code",
+							  @"Unknown command",
+							  @"Heater failed",
+							  @"Move too large",
+							  @"Heater and motors were turned off after a time of inactivity",
+							  @"Target address out of range"
+							  ];
+	
+	if(code < TFPPrinterResponseErrorCodeMin || code > TFPPrinterResponseErrorCodeMax) {
+		return nil;
+	} else {
+		return descriptions[code-TFPPrinterResponseErrorCodeMin];
+	}
+}
+
 
 
 - (double)speedMultiplier {
