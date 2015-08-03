@@ -177,12 +177,12 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 
 
 - (BOOL)canPrint {
-	return self.document.selectedPrinter != nil && self.document.boundingBox.xSize > 0;
+	return self.document.selectedPrinter != nil && self.document.boundingBox.xSize > 0 && !self.document.selectedPrinter.currentOperation;
 }
 
 
 + (NSSet *)keyPathsForValuesAffectingCanPrint {
-	return @[@"document.selectedPrinter", @"document.hasBoundingBox"].tf_set;
+	return @[@"document.selectedPrinter", @"document.selectedPrinter.currentOperation", @"document.hasBoundingBox"].tf_set;
 }
 
 

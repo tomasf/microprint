@@ -12,7 +12,8 @@
 
 @interface TFPGCode (TFPHelpers)
 + (instancetype)stopCode;
-+ (instancetype)waitCodeWithDuration:(NSUInteger)seconds;
++ (instancetype)waitCodeWithDuration:(NSTimeInterval)seconds;
++ (instancetype)waitForMoveCompletionCode;
 
 // Line numbering
 + (instancetype)codeForSettingLineNumber:(uint16_t)lineNumber;
@@ -34,6 +35,7 @@
 + (instancetype)moveHomeCode;
 + (instancetype)moveWithPosition:(TFP3DVector*)position extrusion:(NSNumber*)E feedRate:(double)F;
 + (instancetype)moveWithPosition:(TFP3DVector*)position feedRate:(double)feedRate;
++ (instancetype)codeForGettingPosition;
 
 // Extrusion
 + (instancetype)codeForExtrusion:(double)E feedRate:(double)feedRate;

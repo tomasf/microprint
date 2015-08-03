@@ -10,8 +10,10 @@
 
 @implementation TFPPrinterListCollectionView
 
-- (NSCollectionViewItem *)newCollectionViewItem {
-	return [[NSStoryboard storyboardWithName:@"Main" bundle:nil] instantiateControllerWithIdentifier:@"printerItemPrototype"];
+- (NSCollectionViewItem *)newItemForRepresentedObject:(id)object {
+	NSCollectionViewItem *item = [[NSStoryboard storyboardWithName:@"Main" bundle:nil] instantiateControllerWithIdentifier:@"printerItemPrototype"];
+	item.representedObject = object;
+	return item;
 }
 
 @end

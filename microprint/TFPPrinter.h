@@ -33,38 +33,33 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 @property TFPOperation *currentOperation;
 
 - (void)establishConnectionWithCompletionHandler:(void(^)(NSError *error))completionHandler;
+- (BOOL)printerShouldBeInvalidatedWithRemovedSerialPorts:(NSArray*)ports;
+@property (readonly) BOOL pendingConnection;
 
-// These properties are available after a connection has been established
-@property (readonly) TFPPrinterColor color;
-@property (readonly, copy) NSString *serialNumber;
-@property (readonly, copy) NSString *firmwareVersion;
+@property (copy) void(^outgoingCodeBlock)(NSString *string);
+@property (copy) void(^incomingCodeBlock)(NSString *string);
+@property (copy) void(^noticeBlock)(NSString *string);
 
-+ (NSString*)nameForPrinterColor:(TFPPrinterColor)color;
+@property (readonly) double speedMultiplier;
 
+
+// Basics. Implied response queue is main.
 - (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSDictionary *value))block;
 - (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSDictionary *value))block responseQueue:(dispatch_queue_t)queue;
 - (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success, NSArray *valueDictionaries))completionHandler;
 - (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success, NSArray *valueDictionaries))completionHandler responseQueue:(dispatch_queue_t)queue;
 
-- (void)fetchBedOffsetsWithCompletionHandler:(void(^)(BOOL success, TFPBedLevelOffsets offsets))completionHandler;
-- (void)fetchBacklashValuesWithCompletionHandler:(void(^)(BOOL success, TFPBacklashValues values))completionHandler;
-- (void)fillInOffsetAndBacklashValuesInPrintParameters:(TFPPrintParameters*)params completionHandler:(void(^)(BOOL success))completionHandler;
 
-- (void)setBedOffsets:(TFPBedLevelOffsets)offsets completionHandler:(void(^)(BOOL success))completionHandler;
-- (void)setBacklashValues:(TFPBacklashValues)values completionHandler:(void(^)(BOOL success))completionHandler;
+// State (observable)
+@property (readonly) TFPPrinterColor color;
+@property (readonly, copy) NSString *serialNumber;
+@property (readonly, copy) NSString *firmwareVersion;
 
-- (void)fetchPositionWithCompletionHandler:(void(^)(BOOL success, TFP3DVector *position, NSNumber *E))completionHandler;
+@property (readonly) double heaterTemperature;
+@property (readonly) BOOL hasValidZLevel;
 
-- (void)setRelativeMode:(BOOL)relative completionHandler:(void(^)(BOOL success))completionHandler;
-- (void)moveToPosition:(TFP3DVector*)position usingFeedRate:(double)F completionHandler:(void(^)(BOOL success))completionHandler;
-
-@property (readonly) double heaterTemperature; // Observable
-
-@property (readonly) BOOL pendingConnection;
-- (BOOL)printerShouldBeInvalidatedWithRemovedSerialPorts:(NSArray*)ports;
-
-@property (copy) void(^outgoingCodeBlock)(NSString *string);
-@property (copy) void(^incomingCodeBlock)(NSString *string);
-
-@property (readonly) double speedMultiplier;
++ (NSString*)nameForPrinterColor:(TFPPrinterColor)color;
 @end
+
+
+#import "TFPPrinterHelpers.h"

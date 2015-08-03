@@ -23,6 +23,13 @@ static const CGFloat drawContainerExpandedHeight = 300;
 static const CGFloat drawContainerExpandedBottomMargin = 20;
 
 
+typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
+	TFPPrintingProgressViewControllerStatePreprocessing,
+	TFPPrintingProgressViewControllerStateRunningJob,
+	TFPPrintingProgressViewControllerStateCancelling,
+};
+
+
 @interface TFPPrintingProgressViewController ()
 @property IBOutlet NSTextField *statusLabel;
 @property IBOutlet NSTextField *elapsedTimeLabel;
@@ -47,6 +54,7 @@ static const CGFloat drawContainerExpandedBottomMargin = 20;
 @property NSNumberFormatter *percentFormatter;
 @property NSNumberFormatter *longPercentFormatter;
 
+@property TFPPrintingProgressViewControllerState state;
 @property TFPPrintJob *printJob;
 @property TFPPrintStatusController *printStatusController;
 @property BOOL aborted;
@@ -233,6 +241,7 @@ static const CGFloat drawContainerExpandedBottomMargin = 20;
 	
 	[self.printer fillInOffsetAndBacklashValuesInPrintParameters:params completionHandler:^(BOOL success) {
 		TFAssertMainThread();
+		self.state = TFPPrintingProgressViewControllerStatePreprocessing;
 		
 		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
 			TFPGCodeProgram *program = [[TFPGCodeProgram alloc] initWithFileURL:self.GCodeFileURL error:nil];
@@ -242,6 +251,7 @@ static const CGFloat drawContainerExpandedBottomMargin = 20;
 				if(weakSelf.aborted) {
 					return;
 				}
+				self.state = TFPPrintingProgressViewControllerStateRunningJob;
 				weakSelf.printJob = [[TFPPrintJob alloc] initWithProgram:program printer:weakSelf.printer printParameters:params];
 				[weakSelf configurePrintJob];
 			});
@@ -318,8 +328,8 @@ static const CGFloat drawContainerExpandedBottomMargin = 20;
 	
 	[alert beginSheetModalForWindow:self.view.window completionHandler:^(NSModalResponse returnCode) {
 		if(returnCode == NSAlertSecondButtonReturn) {
+			self.state = TFPPrintingProgressViewControllerStateCancelling;
 			[self.printJob abort];
-			self.statusLabel.stringValue = @"Stopping…";
 		}
 	}];
 }
@@ -372,38 +382,42 @@ static const CGFloat drawContainerExpandedBottomMargin = 20;
 
 
 - (NSString*)statusString {
-	if(!self.printJob) {
-		return @"Pre-processing…";
-	} else {
-		
-		NSString *progress = [self.longPercentFormatter stringFromNumber:@(self.printStatusController.phaseProgress)];
-		NSString *phase;
-		
-		switch(self.printStatusController.currentPhase) {
-			case TFPPrintPhasePreamble:
-				phase = @"Starting Print";
-				break;
-			case TFPPrintPhaseAdhesion:
-				phase = @"Printing Bed Adhesion";
-				break;
-			case TFPPrintPhaseModel:
-				phase = @"Printing Model";
-				break;
-			case TFPPrintPhasePostamble:
-				phase = @"Finishing";
-				break;
-				
-			case TFPPrintPhaseInvalid:
-				return @"";
+	switch(self.state) {
+		case TFPPrintingProgressViewControllerStatePreprocessing:
+			return @"Pre-processing…";
+		case TFPPrintingProgressViewControllerStateRunningJob: {
+			NSString *progress = [self.longPercentFormatter stringFromNumber:@(self.printStatusController.phaseProgress)];
+			NSString *phase;
+			
+			switch(self.printStatusController.currentPhase) {
+				case TFPPrintPhasePreamble:
+					phase = @"Starting Print";
+					break;
+				case TFPPrintPhaseAdhesion:
+					phase = @"Printing Bed Adhesion";
+					break;
+				case TFPPrintPhaseModel:
+					phase = @"Printing Model";
+					break;
+				case TFPPrintPhasePostamble:
+					phase = @"Finishing";
+					break;
+					
+				case TFPPrintPhaseInvalid:
+					return @"";
+			}
+			
+			return [NSString stringWithFormat:@"%@: %@", phase, progress];
 		}
-		
-		return [NSString stringWithFormat:@"%@: %@", phase, progress];
+			
+		case TFPPrintingProgressViewControllerStateCancelling:
+			return @"Stopping…";
 	}
 }
 
 
 + (NSSet *)keyPathsForValuesAffectingStatusString {
-	return @[@"printJob", @"printStatusController.currentPhase", @"printStatusController.phaseProgress"].tf_set;
+	return @[@"state", @"printStatusController.currentPhase", @"printStatusController.phaseProgress"].tf_set;
 }
 
 

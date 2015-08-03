@@ -122,6 +122,11 @@
 		lineNumber = [[scanner scanToString:@"\n"] integerValue];
 		type = TFPPrinterMessageTypeTemperatureUpdate;
 		
+	}else if([scanner scanString:@"skip"]) {
+		[scanner scanWhitespace];
+		lineNumber = [[scanner scanToString:@"\n"] integerValue];
+		type = TFPPrinterMessageTypeSkipNotice;
+		
 	}else if([scanner scanString:@"Error:"]) {
 		NSInteger errorCode = [[scanner scanToString:@" "] integerValue];
 		type = TFPPrinterMessageTypeError;
