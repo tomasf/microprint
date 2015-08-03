@@ -38,39 +38,37 @@
 
     TFPGCodeProgram *zero = [TFPGCodeProgram programWithLines:@[
                                 [TFPGCode codeWithField:'G' value:30],
+//                                [TFPGCode codeWithField:'G' value:28],      // Value to speed up testing
                                 ]];
 
-    TFLog(@"Zero prep");
+    TFPGCodeProgram *park = [TFPGCodeProgram programWithLines:@[
+                                [TFPGCode moveWithPosition:parkingLocation feedRate:moveFeedRate],
+                                [TFPGCode waitCodeWithDuration:0],
+                                ]];
 
-    if(self.prepStartedBlock) {
-        TFLog(@"didStart Prep");
-        self.prepStartedBlock();
+    if(self.progressFeedback) {
+        self.progressFeedback(@"Zero prep - warming the print head.");
     }
 
     [printer runGCodeProgram:prep completionHandler:^(BOOL success, NSArray *valueDictionaries) {
-
         if (weakSelf.stopped) {
             [weakSelf doStop];
         }else{
 
-            if(weakSelf.zeroStartedBlock) {
-                TFLog(@"didStart Zero");
-                weakSelf.zeroStartedBlock();
+            if(weakSelf.progressFeedback) {
+                weakSelf.progressFeedback(@"Running Zero routine");
             }
-            
-            [printer runGCodeProgram:zero completionHandler:^(BOOL success, NSArray *valueDictionaries) {
 
+            [printer runGCodeProgram:zero completionHandler:^(BOOL success, NSArray *valueDictionaries) {
                 if (weakSelf.stopped) {
                     [weakSelf doStop];
                 }else{
                     
-                    if(weakSelf.parkStartedBlock) {
-                        TFLog(@"didStart Park");
-                        weakSelf.parkStartedBlock();
+                    if(weakSelf.progressFeedback) {
+                        weakSelf.progressFeedback(@"Zeroing done, parking...");
                     }
-                    
-                    TFLog(@"Zeroing done, parking...");
-                    [printer moveToPosition:parkingLocation usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
+
+                    [printer runGCodeProgram:park completionHandler:^(BOOL success, NSArray *valueDictionaries) {
                         [weakSelf doStop];
                     }];
                 }
@@ -82,7 +80,9 @@
 - (void)stop {
     [super stop];
     self.stopped = YES;
-    TFLog(@"Stop requested");
+    if(self.progressFeedback) {
+        self.progressFeedback(@"Stopping...");
+    }
 }
 
 - (NSString *)activityDescription {
@@ -90,7 +90,6 @@
 }
 
 - (void)doStop {
-    TFLog(@"didStop");
     [self ended];
     if(self.didStopBlock) {
         self.didStopBlock();

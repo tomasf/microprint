@@ -23,6 +23,7 @@
 #import "TFPGCodeHelpers.h"
 #import "TFPTestBorderPrinting.h"
 #import "TFPGCodeHelpers.h"
+#import "TFPZeroBedOperation.h"
 
 #import "MAKVONotificationCenter.h"
 #import "GBCli.h"
@@ -186,8 +187,13 @@
 	
 	TFLog(@"  raise [--height 70]");
 	TFLog(@"    Raises the print head until you press Return or it reaches the set limit (default is 70 mm)");
+
+    TFLog(@"  zerobed");
+    TFLog(@"    Calibrates the zero Z location for the bed. This takes two or three minutes and does not change bed height calibration values.");
 	
-	
+    TFLog(@"  values");
+    TFLog(@"    Queries the printer for Bed level and Backlash values and displays the results. Record this information so that the values may be restored easily in case they are erased.");
+
 	TFLog(@"");
 	TFLog(@"Options:");
 	TFLog(@"  --dryrun: Don't connect to an actual printer; instead simulate a mock printer that echos sent G-codes.");
@@ -250,7 +256,27 @@
 	});
 }
 
+- (void)zerobed {
+    TFPZeroBedOperation* zeroOperation = [[TFPZeroBedOperation alloc] initWithPrinter:self.printer];
+    __weak TFPZeroBedOperation* weakOperation = zeroOperation;
 
+    zeroOperation.progressFeedback = ^(NSString* msg){
+        TFLog(msg);
+    };
+
+    zeroOperation.didStopBlock = ^() {
+        TFLog(@"Complete");
+        exit(EXIT_SUCCESS);
+    };
+
+    self.operation = zeroOperation;
+    [zeroOperation start];
+
+    TFPListenForInputLine(^(NSString *line) {
+        TFLog(@"Stopping...");
+        [weakOperation stop];
+    });
+}
 
 - (void)performCommand:(NSString *)command withArgument:(NSString *)value usingSettings:(GBSettings *)settings {
 	command = [command lowercaseString];
@@ -352,7 +378,10 @@
 			exit(EXIT_SUCCESS);
 		}];
 		
-	}else{
+	}else if([command isEqual:@"zerobed"]) {
+        [self zerobed];
+//        exit(EXIT_SUCCESS);
+    }else{
 		TFLog(@"Invalid command '%@'", command);
 		exit(EXIT_FAILURE);
 	}
