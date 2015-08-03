@@ -14,6 +14,7 @@
 typedef NS_ENUM(NSInteger, TFPPrinterMessageType) {
 	TFPPrinterMessageTypeInvalid,
 	TFPPrinterMessageTypeConfirmation, // value = nil or NSDictionary
+	TFPPrinterMessageTypeSkipNotice, // value = nil
 	TFPPrinterMessageTypeError, // value = NSNumber for error code
 	TFPPrinterMessageTypeResendRequest, // value = nil
 	TFPPrinterMessageTypeTemperatureUpdate, // value = NSNumber for temperature

@@ -220,7 +220,8 @@
 					   
 					   [TFPGCode moveWithPosition:[TFP3DVector yVector:84] feedRate:-1],
 					   [TFPGCode turnOffFanCode],
-					   [TFPGCode stopCode],
+					   [TFPGCode turnOffMotorsCode],
+					   [TFPGCode codeForTurningOffHeater],
 					   ];
 	
 	[self.printer runGCodeProgram:[TFPGCodeProgram programWithLines:codes] completionHandler:^(BOOL success, NSArray *valueDictionaries) {

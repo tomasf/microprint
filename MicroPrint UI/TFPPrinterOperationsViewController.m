@@ -65,6 +65,7 @@
 	[operation start];
 }
 
+
 - (void)operationDidStop {
 	self.operation = nil;
 	self.statusLabel.stringValue = @"";
@@ -108,6 +109,7 @@
                            ];
 	self.actionButtonTitles = [self.actionButtons valueForKey:@"title"];
 }
+
 
 - (IBAction)buttonAction:(id)sender {
     if(self.operation) {

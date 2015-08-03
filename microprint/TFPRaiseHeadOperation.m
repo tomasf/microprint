@@ -16,7 +16,7 @@
 @end
 
 
-static const double raiseStep = 0.5;
+static const double raiseStep = 0.1;
 
 
 @implementation TFPRaiseHeadOperation
