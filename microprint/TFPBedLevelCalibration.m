@@ -137,14 +137,13 @@ const double adjustmentAmount = 0.05;
 			offsets.frontRight = [zValues[2] doubleValue];
 			offsets.frontLeft = [zValues[3] doubleValue];
 			
-			[weakSelf.printer setBedOffsets:offsets completionHandler:^(BOOL success) {
-				weakSelf.didStartMovingHandler();
-				
-				[weakSelf.printer moveToPosition:moveAwayPosition usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
-					[weakSelf.printer sendGCode:[TFPGCode turnOffMotorsCode] responseHandler:^(BOOL success, NSDictionary *value) {
-						weakSelf.didFinishHandler();
-						[weakSelf ended];
-					}];
+			weakSelf.printer.bedLevelOffsets = offsets;
+			weakSelf.didStartMovingHandler();
+			
+			[weakSelf.printer moveToPosition:moveAwayPosition usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
+				[weakSelf.printer sendGCode:[TFPGCode turnOffMotorsCode] responseHandler:^(BOOL success, NSDictionary *value) {
+					weakSelf.didFinishHandler();
+					[weakSelf ended];
 				}];
 			}];
 		}];

@@ -83,6 +83,9 @@ extern const NSString *TFPPrinterResponseErrorCodeKey;
 @property (readonly) BOOL hasValidZLevel;
 @property (readonly) NSComparisonResult firmwareVersionComparedToTestedRange;
 
+@property (nonatomic) TFPBedLevelOffsets bedLevelOffsets;
+@property (readonly) BOOL hasAllZeroBedLevelOffsets;
+
 + (NSString*)nameForPrinterColor:(TFPPrinterColor)color;
 + (NSString*)minimumTestedFirmwareVersion;
 + (NSString*)maximumTestedFirmwareVersion;

@@ -11,5 +11,4 @@
 
 @interface TFPBedLevelSettingsViewController : NSViewController
 @property TFPPrinter *printer;
-- (void)reload;
 @end

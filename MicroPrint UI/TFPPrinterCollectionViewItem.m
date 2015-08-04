@@ -32,7 +32,7 @@
 	[super viewDidLoad];
 	__weak __typeof__(self) weakSelf = self;
 	
-	[self addObserver:self keyPath:@"representedObject.hasValidZLevel" options:0 block:^(MAKVONotification *notification) {
+	[self addObserver:self keyPath:@[@"representedObject.hasValidZLevel", @"representedObject.firmwareVersionComparedToTestedRange", @"representedObject.hasAllZeroBedLevelOffsets"] options:0 block:^(MAKVONotification *notification) {
 		[weakSelf reloadWarnings];
 	}];
 }
@@ -70,6 +70,7 @@
 	
 	BOOL invalidZ = printer && !printer.hasValidZLevel;
 	BOOL untestedFirmware = printer && printer.firmwareVersionComparedToTestedRange != NSOrderedSame;
+	BOOL allZeroBedLevelOffsets = printer && printer.hasAllZeroBedLevelOffsets;
 	
 	NSMutableArray *warningViews = [NSMutableArray new];
 	if(invalidZ) {
@@ -77,6 +78,9 @@
 	}
 	if(untestedFirmware) {
 		[warningViews addObject:[self makeWarningButtonWithTitle:@"Untested Firmware" action:@selector(showFirmwareInfo:)]];
+	}
+	if(allZeroBedLevelOffsets) {
+		[warningViews addObject:[self makeWarningButtonWithTitle:@"Bed Offsets Not Set" action:@selector(showZeroBedLevelInfo:)]];
 	}
 	
 	if(warningViews.count) {
@@ -117,6 +121,17 @@
 	NSAlert *alert = [NSAlert new];
 	alert.messageText = @"The Z level has been lost. This can happen if the printer loses power unexpectedly.";
 	alert.informativeText = @"You need to use the \"Find Bed Zero\" function in the Tools window before you can print properly.";
+	
+	alert.alertStyle = NSCriticalAlertStyle;
+	[alert addButtonWithTitle:@"OK"];
+	[alert beginSheetModalForWindow:self.view.window completionHandler:nil];
+}
+
+
+- (void)showZeroBedLevelInfo:(id)sender {
+	NSAlert *alert = [NSAlert new];
+	alert.messageText = @"Your bed level offsets are all zero. This probably means you haven't calibrated your bed level, or the settings have been lost somehow.";
+	alert.informativeText = @"Use \"Interactive Calibration\" in the Calibration window to fix this.";
 	
 	alert.alertStyle = NSCriticalAlertStyle;
 	[alert addButtonWithTitle:@"OK"];

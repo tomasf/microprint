@@ -102,6 +102,11 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 @property NSMutableDictionary *codeRegistry;
 @end
 
+@interface TFPPrinter (HelpersPrivate)
+- (void)fetchBedOffsetsWithCompletionHandler:(void(^)(BOOL success, TFPBedLevelOffsets offsets))completionHandler;
+- (void)setBedOffsets:(TFPBedLevelOffsets)offsets completionHandler:(void(^)(BOOL success))completionHandler;
+@end
+
 
 
 @implementation TFPPrinter
@@ -219,6 +224,28 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 	} else {
 		self.firmwareVersionComparedToTestedRange = NSOrderedSame;
 	}
+	
+	[self fetchBedOffsetsWithCompletionHandler:^(BOOL success, TFPBedLevelOffsets offsets) {
+		if(success) {
+			self.bedLevelOffsets = offsets;
+		}
+	}];
+}
+
+
+- (void)setBedLevelOffsets:(TFPBedLevelOffsets)bedLevelOffsets {
+	_bedLevelOffsets = bedLevelOffsets;
+	[self setBedOffsets:bedLevelOffsets completionHandler:nil];
+}
+
+
+- (BOOL)hasAllZeroBedLevelOffsets {
+	return self.connectionFinished && self.bedLevelOffsets.backLeft + self.bedLevelOffsets.backRight + self.bedLevelOffsets.frontLeft + self.bedLevelOffsets.frontRight + self.bedLevelOffsets.common < FLT_EPSILON;
+}
+
+
++ (NSSet *)keyPathsForValuesAffectingHasAllZeroBedLevelOffsets {
+	return @[@"bedLevelOffsets", @"connectionFinished"].tf_set;
 }
 
 
