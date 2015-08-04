@@ -93,6 +93,7 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 
 @property (readwrite) double heaterTemperature;
 @property (readwrite) BOOL hasValidZLevel;
+@property (readwrite) NSComparisonResult firmwareVersionComparedToTestedRange;
 
 @property TFPPrinterGCodeEntry *pendingCodeEntry;
 @property NSMutableArray *queuedCodeEntries;
@@ -134,6 +135,7 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 	self.codeRegistry = [NSMutableDictionary new];
 	self.pendingConnection = YES;
 	self.hasValidZLevel = YES; // Assume valid Z for now
+	self.firmwareVersionComparedToTestedRange = NSOrderedSame; // Assume OK firmware for now
 	
 	[self.connection openWithCompletionHandler:^(NSError *error) {
 		self.pendingConnection = NO;
@@ -193,12 +195,30 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 }
 
 
++ (NSString*)minimumTestedFirmwareVersion {
+	return @"2015071301";
+}
+
+
++ (NSString*)maximumTestedFirmwareVersion {
+	return @"2015072701";
+}
+
+
 - (void)refreshState {
 	[self sendGCode:[TFPGCode codeWithField:'M' value:117] responseHandler:^(BOOL success, NSDictionary *value) {
 		if(success && value[@"ZV"]) {
 			self.hasValidZLevel = [value[@"ZV"] integerValue] > 0;
 		}
 	}];
+	
+	if ([self.firmwareVersion compare:[self.class minimumTestedFirmwareVersion]] == NSOrderedAscending) {
+		self.firmwareVersionComparedToTestedRange = NSOrderedAscending;
+	} else if ([self.firmwareVersion compare:[self.class maximumTestedFirmwareVersion]] == NSOrderedDescending) {
+		self.firmwareVersionComparedToTestedRange = NSOrderedDescending;
+	} else {
+		self.firmwareVersionComparedToTestedRange = NSOrderedSame;
+	}
 }
 
 

@@ -81,8 +81,11 @@ extern const NSString *TFPPrinterResponseErrorCodeKey;
 
 @property (readonly) double heaterTemperature;
 @property (readonly) BOOL hasValidZLevel;
+@property (readonly) NSComparisonResult firmwareVersionComparedToTestedRange;
 
 + (NSString*)nameForPrinterColor:(TFPPrinterColor)color;
++ (NSString*)minimumTestedFirmwareVersion;
++ (NSString*)maximumTestedFirmwareVersion;
 @end
 
 
