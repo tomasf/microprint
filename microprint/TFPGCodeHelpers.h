@@ -80,14 +80,33 @@ typedef struct {
 	double x;
 	double y;
 	double z;
+	double e;
+} TFPAbsolutePosition;
+
+
+
+typedef struct {
+	double x;
+	double y;
+	double z;
 	double xSize;
 	double ySize;
 	double zSize;
 } TFPCuboid;
 
 
+extern BOOL TFPCuboidContainsPosition(TFPCuboid cuboid, TFPAbsolutePosition position);
+extern BOOL TFPCuboidContainsCuboid(TFPCuboid outer, TFPCuboid inner);
+extern TFPCuboid TFPCuboidInfinite;
+
+extern TFPCuboid TFPCuboidM3DMicroPrintVolumeLower;
+extern TFPCuboid TFPCuboidM3DMicroPrintVolumeUpper;
+
+
 @interface TFPGCodeProgram (TFPHelpers)
+- (TFPCuboid)measureBoundingBoxWithinBox:(TFPCuboid)limit;
 - (TFPCuboid)measureBoundingBox;
+- (BOOL)withinM3DMicroPrintableVolume;
 
 - (void)enumerateMovesWithBlock:(void(^)(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate, TFPGCode *code, NSUInteger index))block;
 

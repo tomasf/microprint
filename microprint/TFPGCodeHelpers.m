@@ -229,24 +229,63 @@
 
 
 
+BOOL TFPCuboidContainsPosition(TFPCuboid cuboid, TFPAbsolutePosition position) {
+	return	position.x >= cuboid.x && position.x <= cuboid.x+cuboid.xSize &&
+			position.y >= cuboid.y && position.y <= cuboid.y+cuboid.ySize &&
+			position.z >= cuboid.z && position.z <= cuboid.z+cuboid.zSize;
+}
+
+
+BOOL TFPCuboidContainsCuboid(TFPCuboid outer, TFPCuboid inner) {
+	if(inner.xSize < 0 || inner.ySize < 0 || inner.zSize < 0) {
+		return YES;
+	}
+	TFPAbsolutePosition minPoint = {.x = inner.x, .y = inner.y, .z = inner.z};
+	TFPAbsolutePosition maxPoint = {.x = inner.x+inner.xSize, .y = inner.y+inner.ySize, .z = inner.z+inner.zSize};
+	return TFPCuboidContainsPosition(outer, minPoint) && TFPCuboidContainsPosition(outer, maxPoint);
+}
+
+
+TFPCuboid TFPCuboidInfinite = {.x = -10000, .xSize = 20000, .y = -10000, .ySize = 20000, .z = -10000, .zSize = 20000};
+
+TFPCuboid TFPCuboidM3DMicroPrintVolumeLower = {.x = 0, .y = 0, .z = -1000,  .xSize = 109, .ySize = 113, .zSize = 74 + 1000};
+TFPCuboid TFPCuboidM3DMicroPrintVolumeUpper = {.x = 12.5, .y = 11, .z = 74,  .xSize = 91, .ySize = 84, .zSize = 42};
+
+
 @implementation TFPGCodeProgram (TFPHelpers)
 
 
-- (TFPCuboid)measureBoundingBox {
+- (BOOL)withinM3DMicroPrintableVolume {
+	TFPCuboid infiniteXYBelowBreak = {.x = -10000, .xSize = 20000, .y = -10000, .ySize = 20000, .z = -10000, .zSize = 10000 + TFPCuboidM3DMicroPrintVolumeUpper.z};
+	TFPCuboid infiniteXYAboveBreak = {.x = -10000, .xSize = 20000, .y = -10000, .ySize = 20000, .z = TFPCuboidM3DMicroPrintVolumeUpper.z, .zSize = 10000};
+	
+	TFPCuboid boundingBoxBelowBreak = [self measureBoundingBoxWithinBox:infiniteXYBelowBreak];
+	TFPCuboid boundingBoxAboveBreak = [self measureBoundingBoxWithinBox:infiniteXYAboveBreak];
+	
+	BOOL withinLower = TFPCuboidContainsCuboid(TFPCuboidM3DMicroPrintVolumeLower, boundingBoxBelowBreak);
+	BOOL withinUpper = TFPCuboidContainsCuboid(TFPCuboidM3DMicroPrintVolumeUpper, boundingBoxAboveBreak);
+	
+	return withinLower && withinUpper;
+}
+
+
+- (TFPCuboid)measureBoundingBoxWithinBox:(TFPCuboid)limit {
 	__block double minX = 10000, maxX = 0;
 	__block double minY = 10000, maxY = 0;
 	__block double minZ = 10000, maxZ = 0;
 	
 	[self enumerateMovesWithBlock:^(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate, TFPGCode *code, NSUInteger index) {
 		if(to.e > from.e) {
-			minX = MIN(MIN(minX, from.x), to.x);
-			maxX = MAX(MAX(maxX, from.x), to.x);
-			
-			minY = MIN(MIN(minY, from.y), to.y);
-			maxY = MAX(MAX(maxY, from.y), to.y);
-			
-			minZ = MIN(MIN(minZ, from.z), to.z);
-			maxZ = MAX(MAX(maxZ, from.z), to.z);
+			if(TFPCuboidContainsPosition(limit, from) && TFPCuboidContainsPosition(limit, to)) {
+				minX = MIN(MIN(minX, from.x), to.x);
+				maxX = MAX(MAX(maxX, from.x), to.x);
+				
+				minY = MIN(MIN(minY, from.y), to.y);
+				maxY = MAX(MAX(maxY, from.y), to.y);
+				
+				minZ = MIN(MIN(minZ, from.z), to.z);
+				maxZ = MAX(MAX(maxZ, from.z), to.z);
+			}
 		}
 	}];
 	
@@ -259,6 +298,12 @@
 		.zSize = maxZ-minZ
 	};
 }
+
+
+- (TFPCuboid)measureBoundingBox {
+	return [self measureBoundingBoxWithinBox:TFPCuboidInfinite];
+}
+
 
 
 - (void)enumerateMovesWithBlock:(void(^)(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate, TFPGCode *code, NSUInteger index))block {

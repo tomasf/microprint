@@ -231,6 +231,25 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 }
 
 
+- (void)warnAboutOutOfBounds {
+	NSAlert *alert = [NSAlert new];
+	alert.messageText = @"The model appears to be outside of the printer's printable area.";
+	alert.informativeText = @"This may be due to the model being too large or positioned incorrectly. Make sure your slicer has the correct print area set.";
+	[alert addButtonWithTitle:@"Cancel"];
+	[alert addButtonWithTitle:@"Continue Anyway"];
+	
+	[alert beginSheetModalForWindow:self.view.window completionHandler:^(NSModalResponse returnCode) {
+		if(returnCode == NSAlertFirstButtonReturn) {
+			[self dismissController:nil];
+			self.endHandler(NO);
+		}else{
+			[self configurePrintJob];
+		}
+	}];
+}
+
+
+
 - (void)start {
 	__weak __typeof__(self) weakSelf = self;
 	
@@ -247,13 +266,20 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 			TFPGCodeProgram *program = [[TFPGCodeProgram alloc] initWithFileURL:self.GCodeFileURL error:nil];
 			program = [TFPPreprocessing programByPreprocessingProgram:program usingParameters:params];
 			
+			BOOL withinBounds = [program withinM3DMicroPrintableVolume];
+			
 			dispatch_async(dispatch_get_main_queue(), ^{
 				if(weakSelf.aborted) {
 					return;
 				}
-				self.state = TFPPrintingProgressViewControllerStateRunningJob;
+				weakSelf.state = TFPPrintingProgressViewControllerStateRunningJob;
 				weakSelf.printJob = [[TFPPrintJob alloc] initWithProgram:program printer:weakSelf.printer printParameters:params];
-				[weakSelf configurePrintJob];
+				
+				if(withinBounds) {
+					[weakSelf configurePrintJob];
+				}else{
+					[weakSelf warnAboutOutOfBounds];
+				}
 			});
 		});
 	}];
