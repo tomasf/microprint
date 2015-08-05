@@ -22,6 +22,8 @@
 static const NSUInteger maxLineNumber = 100;
 const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 
+#define ZERO(x) (x < DBL_EPSILON && x > -DBL_EPSILON)
+
 
 @interface TFPPrinterGCodeEntry : NSObject
 @property TFPGCode *code;
@@ -240,7 +242,12 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 
 
 - (BOOL)hasAllZeroBedLevelOffsets {
-	return self.connectionFinished && self.bedLevelOffsets.backLeft + self.bedLevelOffsets.backRight + self.bedLevelOffsets.frontLeft + self.bedLevelOffsets.frontRight + self.bedLevelOffsets.common < FLT_EPSILON;
+	return self.connectionFinished &&
+	ZERO(self.bedLevelOffsets.backLeft) &&
+	ZERO(self.bedLevelOffsets.backRight) &&
+	ZERO(self.bedLevelOffsets.frontLeft) &&
+	ZERO(self.bedLevelOffsets.frontRight) &&
+	ZERO(self.bedLevelOffsets.common);
 }
 
 

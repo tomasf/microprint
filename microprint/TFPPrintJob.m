@@ -235,9 +235,9 @@
 		self.aborted = YES;
 		
 		[self sendAbortSequenceWithCompletionHandler:^{
-			[self jobEnded];
-			
 			dispatch_async(dispatch_get_main_queue(), ^{
+				[self jobEnded];
+				
 				if(self.abortionBlock) {
 					self.abortionBlock();
 				}
