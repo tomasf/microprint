@@ -11,6 +11,7 @@
 #import "TFPBedLevelSettingsViewController.h"
 #import "TFPBacklashSettingsViewController.h"
 #import "TFPConsoleViewController.h"
+#import "TFPCalibrationViewController.h"
 #import "TFPExtras.h"
 #import "TFPPrinter.h"
 
@@ -162,13 +163,11 @@
 
 - (IBAction)openCalibration:(id)sender {
 	self.calibrationWindowController = [[NSStoryboard storyboardWithName:@"Main" bundle:nil] instantiateControllerWithIdentifier:@"CalibrationWindowController"];
-	
-	NSTabViewController *tabController = (NSTabViewController*)self.calibrationWindowController.contentViewController;
-	TFPBedLevelSettingsViewController *viewController = tabController.childViewControllers.firstObject;
-	viewController.printer = self.representedObject;
 
-	TFPBacklashSettingsViewController *viewController2 = tabController.childViewControllers.lastObject;
-	viewController2.printer = self.representedObject;
+	NSTabViewController *tabController = (NSTabViewController*)self.calibrationWindowController.contentViewController;
+    for (TFPCalibrationViewController* viewController in tabController.childViewControllers) {
+        viewController.printer = self.representedObject;
+    }
 
 	[self.calibrationWindowController.window makeKeyAndOrderFront:nil];
 }
