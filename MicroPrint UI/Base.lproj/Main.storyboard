@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="7706" systemVersion="14F19a" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="7706" systemVersion="14E46" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="7706"/>
         <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
@@ -794,7 +794,7 @@
                 <collectionViewItem storyboardIdentifier="printerItemPrototype" id="bpn-zK-R5E" customClass="TFPPrinterCollectionViewItem" sceneMemberID="viewController">
                     <view key="view" id="nvq-9U-B9C">
                         <rect key="frame" x="0.0" y="0.0" width="500" height="92"/>
-                        <autoresizingMask key="autoresizingMask"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="nAD-xB-aed">
                                 <rect key="frame" x="20" y="20" width="48" height="52"/>
@@ -1315,7 +1315,7 @@ DQ
                 </viewController>
                 <customObject id="PL4-Hi-pQ1" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="620" y="1709"/>
+            <point key="canvasLocation" x="-8" y="2126"/>
         </scene>
         <!--Tab View Controller-->
         <scene sceneID="Fgd-uE-72n">
@@ -1324,7 +1324,6 @@ DQ
                     <tabViewItems>
                         <tabViewItem label="Bed Level" identifier="" id="JfS-gP-7yG"/>
                         <tabViewItem label="Backlash Compensation" identifier="" id="L4c-6L-TyO"/>
-                        <tabViewItem label="Zero Head" id="tGN-AB-c14"/>
                     </tabViewItems>
                     <viewControllerTransitionOptions key="transitionOptions" crossfade="YES" slideRight="YES" allowUserInteraction="YES"/>
                     <tabView key="tabView" type="noTabsBezelBorder" id="zgf-qo-srx">
@@ -1336,7 +1335,6 @@ DQ
                     <connections>
                         <segue destination="RcU-HJ-V8B" kind="relationship" relationship="tabItems" id="qCX-kE-KuO"/>
                         <segue destination="JaT-Nt-giJ" kind="relationship" relationship="tabItems" id="qOd-c7-ShX"/>
-                        <segue destination="dfw-Sz-jHf" kind="relationship" relationship="tabItems" id="FOK-CP-RCw"/>
                     </connections>
                 </tabViewController>
                 <customObject id="iqY-Ip-uWe" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
@@ -1348,7 +1346,7 @@ DQ
             <objects>
                 <viewController title="View Controller" id="RcU-HJ-V8B" customClass="TFPBedLevelSettingsViewController" sceneMemberID="viewController">
                     <view key="view" id="D9E-nB-26x">
-                        <rect key="frame" x="0.0" y="0.0" width="290" height="396"/>
+                        <rect key="frame" x="0.0" y="0.0" width="290" height="429"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="APa-aA-Jw3">
@@ -1512,13 +1510,18 @@ Lower numbers = closer to the print bed.</string>
                                 </textFieldCell>
                             </textField>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="GKm-OM-PAV">
-                                <rect key="frame" x="57" y="348" width="176" height="32"/>
-                                <buttonCell key="cell" type="push" title="Interactive Calibration" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Oyi-eW-QpI">
+                                <rect key="frame" x="34" y="348" width="222" height="32"/>
+                                <buttonCell key="cell" type="push" title="Interactive Corner Calibration" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Oyi-eW-QpI">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
                                 <connections>
                                     <action selector="interactiveCalibration:" target="RcU-HJ-V8B" id="0yV-oF-zqV"/>
+                                    <binding destination="RcU-HJ-V8B" name="enabled" keyPath="representedObject.currentOperation" id="Mu9-T0-0XV">
+                                        <dictionary key="options">
+                                            <string key="NSValueTransformerName">NSIsNil</string>
+                                        </dictionary>
+                                    </binding>
                                 </connections>
                             </button>
                             <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="kfY-eb-Jop">
@@ -1551,6 +1554,22 @@ DQ
                                     <action selector="printTestBorder:" target="RcU-HJ-V8B" id="pI5-r6-7JT"/>
                                 </connections>
                             </button>
+                            <button verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="VSI-mj-Eyy">
+                                <rect key="frame" x="57" y="381" width="180" height="32"/>
+                                <buttonCell key="cell" type="push" title="Head Level Calibration" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="K2E-Qc-Fh6">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="interactiveCalibration:" target="RcU-HJ-V8B" id="Usl-to-VNp"/>
+                                    <binding destination="RcU-HJ-V8B" name="enabled" keyPath="representedObject.currentOperation" id="nK4-0D-8OW">
+                                        <dictionary key="options">
+                                            <string key="NSValueTransformerName">NSIsNil</string>
+                                        </dictionary>
+                                    </binding>
+                                    <segue destination="dfw-Sz-jHf" kind="sheet" id="PpR-wz-OSw"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="kfY-eb-Jop" secondAttribute="trailing" constant="20" id="20s-Gl-gDE"/>
@@ -1569,7 +1588,6 @@ DQ
                             <constraint firstItem="ch9-Rt-oll" firstAttribute="top" secondItem="GKm-OM-PAV" secondAttribute="bottom" constant="12" id="Ny2-vL-sVv"/>
                             <constraint firstItem="kVq-Km-lxU" firstAttribute="top" secondItem="kfY-eb-Jop" secondAttribute="bottom" constant="20" id="Ozs-Si-gu4"/>
                             <constraint firstItem="pcv-KP-fVl" firstAttribute="top" secondItem="SUr-4V-9fE" secondAttribute="bottom" constant="17" id="QJg-bC-p8R"/>
-                            <constraint firstItem="GKm-OM-PAV" firstAttribute="top" secondItem="D9E-nB-26x" secondAttribute="top" constant="20" id="UMC-Pk-uuk"/>
                             <constraint firstItem="SUr-4V-9fE" firstAttribute="baseline" secondItem="APa-aA-Jw3" secondAttribute="baseline" id="V0E-yS-lCP"/>
                             <constraint firstItem="ach-BJ-ddN" firstAttribute="leading" secondItem="UPf-I3-bE0" secondAttribute="trailing" constant="6" id="VQj-yJ-fNR"/>
                             <constraint firstItem="NYr-Me-dVU" firstAttribute="centerY" secondItem="Dsp-VW-wQU" secondAttribute="centerY" id="Xs9-q1-cGj"/>
@@ -1589,6 +1607,8 @@ DQ
                             <constraint firstItem="l74-r1-yFS" firstAttribute="leading" secondItem="SUr-4V-9fE" secondAttribute="trailing" constant="6" id="ue6-9a-4k1"/>
                             <constraint firstItem="NYr-Me-dVU" firstAttribute="width" secondItem="kVq-Km-lxU" secondAttribute="width" id="va6-TE-OVo"/>
                             <constraint firstItem="W83-no-pz0" firstAttribute="trailing" secondItem="ach-BJ-ddN" secondAttribute="trailing" id="vva-Ht-w3K"/>
+                            <constraint firstItem="GKm-OM-PAV" firstAttribute="top" secondItem="VSI-mj-Eyy" secondAttribute="bottom" constant="12" id="w2y-j0-4oO"/>
+                            <constraint firstItem="VSI-mj-Eyy" firstAttribute="top" secondItem="D9E-nB-26x" secondAttribute="top" constant="20" id="wqm-UM-0R1"/>
                             <constraint firstItem="RCA-Pn-XQU" firstAttribute="width" secondItem="kVq-Km-lxU" secondAttribute="width" id="x34-wO-qfF"/>
                             <constraint firstItem="SUr-4V-9fE" firstAttribute="centerY" secondItem="l74-r1-yFS" secondAttribute="centerY" id="xGh-df-0gA"/>
                             <constraint firstItem="W83-no-pz0" firstAttribute="top" secondItem="kfY-eb-Jop" secondAttribute="bottom" constant="20" id="xwx-c8-Vwq"/>
@@ -1762,11 +1782,11 @@ DQ
             <objects>
                 <viewController id="dfw-Sz-jHf" userLabel="Zero Head View Controller" customClass="TFPZeroHeadViewController" sceneMemberID="viewController">
                     <view key="view" id="MSb-eW-Lgh">
-                        <rect key="frame" x="0.0" y="0.0" width="387" height="400"/>
+                        <rect key="frame" x="0.0" y="0.0" width="460" height="366"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="SvH-Nn-Rxn">
-                                <rect key="frame" x="159" y="13" width="70" height="32"/>
+                                <rect key="frame" x="236" y="13" width="70" height="32"/>
                                 <buttonCell key="cell" type="push" title="Start" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="r5Z-RB-afe">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -1776,20 +1796,23 @@ DQ
                                 </connections>
                             </button>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="H4h-XY-yr6">
-                                <rect key="frame" x="18" y="81" width="351" height="272"/>
+                                <rect key="frame" x="18" y="81" width="424" height="238"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="420" id="DYc-Ob-Qqy"/>
+                                </constraints>
                                 <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" placeholderString="" allowsEditingTextAttributes="YES" id="F7R-VH-KoF">
                                     <font key="font" metaFont="system"/>
-                                    <string key="title">The Zero Head Height routine automatically determines the zero position of the head above the bed. This is performed by the printer firmware and takes two to three minutes. During the calibration the printer head will move up and down with long pauses as the correct position is determined.
+                                    <mutableString key="title">The Zero Head Height routine automatically determines the zero position of the head above the bed. This is performed by the printer firmware and takes several minutes. During the calibration the printer head will move up and down with long pauses as the correct position is determined.
 
 The printer must remain on a stable surface and undisturbed during the entire calibration.
 
-The calibration can be performed any time and will not change the related Bed Height Offset settings. The Zero Head Height calibration should be performed before the Bed Level calibration and at any time that the height may be incorrect, such as after an unexpected reset of the printer.</string>
+The calibration can be performed any time and will not change the related Bed Height Offset settings. The Zero Head Height calibration should be performed before the Bed Level calibration and at any time that the height may be incorrect, such as after an unexpected reset of the printer.</mutableString>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="vN0-qm-LXo">
-                                <rect key="frame" x="18" y="361" width="351" height="19"/>
+                                <rect key="frame" x="18" y="327" width="424" height="19"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Zero Head Height Calibration" id="qDg-rn-g2H">
                                     <font key="font" metaFont="system" size="16"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -1800,17 +1823,35 @@ The calibration can be performed any time and will not change the related Bed He
                                 <rect key="frame" x="20" y="57" width="16" height="16"/>
                             </progressIndicator>
                             <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="iJd-TE-LUn">
-                                <rect key="frame" x="42" y="56" width="327" height="17"/>
+                                <rect key="frame" x="42" y="56" width="400" height="17"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" enabled="NO" sendsActionOnEndEditing="YES" title="Label" id="UPj-4u-9Ll">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="2ex-Aa-HrV">
+                                <rect key="frame" x="153" y="13" width="83" height="32"/>
+                                <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="avs-9S-STF">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="dismissController:" target="dfw-Sz-jHf" id="tOi-dn-P9u"/>
+                                    <binding destination="dfw-Sz-jHf" name="enabled" keyPath="operation" id="mZr-XI-LvX">
+                                        <dictionary key="options">
+                                            <string key="NSValueTransformerName">NSIsNil</string>
+                                        </dictionary>
+                                    </binding>
+                                </connections>
+                            </button>
                         </subviews>
                         <constraints>
                             <constraint firstItem="iJd-TE-LUn" firstAttribute="leading" secondItem="1if-Qd-U8B" secondAttribute="trailing" constant="8" symbolic="YES" id="1WC-U6-16C"/>
-                            <constraint firstAttribute="centerX" secondItem="SvH-Nn-Rxn" secondAttribute="centerX" id="1ba-Sq-Ese"/>
+                            <constraint firstAttribute="centerX" secondItem="SvH-Nn-Rxn" secondAttribute="leading" constant="-12" id="1ba-Sq-Ese"/>
                             <constraint firstAttribute="centerX" secondItem="vN0-qm-LXo" secondAttribute="centerX" id="77A-Yp-mfm"/>
                             <constraint firstItem="vN0-qm-LXo" firstAttribute="top" secondItem="MSb-eW-Lgh" secondAttribute="top" constant="20" symbolic="YES" id="9K3-Zz-u1u"/>
                             <constraint firstAttribute="trailing" secondItem="vN0-qm-LXo" secondAttribute="trailing" constant="20" symbolic="YES" id="GPM-tN-4dW"/>
@@ -1818,9 +1859,12 @@ The calibration can be performed any time and will not change the related Bed He
                             <constraint firstItem="1if-Qd-U8B" firstAttribute="top" secondItem="H4h-XY-yr6" secondAttribute="bottom" constant="8" symbolic="YES" id="NZN-we-OTr"/>
                             <constraint firstItem="H4h-XY-yr6" firstAttribute="leading" secondItem="MSb-eW-Lgh" secondAttribute="leading" constant="20" symbolic="YES" id="Ru7-bk-DXX"/>
                             <constraint firstAttribute="bottom" secondItem="SvH-Nn-Rxn" secondAttribute="bottom" constant="20" symbolic="YES" id="WBc-yy-Cpn"/>
+                            <constraint firstItem="SvH-Nn-Rxn" firstAttribute="leading" secondItem="2ex-Aa-HrV" secondAttribute="trailing" constant="12" id="XAo-Gr-yys"/>
                             <constraint firstAttribute="trailing" secondItem="H4h-XY-yr6" secondAttribute="trailing" constant="20" symbolic="YES" id="XX1-ir-QYI"/>
                             <constraint firstItem="vN0-qm-LXo" firstAttribute="leading" secondItem="MSb-eW-Lgh" secondAttribute="leading" constant="20" symbolic="YES" id="ebC-OO-ZFx"/>
                             <constraint firstItem="1if-Qd-U8B" firstAttribute="leading" secondItem="MSb-eW-Lgh" secondAttribute="leading" constant="20" symbolic="YES" id="hoY-71-s5g"/>
+                            <constraint firstItem="SvH-Nn-Rxn" firstAttribute="baseline" secondItem="2ex-Aa-HrV" secondAttribute="baseline" id="igz-Sg-Men"/>
+                            <constraint firstItem="SvH-Nn-Rxn" firstAttribute="top" secondItem="iJd-TE-LUn" secondAttribute="bottom" constant="15" id="npe-iA-VZA"/>
                             <constraint firstItem="iJd-TE-LUn" firstAttribute="top" secondItem="H4h-XY-yr6" secondAttribute="bottom" constant="8" symbolic="YES" id="vCx-yv-NR8"/>
                             <constraint firstItem="H4h-XY-yr6" firstAttribute="top" secondItem="vN0-qm-LXo" secondAttribute="bottom" constant="8" symbolic="YES" id="whK-Vf-Ko4"/>
                         </constraints>
@@ -1835,7 +1879,7 @@ The calibration can be performed any time and will not change the related Bed He
                 </viewController>
                 <customObject id="V9L-s0-LyI" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1468.5" y="1849"/>
+            <point key="canvasLocation" x="1998" y="1776"/>
         </scene>
         <!--Printer Operations View Controller-->
         <scene sceneID="4Dt-n4-U8A">

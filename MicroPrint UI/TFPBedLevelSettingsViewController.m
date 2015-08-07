@@ -81,4 +81,9 @@
 }
 
 
+- (void)prepareForSegue:(NSStoryboardSegue *)segue sender:(id)sender {
+	[(TFPCalibrationViewController*)segue.destinationController setPrinter:self.printer];
+}
+
+
 @end
