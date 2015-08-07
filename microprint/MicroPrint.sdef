@@ -15,6 +15,10 @@
 			<element type="printer" access="r">
 				<cocoa key="scripting_printers"/>
 			</element>
+			
+			<responds-to name="send code">
+				<cocoa method="scripting_sendGCode:"/>
+			</responds-to>
 		</class-extension>
 		
 		<class-extension extends="document" description="A G-code file document.">
@@ -49,6 +53,18 @@
 			<direct-parameter description="the document to print">
 				<type type="document"/>
 			</direct-parameter>
+		</command>
+		
+		<command name="send code" code="TFMPgcod" description="Send a G-code to the printer">
+			<direct-parameter description="the code to send">
+				<type type="text"/>
+			</direct-parameter>
+			
+			<parameter name="to" code="sept" type="printer" description="The printer to use">
+				<cocoa key="printer"/>
+			</parameter>
+			
+			<result type="record" description="Fields returned"/>
 		</command>
 		
     </suite>
