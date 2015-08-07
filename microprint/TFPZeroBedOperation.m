@@ -13,10 +13,13 @@
 @interface TFPZeroBedOperation ()
 
 @property BOOL stopped;
-
+@property (readwrite) TFPOperationStage stage;
 @end
 
+
 @implementation TFPZeroBedOperation
+@synthesize stage=_stage;
+
 
 - (void)start {
     [super start];
@@ -49,6 +52,8 @@
     if(self.progressFeedback) {
         self.progressFeedback(@"Zero prep - warming the print head.");
     }
+	
+	self.stage = TFPOperationStagePreparation;
 
     [printer runGCodeProgram:prep completionHandler:^(BOOL success, NSArray *valueDictionaries) {
         if (weakSelf.stopped) {
@@ -59,7 +64,9 @@
                 weakSelf.progressFeedback(@"Running Zero routine");
             }
 
+			self.stage = TFPOperationStageRunning;
             [printer runGCodeProgram:zero completionHandler:^(BOOL success, NSArray *valueDictionaries) {
+				self.stage = TFPOperationStageEnding;
                 if (weakSelf.stopped) {
                     [weakSelf doStop];
                 }else{
@@ -95,5 +102,11 @@
         self.didStopBlock();
     }
 }
+
+
+- (TFPOperationKind)kind {
+	return TFPOperationKindCalibration;
+}
+
 
 @end

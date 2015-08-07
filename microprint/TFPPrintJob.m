@@ -31,11 +31,14 @@
 @property double targetTemperature;
 @property NSUInteger pendingRequestCount;
 @property (readwrite) NSUInteger completedRequests;
+
+@property (readwrite) TFPOperationStage stage;
 @end
 
 
 
 @implementation TFPPrintJob
+@synthesize stage=_stage;
 
 
 - (instancetype)initWithProgram:(TFPGCodeProgram*)program printer:(TFPPrinter*)printer printParameters:(TFPPrintParameters*)params {
@@ -177,6 +180,7 @@
 	self.pendingRequestCount = 0;
 	self.completedRequests = 0;
 	self.startTime = TFNanosecondTime();
+	self.stage = TFPOperationStageRunning;
 	
 	if(self.parameters.verbose) {
 		self.printer.incomingCodeBlock = ^(NSString *line){
@@ -231,6 +235,8 @@
 
 
 - (void)abort {
+	self.stage = TFPOperationStageEnding;
+	
 	dispatch_async(self.printQueue, ^{
 		self.aborted = YES;
 		
@@ -244,6 +250,11 @@
 			});
 		}];
 	});
+}
+
+
+- (TFPOperationKind)kind {
+	return TFPOperationKindPrintJob;
 }
 
 

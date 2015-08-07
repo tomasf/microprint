@@ -15,6 +15,8 @@
 #import "TFPPrinter.h"
 #import "TFPGCodeDocument.h"
 #import "TFPExtras.h"
+#import "TFPRaiseHeadOperation.h"
+#import "TFPExtrusionOperation.h"
 
 
 @interface TFPPrintingProgressViewController (Private)
@@ -213,5 +215,58 @@
 	
 	return [[NSIndexSpecifier alloc] initWithContainerClassDescription:containerClassDesc containerSpecifier:nil key:@"printers" index:printerIndex];
 }
+
+- (TFPOperationKind)currentOperationKind {
+	if (self.currentOperation) {
+		return self.currentOperation.kind;
+	} else {
+		return TFPOperationKindIdle;
+	}
+}
+
+- (TFPOperationStage)currentOperationStage {
+	if (self.currentOperation) {
+		return self.currentOperation.stage;
+	} else {
+		return TFPOperationStageIdle;
+	}
+}
+
+
+- (void)scripting_stop:(NSScriptCommand*)command {
+	[self.currentOperation stop];
+}
+
+
+- (void)scripting_raise:(NSScriptCommand*)command {
+	if(self.currentOperation) {
+		return;
+	}
+	
+	TFPRaiseHeadOperation *operation = [[TFPRaiseHeadOperation alloc] initWithPrinter:self];
+	operation.targetHeight = 70;
+	[operation start];
+}
+
+
+- (void)scripting_retract:(NSScriptCommand*)command {
+	if(self.currentOperation) {
+		return;
+	}
+	
+	TFPExtrusionOperation *operation = [[TFPExtrusionOperation alloc] initWithPrinter:self retraction:YES];
+	[operation start];
+}
+
+
+- (void)scripting_extrude:(NSScriptCommand*)command {
+	if(self.currentOperation) {
+		return;
+	}
+	
+	TFPExtrusionOperation *operation = [[TFPExtrusionOperation alloc] initWithPrinter:self retraction:NO];
+	[operation start];
+}
+
 
 @end

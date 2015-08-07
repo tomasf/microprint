@@ -20,11 +20,13 @@ const double adjustmentAmount = 0.05;
 @property (readwrite) double currentLevel;
 @property (copy) void(^continueBlock)(double level);
 @property BOOL adjusting;
+@property (readwrite) TFPOperationStage stage;
 @end
 
 
 
 @implementation TFPBedLevelCalibration
+@synthesize stage=_stage;
 
 
 - (void)moveToNewLevel:(double)level {
@@ -110,7 +112,8 @@ const double adjustmentAmount = 0.05;
 - (void)startAtLevel:(double)initialZ heightTarget:(double)targetOffset {
 	[super start];
 	__weak __typeof__(self) weakSelf = self;
-	
+	self.stage = TFPOperationStagePreparation;
+
 	const double minX = 1, minY = 9.5, maxX = 102.9, maxY = 99;
 	const double raiseLevel = 5;
 	
@@ -129,7 +132,10 @@ const double adjustmentAmount = 0.05;
 																	   ]];
 	
 	[weakSelf.printer runGCodeProgram:preparation completionHandler:^(BOOL success, NSArray *valueDictionaries) {
+		self.stage = TFPOperationStageRunning;
+
 		[weakSelf promptForZFromPositions:positions index:0 zOffset:raiseLevel completionHandler:^(NSArray *zValues) {
+			self.stage = TFPOperationStageEnding;
 			NSAssert(zValues.count == positions.count, @"Invalid prompt position response");
 			
 			TFPBedLevelOffsets offsets = {.common = -targetOffset};
@@ -149,6 +155,11 @@ const double adjustmentAmount = 0.05;
 			}];
 		}];
 	}];
+}
+
+
+- (TFPOperationKind)kind {
+	return TFPOperationKindCalibration;
 }
 
 

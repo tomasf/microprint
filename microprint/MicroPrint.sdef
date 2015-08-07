@@ -11,6 +11,20 @@
 			<enumerator name="other" code="othr" description="Other filament"/>
 		</enumeration>
 		
+		<enumeration name="operation kind" code="opkd">
+			<enumerator name="idle" code="idle" description="The printer is idle"/>
+			<enumerator name="print job" code="prjb" description="A print job"/>
+			<enumerator name="calibration" code="clbr" description="Some sort of calibration routine"/>
+			<enumerator name="utility" code="util" description="A utility function, such as extrusion or raising print head"/>
+		</enumeration>
+		
+		<enumeration name="operation stage" code="opst">
+			<enumerator name="idle" code="idle" description="The operation is idle"/>
+			<enumerator name="preparing" code="prep" description="The operation is preparing to run"/>
+			<enumerator name="running" code="rung" description="The operation is running"/>
+			<enumerator name="ending" code="endg" description="The operation is about to end"/>
+		</enumeration>
+		
 		<class-extension extends="application" description="The MicroPrint application">
 			<element type="printer" access="r">
 				<cocoa key="scripting_printers"/>
@@ -47,6 +61,31 @@
 			<property name="serial number" code="seri" description="the serial number" type="text" access="r">
 				<cocoa key="serialNumber"/>
 			</property>
+			
+			<property name="current operation kind" code="copk" description="the kind of currently running operation" type="operation kind" access="r">
+				<cocoa key="currentOperationKind"/>
+			</property>
+			
+			<property name="current operation stage" code="cost" description="the stage of the current operation" type="operation stage" access="r">
+				<cocoa key="currentOperationStage"/>
+			</property>
+			
+			<responds-to name="retract filament">
+				<cocoa method="scripting_retract:"/>
+			</responds-to>
+			
+			<responds-to name="extrude filament">
+				<cocoa method="scripting_extrude:"/>
+			</responds-to>
+			
+			<responds-to name="raise print head">
+				<cocoa method="scripting_raise:"/>
+			</responds-to>
+			
+			<responds-to name="stop operation">
+				<cocoa method="scripting_stop:"/>
+			</responds-to>
+		
 		</class>
 		
 		<command name="print" code="TFMPprnt" description="Print a G-code file document">
@@ -65,6 +104,30 @@
 			</parameter>
 			
 			<result type="record" description="Fields returned"/>
+		</command>
+		
+		<command name="stop operation" code="TFMPstop" description="Stop the current operation, if possible">
+			<direct-parameter description="the printer whose operation to stop">
+				<type type="printer"/>
+			</direct-parameter>
+		</command>
+		
+		<command name="extrude filament" code="TFMPextr" description="Start an extrusion operation">
+			<direct-parameter description="the printer to use">
+				<type type="printer"/>
+			</direct-parameter>
+		</command>
+		
+		<command name="retract filament" code="TFMPretr" description="Start a retraction operation">
+			<direct-parameter description="the printer to use">
+				<type type="printer"/>
+			</direct-parameter>
+		</command>
+		
+		<command name="raise print head" code="TFMPrais" description="Start a raise print head operation">
+			<direct-parameter description="the printer to use">
+				<type type="printer"/>
+			</direct-parameter>
 		</command>
 		
     </suite>

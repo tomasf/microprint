@@ -22,10 +22,13 @@ static const double minimumZLevelForOperation = 25;
 @interface TFPExtrusionOperation ()
 @property BOOL retract;
 @property BOOL stopped;
+
+@property (readwrite) TFPOperationStage stage;
 @end
 
 
 @implementation TFPExtrusionOperation
+@synthesize stage=_stage;
 
 
 - (instancetype)initWithPrinter:(TFPPrinter*)printer retraction:(BOOL)retract {
@@ -70,6 +73,8 @@ static const double minimumZLevelForOperation = 25;
 		[steps insertObject:[TFPGCode codeForExtrusion:-2 feedRate:extrudeFeedRate] atIndex:0];
 	}
 	
+	self.stage = TFPOperationStageEnding;
+	
 	TFPGCodeProgram *end = [TFPGCodeProgram programWithLines:steps];
 	[self.printer runGCodeProgram:end completionHandler:^(BOOL success, NSArray *valueDictionaries) {
 		if(weakSelf.extrusionStoppedBlock) {
@@ -83,6 +88,7 @@ static const double minimumZLevelForOperation = 25;
 
 - (void)start {
 	[super start];
+	self.stage = TFPOperationStagePreparation;
 	
 	__weak TFPPrinter *printer = self.printer;
 	__weak __typeof__(self) weakSelf = self;
@@ -133,12 +139,18 @@ static const double minimumZLevelForOperation = 25;
 					if(weakSelf.extrusionStartedBlock) {
 						weakSelf.extrusionStartedBlock();
 					}
+					self.stage = TFPOperationStageRunning;
 					
 					[weakSelf extrudeStep];
 				}];
 			}];
 		}];
 	}];
+}
+
+
+- (TFPOperationKind)kind {
+	return TFPOperationKindUtility;
 }
 
 

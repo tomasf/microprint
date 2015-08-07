@@ -44,4 +44,15 @@
 	
 }
 
+
+- (TFPOperationKind)kind {
+	return TFPOperationKindIdle;
+}
+
+
+- (TFPOperationStage)stage {
+	return TFPOperationStageRunning;
+}
+
+
 @end
