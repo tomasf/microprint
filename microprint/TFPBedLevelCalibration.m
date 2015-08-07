@@ -148,7 +148,6 @@ const double adjustmentAmount = 0.05;
 				}];
 			}];
 		}];
-		
 	}];
 }
 

@@ -209,18 +209,16 @@
 
 
 - (void)sendAbortSequenceWithCompletionHandler:(void(^)())completionHandler {
-	const double retractFeedRate = 1995;
+	const double retractFeedRate = 1500;
 	const double raiseFeedRate = 870;
 	
 	NSArray *codes = @[
 					   [TFPGCode relativeModeCode],
-					   [TFPGCode codeForExtrusion:-5 feedRate:retractFeedRate],
-					   [TFPGCode moveWithPosition:[TFP3DVector zVector:1] feedRate:raiseFeedRate],
-					   [TFPGCode codeForExtrusion:-4 feedRate:retractFeedRate],
-					   [TFPGCode moveWithPosition:[TFP3DVector zVector:4] feedRate:raiseFeedRate],
+					   [TFPGCode codeForExtrusion:-2 feedRate:retractFeedRate],
+					   [TFPGCode moveWithPosition:[TFP3DVector zVector:5] feedRate:raiseFeedRate],
 					   [TFPGCode absoluteModeCode],
 					   
-					   [TFPGCode moveWithPosition:[TFP3DVector yVector:84] feedRate:-1],
+					   [TFPGCode moveWithPosition:[TFP3DVector xyVectorWithX:90 y:84] feedRate:2000],
 					   [TFPGCode turnOffFanCode],
 					   [TFPGCode turnOffMotorsCode],
 					   [TFPGCode codeForTurningOffHeater],

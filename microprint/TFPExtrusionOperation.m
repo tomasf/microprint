@@ -60,13 +60,17 @@ static const double minimumZLevelForOperation = 25;
 - (void)runEndCode {
 	__weak __typeof__(self) weakSelf = self;
 	
-	TFPGCodeProgram *end = [TFPGCodeProgram programWithLines:@[
-																[TFPGCode absoluteModeCode],
-																[TFPGCode codeForTurningOffHeater],
-																[TFPGCode turnOffFanCode],
-																[TFPGCode turnOffMotorsCode],
-																]];
+	NSMutableArray *steps = [@[
+							  [TFPGCode absoluteModeCode],
+							  [TFPGCode codeForTurningOffHeater],
+							  [TFPGCode turnOffFanCode],
+							  [TFPGCode turnOffMotorsCode],
+							  ] mutableCopy];
+	if(!self.retract) {
+		[steps insertObject:[TFPGCode codeForExtrusion:-2 feedRate:extrudeFeedRate] atIndex:0];
+	}
 	
+	TFPGCodeProgram *end = [TFPGCodeProgram programWithLines:steps];
 	[self.printer runGCodeProgram:end completionHandler:^(BOOL success, NSArray *valueDictionaries) {
 		if(weakSelf.extrusionStoppedBlock) {
 			weakSelf.extrusionStoppedBlock();
