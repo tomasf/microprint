@@ -34,7 +34,11 @@ static const double minimumZLevelForOperation = 25;
 - (instancetype)initWithPrinter:(TFPPrinter*)printer retraction:(BOOL)retract {
 	if(!(self = [super initWithPrinter:printer])) return nil;
 	
-	self.temperature = 230;
+	if(retract) {
+		self.temperature = 275;
+	}else{
+		self.temperature = 230;
+	}
 	self.retract = retract;
 	
 	return self;

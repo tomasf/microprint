@@ -37,11 +37,6 @@
 	
 	TFPExtrusionOperation *operation = [[TFPExtrusionOperation alloc] initWithPrinter:self.printer retraction:retract];
 	__weak TFPExtrusionOperation *weakOperation = operation;
-	if(retract) {
-		operation.temperature = 275;
-	}else{
-		operation.temperature = 230;
-	}
 	
 	self.operation = operation;
 	
