@@ -111,7 +111,9 @@
 		}
 		if(weakSelf.progressBlock && !self.aborted) {
 			dispatch_async(dispatch_get_main_queue(), ^{
-				weakSelf.progressBlock();
+				if(weakSelf.progressBlock) {
+					weakSelf.progressBlock();
+				}
 			});
 		}
 	}];
