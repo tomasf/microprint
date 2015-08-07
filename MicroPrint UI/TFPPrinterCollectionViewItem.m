@@ -121,7 +121,7 @@
 - (void)showZLostInfo:(id)sender {
 	NSAlert *alert = [NSAlert new];
 	alert.messageText = @"The Z level has been lost. This can happen if the printer loses power unexpectedly.";
-	alert.informativeText = @"You need to use the \"Find Bed Zero\" function in the Tools window before you can print properly.";
+	alert.informativeText = @"You need to use the \"Head Level Calibration\" function in the Calibration window before you can print properly.";
 	
 	alert.alertStyle = NSCriticalAlertStyle;
 	[alert addButtonWithTitle:@"OK"];
