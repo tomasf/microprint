@@ -13,6 +13,11 @@
 #import "TFPGCodeHelpers.h"
 #import "TFPPrinterManager.h"
 
+#import "MAKVONotificationCenter.h"
+
+
+static NSString *const savedSettingsKey = @"SavedDocumentSettings";
+
 
 @interface TFPGCodeDocument ()
 @property (readwrite) TFPCuboid boundingBox;
@@ -33,15 +38,28 @@
 	self.filamentType = TFPFilamentTypePLA;
 	self.useWaveBonding = YES;
 	
+	NSData *savedSettings = [[NSUserDefaults standardUserDefaults] dataForKey:savedSettingsKey];
+	[self useEncodedSettings:savedSettings];
+	
+	/*
+	[self addObserver:self keyPath:@[@"filamentType", @"useWaveBonding", @"temperature", @"completionScriptURL"] options:0 block:^(MAKVONotification *notification) {
+		[weakSelf saveSettings];
+	}];
+	*/
+	
 	return self;
+}
+
+
+- (void)saveSettings {
+	NSData *settings = [self encodedSettings];
+	[[NSUserDefaults standardUserDefaults] setObject:settings forKey:savedSettingsKey];
 }
 
 
 - (void)makeWindowControllers {
 	NSWindowController *windowController = [[NSStoryboard storyboardWithName:@"Main" bundle:nil] instantiateControllerWithIdentifier:@"PrintWindowController"];
-	
 	((TFPPrintSettingsViewController*)windowController.contentViewController).document = self;
-	
 	[self addWindowController:windowController];
 }
 
@@ -105,6 +123,37 @@
 
 - (TFPPrintSettingsViewController*)printSettingsViewController {
 	return (TFPPrintSettingsViewController*)[self.windowControllers.firstObject contentViewController];
+}
+
+
+- (NSData*)completionScriptBookmark {
+	return [self.completionScriptURL bookmarkDataWithOptions:0 includingResourceValuesForKeys:nil relativeToURL:nil error:nil];
+}
+
+
+- (void)setCompletionScriptBookmark:(NSData*)bookmark {
+	self.completionScriptURL = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithoutUI relativeToURL:nil bookmarkDataIsStale:nil error:nil];
+}
+
+
+- (NSData*)encodedSettings {
+	NSMutableDictionary *values = [[self dictionaryWithValuesForKeys:@[@"filamentType", @"temperature", @"useWaveBonding", @"completionScriptBookmark"]] mutableCopy];
+	values[@"formatVersion"] = @1;
+	return [NSKeyedArchiver archivedDataWithRootObject:values];
+}
+
+
+- (void)useEncodedSettings:(NSData*)data {
+	NSDictionary *values = data ? [NSKeyedUnarchiver unarchiveObjectWithData:data] : nil;
+	values = [values dictionaryWithValuesForKeys:@[@"filamentType", @"temperature", @"useWaveBonding", @"completionScriptBookmark"]];
+	
+	for(NSString *key in values) {
+		id value = values[key];
+		if(value == [NSNull null]) {
+			value = nil;
+		}
+		[self setValue:value forKey:key];
+	}
 }
 
 

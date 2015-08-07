@@ -1997,7 +1997,7 @@ DQ
                 </viewController>
                 <customObject id="BDb-ih-ONj" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="590" y="909"/>
+            <point key="canvasLocation" x="606" y="970"/>
         </scene>
         <!--Printing Progress View Controller-->
         <scene sceneID="gSv-o8-Dyf">

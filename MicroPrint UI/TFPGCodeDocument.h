@@ -24,4 +24,6 @@
 
 @property TFPPrinter *selectedPrinter;
 @property NSURL *completionScriptURL;
+
+- (void)saveSettings;
 @end
