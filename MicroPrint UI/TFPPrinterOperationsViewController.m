@@ -10,6 +10,7 @@
 #import "TFPExtrusionOperation.h"
 #import "TFPRaiseHeadOperation.h"
 #import "TFPZeroBedOperation.h"
+#import "TFPExtras.h"
 
 
 @interface TFPPrinterOperationsViewController ()
@@ -36,6 +37,12 @@
 	
 	TFPExtrusionOperation *operation = [[TFPExtrusionOperation alloc] initWithPrinter:self.printer retraction:retract];
 	__weak TFPExtrusionOperation *weakOperation = operation;
+	if(retract) {
+		operation.temperature = 275;
+	}else{
+		operation.temperature = 230;
+	}
+	
 	self.operation = operation;
 	
 	operation.movingStartedBlock = ^{
