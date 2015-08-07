@@ -123,6 +123,7 @@ const double adjustmentAmount = 0.05;
 	TFP3DVector *moveAwayPosition = [TFP3DVector vectorWithX:@(maxX) Y:@(maxY) Z:@20];
 	
 	TFPGCodeProgram *preparation = [TFPGCodeProgram programWithLines:@[
+																	   [TFPGCode moveWithPosition:[TFP3DVector zVector:initialZ+raiseLevel] feedRate:moveFeedRate],
 																	   [TFPGCode moveHomeCode],
 																	   [TFPGCode absoluteModeCode],
 																	   ]];
