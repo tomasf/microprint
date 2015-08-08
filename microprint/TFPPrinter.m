@@ -82,7 +82,7 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 
 
 @interface TFPPrinter ()
-@property TFPPrinterConnection *connection;
+@property (readwrite) TFPPrinterConnection *connection;
 @property dispatch_queue_t communicationQueue;
 
 @property BOOL connectionFinished;
@@ -154,6 +154,7 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 			}
 			[self.establishmentBlocks removeAllObjects];
 		}else{
+			[self sendGCode:[TFPGCode codeForSettingLineNumber:0] responseHandler:nil];
 			[weakSelf identifyWithCompletionHandler:^(BOOL success) {
 			}];
 		}
@@ -579,6 +580,10 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 
 
 - (BOOL)printerShouldBeInvalidatedWithRemovedSerialPorts:(NSArray*)ports {
+	NSLog(@"ports %@", ports);
+	NSLog(@"my port %@", self.connection.serialPort);
+	NSLog(@"my state %d", (int)self.connection.state);
+	
 	return self.connection.state != TFPPrinterConnectionStatePending && self.connection.serialPort && [ports containsObject:self.connection.serialPort];
 }
 

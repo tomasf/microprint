@@ -49,6 +49,7 @@ extern const NSString *TFPPrinterResponseErrorCodeKey;
 
 @interface TFPPrinter : NSObject
 - (instancetype)initWithConnection:(TFPPrinterConnection*)connection;
+@property (readonly) TFPPrinterConnection *connection;
 
 @property TFPOperation *currentOperation;
 

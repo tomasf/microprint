@@ -64,7 +64,14 @@ static const uint16_t M3DMicroUSBProductID = 0x2404;
 			[printers removeObjectsInArray:removedPrinters];
 		
 		}else{
-			[printers addObjectsFromArray:[weakSelf printersForSerialPorts:notification.newValue]];
+			NSArray *existingPorts = [self.printers valueForKeyPath:@"connection.serialPort"];
+			NSArray *newSerialPorts = [notification.newValue tf_rejectWithBlock:^BOOL(id object) {
+				return [existingPorts containsObject:object];
+			}];
+			
+			dispatch_after(dispatch_time(0, 1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+				[printers addObjectsFromArray:[weakSelf printersForSerialPorts:newSerialPorts]];
+			});
 		}
 	}];
 	
