@@ -12,6 +12,7 @@
 
 @interface TFPPrintStatusController : NSObject
 - (instancetype)initWithPrintJob:(TFPPrintJob*)printJob;
+@property (readonly) TFPPrintJob *printJob;
 
 // Properties are observable
 @property (readonly) NSTimeInterval elapsedTime;

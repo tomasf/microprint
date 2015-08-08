@@ -2064,7 +2064,7 @@ DQ
                                     <binding destination="loo-rf-9XD" name="value" keyPath="remainingTimeString" id="O9f-6X-E94"/>
                                 </connections>
                             </textField>
-                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="QyU-bR-nIm">
+                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="QyU-bR-nIm" customClass="TFPVisualPrintProgressView">
                                 <rect key="frame" x="0.0" y="61" width="488" height="300"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="300" id="s1G-FC-wL2"/>
@@ -2140,11 +2140,11 @@ DQ
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="drawContainer" destination="QyU-bR-nIm" id="fF3-wz-6w7"/>
                         <outlet property="drawContainerBottomMarginConstraint" destination="jWA-I9-ezm" id="J5o-fl-exF"/>
                         <outlet property="drawContainerHeightConstraint" destination="s1G-FC-wL2" id="2V8-Lc-w6j"/>
                         <outlet property="elapsedTimeLabel" destination="Q6K-wf-Psv" id="bOd-RP-ItY"/>
                         <outlet property="expandButton" destination="7CK-pN-69S" id="6oe-7c-My0"/>
+                        <outlet property="printProgressView" destination="QyU-bR-nIm" id="XDT-78-Tbj"/>
                         <outlet property="progressIndicator" destination="d9W-Vn-QR7" id="Obo-UM-clj"/>
                         <outlet property="remainingTimeLabel" destination="NM8-Rf-ZEj" id="MvK-kH-a55"/>
                         <outlet property="statusLabel" destination="OKE-bC-0aN" id="Pxl-cp-fTd"/>

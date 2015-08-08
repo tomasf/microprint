@@ -23,6 +23,7 @@
 		C94469631B6E6E4C008820F4 /* TFPPrinterHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = C94469621B6E6E4C008820F4 /* TFPPrinterHelpers.m */; };
 		C94469641B6E6E4C008820F4 /* TFPPrinterHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = C94469621B6E6E4C008820F4 /* TFPPrinterHelpers.m */; };
 		C94469691B70283E008820F4 /* microprint.icns in Resources */ = {isa = PBXBuildFile; fileRef = C94469681B70283E008820F4 /* microprint.icns */; };
+		C94469A81B769E49008820F4 /* TFPVisualPrintProgressView.m in Sources */ = {isa = PBXBuildFile; fileRef = C94469A71B769E49008820F4 /* TFPVisualPrintProgressView.m */; };
 		C94F60051B3804CA0074EC41 /* TFPGCodePreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60041B3804CA0074EC41 /* TFPGCodePreprocessor.m */; };
 		C94F60131B3814F30074EC41 /* TFPBasicPreparationPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60121B3814F30074EC41 /* TFPBasicPreparationPreprocessor.m */; };
 		C94F60161B3815290074EC41 /* TFPPrintParameters.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60151B3815290074EC41 /* TFPPrintParameters.m */; };
@@ -150,6 +151,8 @@
 		C94469611B6E6E4C008820F4 /* TFPPrinterHelpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPPrinterHelpers.h; sourceTree = "<group>"; };
 		C94469621B6E6E4C008820F4 /* TFPPrinterHelpers.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPPrinterHelpers.m; sourceTree = "<group>"; };
 		C94469681B70283E008820F4 /* microprint.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = microprint.icns; sourceTree = "<group>"; };
+		C94469A61B769E49008820F4 /* TFPVisualPrintProgressView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPVisualPrintProgressView.h; sourceTree = "<group>"; };
+		C94469A71B769E49008820F4 /* TFPVisualPrintProgressView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPVisualPrintProgressView.m; sourceTree = "<group>"; };
 		C94F60031B3804CA0074EC41 /* TFPGCodePreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPGCodePreprocessor.h; sourceTree = "<group>"; };
 		C94F60041B3804CA0074EC41 /* TFPGCodePreprocessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPGCodePreprocessor.m; sourceTree = "<group>"; };
 		C94F60111B3814F30074EC41 /* TFPBasicPreparationPreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPBasicPreparationPreprocessor.h; sourceTree = "<group>"; };
@@ -412,6 +415,8 @@
 				C95F11051B5403FA00F396B6 /* TFPPrintSettingsViewController.m */,
 				C95F11171B55183100F396B6 /* TFPPrintingProgressViewController.h */,
 				C95F11181B55183100F396B6 /* TFPPrintingProgressViewController.m */,
+				C94469A61B769E49008820F4 /* TFPVisualPrintProgressView.h */,
+				C94469A71B769E49008820F4 /* TFPVisualPrintProgressView.m */,
 			);
 			name = Document;
 			sourceTree = "<group>";
@@ -659,6 +664,7 @@
 				C95F11121B54108400F396B6 /* TFPExtrusionOperation.m in Sources */,
 				C944695A1B6A7669008820F4 /* TFPPrinterListCollectionView.m in Sources */,
 				C95F110B1B54107500F396B6 /* TFPBacklashPreprocessor.m in Sources */,
+				C94469A81B769E49008820F4 /* TFPVisualPrintProgressView.m in Sources */,
 				C95F10BF1B53EBC100F396B6 /* TFPPrinter.m in Sources */,
 				C9B940E11B5E641D00E42864 /* TFPAppleScriptSupport.m in Sources */,
 				C95F110A1B54107500F396B6 /* TFPBedCompensationPreprocessor.m in Sources */,
