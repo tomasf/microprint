@@ -33,7 +33,7 @@ static const double raiseStep = 0.1;
 	Z += raiseStep;
 	
 	TFP3DVector *position = [TFP3DVector zVector:Z];
-	[self.printer moveToPosition:position usingFeedRate:2000 completionHandler:^(BOOL success) {
+	[self.printer moveToPosition:position usingFeedRate:3000 completionHandler:^(BOOL success) {
 		[self raiseStepFromZ:Z toLevel:targetHeight completionHandler:completionHandler];
 	}];
 }

@@ -1346,11 +1346,11 @@ DQ
             <objects>
                 <viewController title="View Controller" id="RcU-HJ-V8B" customClass="TFPBedLevelSettingsViewController" sceneMemberID="viewController">
                     <view key="view" id="D9E-nB-26x">
-                        <rect key="frame" x="0.0" y="0.0" width="290" height="429"/>
+                        <rect key="frame" x="0.0" y="0.0" width="290" height="457"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="APa-aA-Jw3">
-                                <rect key="frame" x="67" y="108" width="80" height="17"/>
+                                <rect key="frame" x="67" y="136" width="80" height="17"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Base Offset:" id="H2e-0n-fg5">
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -1358,7 +1358,7 @@ DQ
                                 </textFieldCell>
                             </textField>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="kVq-Km-lxU">
-                                <rect key="frame" x="20" y="259" width="48" height="22"/>
+                                <rect key="frame" x="20" y="287" width="48" height="22"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="48" id="4tR-yD-qyC"/>
                                 </constraints>
@@ -1381,14 +1381,14 @@ DQ
                                 </connections>
                             </textField>
                             <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="amI-BZ-Gne">
-                                <rect key="frame" x="71" y="256" width="19" height="27"/>
+                                <rect key="frame" x="71" y="284" width="19" height="27"/>
                                 <stepperCell key="cell" continuous="YES" alignment="left" increment="0.01" minValue="-100" maxValue="100" id="ni4-Ml-8Gn"/>
                                 <connections>
                                     <binding destination="RcU-HJ-V8B" name="value" keyPath="backLeftOffset" id="GSE-CK-uns"/>
                                 </connections>
                             </stepper>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="RCA-Pn-XQU">
-                                <rect key="frame" x="203" y="259" width="48" height="22"/>
+                                <rect key="frame" x="203" y="287" width="48" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="12,12" drawsBackground="YES" id="sIU-c9-RbT">
                                     <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="TUO-7m-w5d">
                                         <metadata>
@@ -1408,14 +1408,14 @@ DQ
                                 </connections>
                             </textField>
                             <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="W83-no-pz0">
-                                <rect key="frame" x="254" y="256" width="19" height="27"/>
+                                <rect key="frame" x="254" y="284" width="19" height="27"/>
                                 <stepperCell key="cell" continuous="YES" alignment="left" increment="0.01" minValue="-100" maxValue="100" id="vUq-am-TwT"/>
                                 <connections>
                                     <binding destination="RcU-HJ-V8B" name="value" keyPath="backRightOffset" id="3Cy-qM-iP5"/>
                                 </connections>
                             </stepper>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="SUr-4V-9fE">
-                                <rect key="frame" x="153" y="106" width="48" height="22"/>
+                                <rect key="frame" x="153" y="134" width="48" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="12,12" drawsBackground="YES" id="kxS-3n-b0D">
                                     <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="Qce-zG-7Ya">
                                         <metadata>
@@ -1435,14 +1435,14 @@ DQ
                                 </connections>
                             </textField>
                             <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="l74-r1-yFS">
-                                <rect key="frame" x="204" y="103" width="19" height="27"/>
+                                <rect key="frame" x="204" y="131" width="19" height="27"/>
                                 <stepperCell key="cell" continuous="YES" alignment="left" increment="0.01" minValue="-100" maxValue="100" id="ntj-lF-ZPE"/>
                                 <connections>
                                     <binding destination="RcU-HJ-V8B" name="value" keyPath="commonOffset" id="Zxb-KR-Wxj"/>
                                 </connections>
                             </stepper>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="NYr-Me-dVU">
-                                <rect key="frame" x="20" y="149" width="48" height="22"/>
+                                <rect key="frame" x="20" y="177" width="48" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="12,12" drawsBackground="YES" id="fLt-cB-4cd">
                                     <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="mFZ-j8-5Bp">
                                         <metadata>
@@ -1462,14 +1462,14 @@ DQ
                                 </connections>
                             </textField>
                             <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Dsp-VW-wQU">
-                                <rect key="frame" x="71" y="146" width="19" height="27"/>
+                                <rect key="frame" x="71" y="174" width="19" height="27"/>
                                 <stepperCell key="cell" continuous="YES" alignment="left" increment="0.01" minValue="-100" maxValue="100" id="Usz-9b-2tO"/>
                                 <connections>
                                     <binding destination="RcU-HJ-V8B" name="value" keyPath="frontLeftOffset" id="G8s-25-482"/>
                                 </connections>
                             </stepper>
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="UPf-I3-bE0">
-                                <rect key="frame" x="203" y="149" width="48" height="22"/>
+                                <rect key="frame" x="203" y="177" width="48" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="12,12" drawsBackground="YES" id="2vp-XV-b8i">
                                     <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="61s-O1-M2N">
                                         <metadata>
@@ -1489,29 +1489,30 @@ DQ
                                 </connections>
                             </textField>
                             <stepper horizontalHuggingPriority="750" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ach-BJ-ddN">
-                                <rect key="frame" x="254" y="146" width="19" height="27"/>
+                                <rect key="frame" x="254" y="174" width="19" height="27"/>
                                 <stepperCell key="cell" continuous="YES" alignment="left" increment="0.01" minValue="-100" maxValue="100" id="Q7v-ML-ydb"/>
                                 <connections>
                                     <binding destination="RcU-HJ-V8B" name="value" keyPath="frontRightOffset" id="Bmx-Hk-5IH"/>
                                 </connections>
                             </stepper>
                             <imageView horizontalHuggingPriority="1000" verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="l0b-rj-9Dt">
-                                <rect key="frame" x="48" y="181" width="195" height="90"/>
+                                <rect key="frame" x="48" y="209" width="195" height="90"/>
                                 <imageCell key="cell" refusesFirstResponder="YES" alignment="left" animates="YES" imageScaling="proportionallyDown" image="Printbed" id="0RN-gc-3mP"/>
                             </imageView>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" setsMaxLayoutWidthAtFirstLayout="YES" translatesAutoresizingMaskIntoConstraints="NO" id="pcv-KP-fVl">
-                                <rect key="frame" x="18" y="61" width="254" height="28"/>
+                                <rect key="frame" x="18" y="61" width="254" height="56"/>
                                 <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="center" id="9Bu-ve-SMD">
                                     <font key="font" metaFont="smallSystem"/>
                                     <string key="title">Measurements are millimeters.
-Lower numbers = closer to the print bed.</string>
+Lower numbers = closer to the print bed.
+Use Bed Level Calibration to calculate these values automatically.</string>
                                     <color key="textColor" red="0.26873533847184983" green="0.26873533847184983" blue="0.26873533847184983" alpha="1" colorSpace="calibratedRGB"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="GKm-OM-PAV">
-                                <rect key="frame" x="34" y="348" width="222" height="32"/>
-                                <buttonCell key="cell" type="push" title="Interactive Corner Calibration" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Oyi-eW-QpI">
+                                <rect key="frame" x="59" y="376" width="172" height="32"/>
+                                <buttonCell key="cell" type="push" title="Bed Level Calibration" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="Oyi-eW-QpI">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
@@ -1525,7 +1526,7 @@ Lower numbers = closer to the print bed.</string>
                                 </connections>
                             </button>
                             <box verticalHuggingPriority="750" title="Box" boxType="separator" titlePosition="noTitle" translatesAutoresizingMaskIntoConstraints="NO" id="kfY-eb-Jop">
-                                <rect key="frame" x="20" y="299" width="250" height="5"/>
+                                <rect key="frame" x="20" y="327" width="250" height="5"/>
                                 <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
                                 <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                 <font key="titleFont" metaFont="system"/>
@@ -1545,7 +1546,7 @@ DQ
                                 </connections>
                             </button>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="ch9-Rt-oll">
-                                <rect key="frame" x="73" y="315" width="144" height="32"/>
+                                <rect key="frame" x="73" y="343" width="144" height="32"/>
                                 <buttonCell key="cell" type="push" title="Print Test Border" bezelStyle="rounded" alignment="center" enabled="NO" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="zUD-32-xU3">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -1554,9 +1555,9 @@ DQ
                                     <action selector="printTestBorder:" target="RcU-HJ-V8B" id="pI5-r6-7JT"/>
                                 </connections>
                             </button>
-                            <button verticalHuggingPriority="750" ambiguous="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="VSI-mj-Eyy">
-                                <rect key="frame" x="57" y="381" width="180" height="32"/>
-                                <buttonCell key="cell" type="push" title="Head Level Calibration" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="K2E-Qc-Fh6">
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="VSI-mj-Eyy">
+                                <rect key="frame" x="49" y="409" width="193" height="32"/>
+                                <buttonCell key="cell" type="push" title="Bed Location Calibration" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="K2E-Qc-Fh6">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
                                 </buttonCell>
@@ -1581,6 +1582,7 @@ DQ
                             <constraint firstAttribute="trailing" secondItem="pcv-KP-fVl" secondAttribute="trailing" constant="20" id="CWv-yS-XTc"/>
                             <constraint firstItem="pcv-KP-fVl" firstAttribute="leading" secondItem="D9E-nB-26x" secondAttribute="leading" constant="20" id="FrC-UG-1ic"/>
                             <constraint firstItem="l0b-rj-9Dt" firstAttribute="top" secondItem="kfY-eb-Jop" secondAttribute="bottom" constant="30" id="Fvi-EQ-OSz"/>
+                            <constraint firstItem="GKm-OM-PAV" firstAttribute="centerX" secondItem="VSI-mj-Eyy" secondAttribute="centerX" id="FyC-iU-bod"/>
                             <constraint firstItem="APa-aA-Jw3" firstAttribute="top" secondItem="NYr-Me-dVU" secondAttribute="bottom" constant="24" id="GGp-BO-OhI"/>
                             <constraint firstItem="W83-no-pz0" firstAttribute="leading" secondItem="RCA-Pn-XQU" secondAttribute="trailing" constant="6" id="Kc9-UN-RAV"/>
                             <constraint firstItem="NYr-Me-dVU" firstAttribute="top" secondItem="l0b-rj-9Dt" secondAttribute="bottom" constant="10" id="MjP-xk-YMY"/>
@@ -1802,18 +1804,18 @@ DQ
                                 </constraints>
                                 <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" placeholderString="" allowsEditingTextAttributes="YES" id="F7R-VH-KoF">
                                     <font key="font" metaFont="system"/>
-                                    <mutableString key="title">The Zero Head Height routine automatically determines the zero position of the head above the bed. This is performed by the printer firmware and takes several minutes. During the calibration the printer head will move up and down with long pauses as the correct position is determined.
+                                    <mutableString key="title">The bed location calibration routine automatically determines the zero position of the head above the bed. This is performed by the printer firmware and takes several minutes. During the calibration the printer head will move up and down with long pauses as the correct position is determined.
 
 The printer must remain on a stable surface and undisturbed during the entire calibration.
 
-The calibration can be performed any time and will not change the related Bed Height Offset settings. The Zero Head Height calibration should be performed before the Bed Level calibration and at any time that the height may be incorrect, such as after an unexpected reset of the printer.</mutableString>
+The calibration can be performed any time and will not change the related bed level settings. The bed location calibration should be performed before the bed level calibration and at any time that the height may be incorrect, such as after an unexpected reset of the printer.</mutableString>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
                             </textField>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="vN0-qm-LXo">
                                 <rect key="frame" x="18" y="327" width="424" height="19"/>
-                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Zero Head Height Calibration" id="qDg-rn-g2H">
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" alignment="center" title="Bed Location Calibration" id="qDg-rn-g2H">
                                     <font key="font" metaFont="system" size="16"/>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>

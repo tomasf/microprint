@@ -75,13 +75,13 @@
 	
 	NSMutableArray *warningViews = [NSMutableArray new];
 	if(invalidZ) {
-		[warningViews addObject:[self makeWarningButtonWithTitle:@"Z Level Lost!" action:@selector(showZLostInfo:)]];
+		[warningViews addObject:[self makeWarningButtonWithTitle:@"Bed Location Lost!" action:@selector(showZLostInfo:)]];
 	}
 	if(untestedFirmware) {
 		[warningViews addObject:[self makeWarningButtonWithTitle:@"Untested Firmware" action:@selector(showFirmwareInfo:)]];
 	}
 	if(allZeroBedLevelOffsets) {
-		[warningViews addObject:[self makeWarningButtonWithTitle:@"Bed Offsets Not Set" action:@selector(showZeroBedLevelInfo:)]];
+		[warningViews addObject:[self makeWarningButtonWithTitle:@"Bed Level Not Set" action:@selector(showZeroBedLevelInfo:)]];
 	}
 	
 	if(warningViews.count) {
@@ -120,8 +120,8 @@
 
 - (void)showZLostInfo:(id)sender {
 	NSAlert *alert = [NSAlert new];
-	alert.messageText = @"The Z level has been lost. This can happen if the printer loses power unexpectedly.";
-	alert.informativeText = @"You need to use the \"Head Level Calibration\" function in the Calibration window before you can print properly.";
+	alert.messageText = @"The bed location has been lost. This can happen if the printer loses power unexpectedly.";
+	alert.informativeText = @"You need to use the \"Bed Location Calibration\" function in the Calibration window before you can print properly.";
 	
 	alert.alertStyle = NSCriticalAlertStyle;
 	[alert addButtonWithTitle:@"OK"];
@@ -131,8 +131,8 @@
 
 - (void)showZeroBedLevelInfo:(id)sender {
 	NSAlert *alert = [NSAlert new];
-	alert.messageText = @"Your bed level offsets are all zero. This probably means you haven't calibrated your bed level, or the settings have been lost somehow.";
-	alert.informativeText = @"Use \"Interactive Calibration\" in the Calibration window to fix this.";
+	alert.messageText = @"Your bed level values are all zero. This probably means you haven't calibrated your bed level, or the settings have been lost somehow.";
+	alert.informativeText = @"Use \"Bed Level Calibration\" in the Calibration window to fix this.";
 	
 	alert.alertStyle = NSCriticalAlertStyle;
 	[alert addButtonWithTitle:@"OK"];
@@ -141,19 +141,6 @@
 
 
 - (IBAction)showFilamentOptions:(NSButton*)button {
-	if([NSApp currentEvent].modifierFlags & NSAlternateKeyMask) {
-		TFPPrinter *printer = self.representedObject;
-		printer.incomingCodeBlock = ^(NSString *line){
-			TFLog(@"< %@", line);
-		};
-		printer.outgoingCodeBlock = ^(NSString *line){
-			TFLog(@"> %@", line);
-		};
-		
-		TFLog(@"Enabled printer communication logging");
-		return;
-	}
-	
 	TFPPrinterOperationsViewController *viewController = [[NSStoryboard storyboardWithName:@"Main" bundle:nil] instantiateControllerWithIdentifier:@"extrusionViewController"];
 	viewController.printer = self.representedObject;
 
