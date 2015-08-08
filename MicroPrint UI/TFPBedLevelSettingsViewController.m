@@ -9,7 +9,6 @@
 #import "TFPBedLevelSettingsViewController.h"
 #import "TFPBedLevelCalibrationViewController.h"
 #import "MAKVONotificationCenter.h"
-#import "TFPTestBorderProgressViewController.h"
 
 
 @interface TFPBedLevelSettingsViewController ()
@@ -59,15 +58,6 @@
 	
 	self.printer.bedLevelOffsets = offsets;
 	self.hasChanges = NO;
-}
-
-
-- (IBAction)printTestBorder:(id)sender {
-	NSWindowController *windowController = [self.storyboard instantiateControllerWithIdentifier:@"TestBorderProgressWindowController"];
-	TFPTestBorderProgressViewController *viewController = (TFPTestBorderProgressViewController*)windowController.contentViewController;
-	viewController.printer = self.printer;
-	
-	[self presentViewControllerAsSheet:viewController];
 }
 
 

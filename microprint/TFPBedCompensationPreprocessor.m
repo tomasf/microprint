@@ -71,8 +71,6 @@ static double GetHeightAdjustmentRequired(double x, double y, TFPBedLevelOffsets
 	double absoluteZ = 0;
 	double absoluteE = 0;
 	
-	double F = 0;
-	
 	for(__strong TFPGCode *line in self.program.lines) {
 		if([line hasField:'G']) {
 			switch((int)[line valueForField:'G']) {
@@ -104,11 +102,7 @@ static double GetHeightAdjustmentRequired(double x, double y, TFPBedLevelOffsets
 					relativeY += deltaY;
 					relativeZ += deltaZ;
 					relativeE += deltaE;
-					
-					if([line hasField:'F']) {
-						F = [line valueForField:'F'];
-					}
-					
+
 					if(deltaZ > DBL_EPSILON || deltaZ < -DBL_EPSILON) {
 						if(!hasExtruded) {
 							layerNumber = 1;

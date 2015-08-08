@@ -21,7 +21,7 @@
 						 @(VirtualEEPROMIndexBedOffsetCommon)];
 	
 	[self readVirtualEEPROMFloatValuesAtIndexes:indexes completionHandler:^(BOOL success, NSArray *values) {
-		TFPBedLevelOffsets offsets;
+		TFPBedLevelOffsets offsets = {0};
 		
 		if(!success) {
 			completionHandler(NO, offsets);
@@ -63,7 +63,7 @@
 						 ];
 	
 	[self readVirtualEEPROMFloatValuesAtIndexes:indexes completionHandler:^(BOOL success, NSArray *values) {
-		TFPBacklashValues backlash;
+		TFPBacklashValues backlash = {0};
 		if(success) {
 			backlash.x = [values[0] floatValue];
 			backlash.y = [values[1] floatValue];
