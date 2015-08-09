@@ -10,11 +10,12 @@
 #import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
 
-@interface TFPZeroBedOperation ()
 
+@interface TFPZeroBedOperation ()
 @property BOOL stopped;
 @property (readwrite) TFPOperationStage stage;
 @end
+
 
 
 @implementation TFPZeroBedOperation
@@ -50,39 +51,40 @@
 																]];
 
     if(self.progressFeedback) {
-        self.progressFeedback(@"Zero prep - warming the print head.");
+        self.progressFeedback(@"Heating up…");
     }
 	
 	self.stage = TFPOperationStagePreparation;
 
     [printer runGCodeProgram:prep completionHandler:^(BOOL success, NSArray *valueDictionaries) {
         if (weakSelf.stopped) {
-            [weakSelf doStop];
+			[weakSelf doStopCompleted:NO];
         }else{
 
             if(weakSelf.progressFeedback) {
-                weakSelf.progressFeedback(@"Running Zero routine");
+                weakSelf.progressFeedback(@"Finding Bed Location…");
             }
 
 			self.stage = TFPOperationStageRunning;
             [printer runGCodeProgram:zero completionHandler:^(BOOL success, NSArray *valueDictionaries) {
 				self.stage = TFPOperationStageEnding;
                 if (weakSelf.stopped) {
-                    [weakSelf doStop];
+                    [weakSelf doStopCompleted:NO];
                 }else{
                     
                     if(weakSelf.progressFeedback) {
-                        weakSelf.progressFeedback(@"Zeroing done, parking...");
+                        weakSelf.progressFeedback(@"Parking Print Head…");
                     }
 
                     [printer runGCodeProgram:park completionHandler:^(BOOL success, NSArray *valueDictionaries) {
-                        [weakSelf doStop];
+						[weakSelf doStopCompleted:YES];
                     }];
                 }
             }];
         }
     }];
 }
+
 
 - (void)stop {
     [super stop];
@@ -92,14 +94,16 @@
     }
 }
 
+
 - (NSString *)activityDescription {
-    return @"Finding bed zero height";
+    return @"Calibrating bed location";
 }
 
-- (void)doStop {
+
+- (void)doStopCompleted:(BOOL)completed {
     [self ended];
     if(self.didStopBlock) {
-        self.didStopBlock();
+        self.didStopBlock(completed);
     }
 }
 
