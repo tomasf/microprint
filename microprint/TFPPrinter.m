@@ -231,7 +231,9 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 	
 	[self fetchBedOffsetsWithCompletionHandler:^(BOOL success, TFPBedLevelOffsets offsets) {
 		if(success) {
-			self.bedLevelOffsets = offsets;
+			[self willChangeValueForKey:@"bedLevelOffsets"];
+			_bedLevelOffsets = offsets;
+			[self didChangeValueForKey:@"bedLevelOffsets"];
 		}
 	}];
 }
