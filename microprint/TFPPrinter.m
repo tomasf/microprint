@@ -15,6 +15,7 @@
 #import "TFPGCodeHelpers.h"
 #import "TFPPrinter+VirtualEEPROM.h"
 #import "TFPPrinterConnection.h"
+#import "TFTimer.h"
 
 #import "MAKVONotificationCenter.h"
 

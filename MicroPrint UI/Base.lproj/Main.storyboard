@@ -573,6 +573,56 @@
                                                 <action selector="blockMainThreadTest:" target="Ady-hI-5gd" id="Sjm-5c-aak"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem title="Heater Tests" id="YT8-z9-XL5">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <menu key="submenu" title="Heater Tests" id="QId-pf-GAE">
+                                                <items>
+                                                    <menuItem title="Set Temperature Async" id="yWN-ma-ALX">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="turnOnHeaterAsync:" target="Voe-Tx-rLC" id="zmy-hb-693"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Cancel" id="Ov2-47-Ym9">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="cancelHeater:" target="Voe-Tx-rLC" id="29g-6b-hPo"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Turn off" id="Raw-51-QKe">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="turnOffHeater:" target="Voe-Tx-rLC" id="2nl-rb-Kdo"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                </items>
+                                            </menu>
+                                        </menuItem>
+                                        <menuItem title="Move Tests" id="wuw-GE-u76">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <menu key="submenu" title="Move Tests" id="6U4-zZ-tyo">
+                                                <items>
+                                                    <menuItem title="Move Async 1" id="WQj-DW-hg0">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="testPosition1:" target="Voe-Tx-rLC" id="Lng-Vw-zRg"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Move Async 2" id="9qe-dI-EET">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="testPosition2:" target="Voe-Tx-rLC" id="68m-4P-6Ot"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="Cancel" id="dcF-Pw-4cP">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="cancelMove:" target="Voe-Tx-rLC" id="9N7-Q4-weK"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                </items>
+                                            </menu>
+                                        </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>

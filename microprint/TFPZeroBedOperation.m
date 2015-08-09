@@ -34,20 +34,20 @@
     __weak __typeof__(self) weakSelf = self;
 
     TFPGCodeProgram *prep = [TFPGCodeProgram programWithLines:@[
-                                [TFPGCode codeForHeaterTemperature:temperature waitUntilDone:YES],
-                                [TFPGCode codeForTurningOffHeater],
-                                [TFPGCode turnOffFanCode],
+																[TFPGCode codeForHeaterTemperature:temperature waitUntilDone:YES],
+																[TFPGCode codeForTurningOffHeater],
+																[TFPGCode turnOffFanCode],
                                 ]];
 
     TFPGCodeProgram *zero = [TFPGCodeProgram programWithLines:@[
-                                [TFPGCode codeWithField:'G' value:30],
-//                                [TFPGCode codeWithField:'G' value:28],      // Value to speed up testing
+																[TFPGCode codeWithField:'G' value:30],
                                 ]];
 
     TFPGCodeProgram *park = [TFPGCodeProgram programWithLines:@[
-                                [TFPGCode moveWithPosition:parkingLocation feedRate:moveFeedRate],
-                                [TFPGCode waitCodeWithDuration:0],
-                                ]];
+																[TFPGCode absoluteModeCode],
+																[TFPGCode moveWithPosition:parkingLocation feedRate:moveFeedRate],
+																[TFPGCode waitCodeWithDuration:0],
+																]];
 
     if(self.progressFeedback) {
         self.progressFeedback(@"Zero prep - warming the print head.");

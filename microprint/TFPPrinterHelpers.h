@@ -19,4 +19,8 @@
 - (void)setRelativeMode:(BOOL)relative completionHandler:(void(^)(BOOL success))completionHandler;
 - (void)moveToPosition:(TFP3DVector*)position usingFeedRate:(double)F completionHandler:(void(^)(BOOL success))completionHandler;
 - (void)waitForMoveCompletionWithHandler:(void(^)())completionHandler;
+
+- (void(^)())setHeaterTemperatureAsynchronously:(double)targetTemperature progressBlock:(void(^)(double currentTemperature))progressBlock completionBlock:(void(^)())completionBlock;
+
+- (void(^)())moveAsynchronouslyToPosition:(TFP3DVector*)targetPosition feedRate:(double)feedRate progressBlock:(void(^)(double fraction, TFP3DVector *position))progressBlock completionBlock:(void(^)())completionBlock;
 @end

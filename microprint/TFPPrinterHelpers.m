@@ -9,6 +9,9 @@
 #import "TFPPrinterHelpers.h"
 #import "TFPPrinter+VirtualEEPROM.h"
 
+#import "TFTimer.h"
+#import "MAKVONotificationCenter.h"
+
 
 @implementation TFPPrinter (CommandHelpers)
 
@@ -134,11 +137,15 @@
 - (void)setRelativeMode:(BOOL)relative completionHandler:(void(^)(BOOL success))completionHandler {
 	if(relative) {
 		[self sendGCode:[TFPGCode relativeModeCode] responseHandler:^(BOOL success, NSDictionary *value) {
-			completionHandler(success);
+			if(completionHandler) {
+				completionHandler(success);
+			}
 		}];
 	}else{
 		[self sendGCode:[TFPGCode absoluteModeCode] responseHandler:^(BOOL success, NSDictionary *value) {
-			completionHandler(success);
+			if(completionHandler) {
+				completionHandler(success);
+			}
 		}];
 	}
 }
@@ -174,6 +181,83 @@
 		}
 	}];
 }
+
+
+- (void(^)())setHeaterTemperatureAsynchronously:(double)targetTemperature progressBlock:(void(^)(double currentTemperature))progressBlock completionBlock:(void(^)())completionBlock {
+	__weak __typeof__(self) weakSelf = self;
+	
+	[self sendGCode:[TFPGCode codeForHeaterTemperature:targetTemperature waitUntilDone:NO] responseHandler:nil];
+	
+	TFTimer *timer = [TFTimer timerWithInterval:0.5 repeating:YES block:^{
+		[weakSelf sendGCode:[TFPGCode codeForReadingHeaterTemperature] responseHandler:nil];
+	}];
+	__weak TFTimer *weakTimer = timer;
+	
+	void(^cancelBlock)() = [^{
+		[timer invalidate];
+		[weakSelf sendGCode:[TFPGCode codeForTurningOffHeater] responseHandler:nil];
+	} copy];
+	
+	[self addObserver:timer keyPath:@"heaterTemperature" options:0 block:^(MAKVONotification *notification) {
+		if(fabs(weakSelf.heaterTemperature - targetTemperature) < 3) {
+			[weakTimer invalidate];
+			completionBlock();
+		}else{
+			progressBlock(weakSelf.heaterTemperature);
+		}
+	}];
+	
+	return cancelBlock;
+}
+
+
+- (void)moveStepFromPosition:(TFP3DVector*)from toPosition:(TFP3DVector*)to steps:(NSUInteger)stepCount currentStep:(NSUInteger)step feedRate:(double)feedRate cancelBlock:(BOOL(^)())cancelBlock progressBlock:(void(^)(double fraction, TFP3DVector *position))progressBlock completionBlock:(void(^)())completionBlock {
+	TFP3DVector *fullDelta = [to vectorBySubtracting:from];
+	TFP3DVector *deltaPerStep = [fullDelta vectorByDividingByScalar:stepCount];
+	TFP3DVector *currentDelta = [deltaPerStep vectorByMultiplyingByScalar:step];
+	TFP3DVector *absolutePosition = [from vectorByAdding:currentDelta];
+	
+	[self moveToPosition:absolutePosition usingFeedRate:feedRate completionHandler:^(BOOL success) {
+		if(cancelBlock()) {
+			return;
+		}
+		
+		progressBlock((double)step/stepCount, absolutePosition);
+		
+		if(step == stepCount) {
+			completionBlock();
+		}else{
+			[self moveStepFromPosition:from toPosition:to steps:stepCount currentStep:step+1 feedRate:feedRate cancelBlock:cancelBlock progressBlock:progressBlock completionBlock:completionBlock];
+		}
+	}];
+
+}
+
+
+- (void(^)())moveAsynchronouslyToPosition:(TFP3DVector*)targetPosition feedRate:(double)feedRate progressBlock:(void(^)(double fraction, TFP3DVector *position))progressBlock completionBlock:(void(^)())completionBlock {
+	
+	__block BOOL cancelFlag = NO;
+	
+	[self setRelativeMode:NO completionHandler:nil];
+	
+	[self fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *originPosition, NSNumber *E) {
+		TFP3DVector *delta = [targetPosition vectorBySubtracting:originPosition];
+		
+		TFP3DVector *stepVector = [[delta vectorByDividingBy:[TFP3DVector vectorWithX:@2 Y:@2 Z:@0.1]] absoluteVector];
+		NSUInteger numSteps = MAX(MAX(stepVector.x.integerValue, stepVector.y.integerValue), stepVector.z.integerValue);
+		
+		[self moveStepFromPosition:originPosition toPosition:targetPosition steps:numSteps currentStep:0 feedRate:feedRate cancelBlock:^BOOL{
+			return cancelFlag;
+		} progressBlock:progressBlock completionBlock:^{
+			completionBlock();
+		}];
+	}];
+	
+	return ^{
+		cancelFlag = YES;
+	};
+}
+
 
 
 @end

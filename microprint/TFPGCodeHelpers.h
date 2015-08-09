@@ -44,6 +44,7 @@
 // Heater
 + (instancetype)codeForHeaterTemperature:(double)temperature waitUntilDone:(BOOL)wait;
 + (instancetype)codeForTurningOffHeater;
++ (instancetype)codeForReadingHeaterTemperature;
 
 // Fan
 + (instancetype)turnOnFanCode;

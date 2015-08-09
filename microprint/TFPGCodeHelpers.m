@@ -90,6 +90,10 @@
 }
 
 
++ (instancetype)codeForReadingHeaterTemperature {
+	return [TFPGCode codeWithField:'M' value:105];
+}
+
 
 + (instancetype)codeForHeaterTemperature:(double)temperature waitUntilDone:(BOOL)wait {
 	return [[TFPGCode codeWithField:'M' value:(wait ? 109 : 104)] codeBySettingField:'S' toValue:temperature];
