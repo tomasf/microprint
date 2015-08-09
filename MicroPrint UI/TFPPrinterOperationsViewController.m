@@ -96,6 +96,7 @@
 	[operation start];
 }
 
+
 - (void)viewDidLoad {
 	[super viewDidLoad];
 	self.actionButtons = @[self.retractButton,
@@ -103,6 +104,12 @@
                            self.raiseButton,
                            ];
 	self.actionButtonTitles = [self.actionButtons valueForKey:@"title"];
+}
+
+
+- (void)viewDidAppear {
+	[super viewDidAppear];
+	self.view.window.styleMask &= ~NSResizableWindowMask;
 }
 
 
