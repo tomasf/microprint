@@ -8,6 +8,7 @@
 
 #import "TFPGCode.h"
 #import "TFPGCodeProgram.h"
+#import "TFP3DVector.h"
 
 
 @interface TFPGCode (TFPHelpers)
@@ -56,6 +57,14 @@
 + (instancetype)codeForWritingVirtualEEPROMAtIndex:(NSUInteger)valueIndex value:(int32_t)value;
 
 @property (readonly) NSInteger layerIndexFromComment;
+
+@property (readonly) TFP3DVector *movementVector;
+
+@property (readonly) BOOL hasExtrusion;
+@property (readonly) double extrusion;
+
+@property (readonly) double feedRate;
+@property (readonly) BOOL hasFeedRate;
 @end
 
 

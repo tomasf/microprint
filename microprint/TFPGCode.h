@@ -5,7 +5,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "TFP3DVector.h"
 
 @interface TFPGCode : NSObject
 + (instancetype)codeWithString:(NSString*)string;
@@ -19,20 +18,13 @@
 - (TFPGCode*)codeBySettingComment:(NSString*)comment;
 
 @property (readonly, copy) NSString *comment;
+@property (readonly) BOOL hasFields;
+- (void)enumerateFieldsWithBlock:(void(^)(char field, double value, BOOL *stopFlag))block;
 
 - (BOOL)hasField:(char)field;
 - (double)valueForField:(char)field;
 - (double)valueForField:(char)field fallback:(double)fallbackValue;
-
-@property (readonly) TFP3DVector *movementVector;
-
-@property (readonly) BOOL hasFields;
-
-@property (readonly) BOOL hasExtrusion;
-@property (readonly) double extrusion;
-
-@property (readonly) double feedRate;
-@property (readonly) BOOL hasFeedRate;
+- (NSNumber*)objectAtIndexedSubscript:(NSUInteger)index;
 
 @property (readonly) NSData *repetierV2Representation;
 @property (readonly) NSString *ASCIIRepresentation;

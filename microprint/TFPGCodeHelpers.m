@@ -194,6 +194,31 @@
 }
 
 
+- (TFP3DVector*)movementVector {
+	return [TFP3DVector vectorWithX:self['X'] Y:self['Y'] Z:self['Z']];
+}
+
+
+- (BOOL)hasExtrusion {
+	return [self hasField:'E'];
+}
+
+
+- (double)extrusion {
+	return [self valueForField:'E'];
+}
+
+
+- (double)feedRate {
+	return [self valueForField:'F'];
+}
+
+
+- (BOOL)hasFeedRate {
+	return [self hasField:'F'];
+}
+
+
 @end
 
 
