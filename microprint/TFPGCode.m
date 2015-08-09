@@ -28,6 +28,11 @@ const char *canonicalFieldOrder = "NMGXYZE FTSP    IJRD";
 	self.comment = comment;
 	self.fields = fields;
 	
+	for(NSNumber *key in fields) {
+		double value = [fields[key] doubleValue];
+		NSAssert(!isnan(value) && !isinf(value), @"G-code values can't be NaN or infinite");
+	}
+	
 	return self;
 }
 
