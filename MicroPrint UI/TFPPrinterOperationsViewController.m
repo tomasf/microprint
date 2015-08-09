@@ -36,23 +36,14 @@
 	__weak __typeof__(self) weakSelf = self;
 	
 	TFPExtrusionOperation *operation = [[TFPExtrusionOperation alloc] initWithPrinter:self.printer retraction:retract];
-	__weak TFPExtrusionOperation *weakOperation = operation;
-	
 	self.operation = operation;
-	
-	operation.movingStartedBlock = ^{
-		weakSelf.statusLabel.stringValue = @"Raising head…";
-		[weakSelf.progressIndicator setIndeterminate:YES];
-		[weakSelf.progressIndicator startAnimation:nil];
-	};
-	
-	operation.heatingStartedBlock = ^{
-		weakSelf.statusLabel.stringValue = @"Heating up…";
-	};
-	
-	operation.heatingProgressBlock = ^(double temperature){
-		[weakSelf.progressIndicator setIndeterminate:NO];
-		weakSelf.progressIndicator.doubleValue = temperature / weakOperation.temperature;
+	self.progressIndicator.hidden = NO;
+	[weakSelf.progressIndicator setIndeterminate:NO];
+	[weakSelf.progressIndicator startAnimation:nil];
+	weakSelf.statusLabel.stringValue = @"Preparing…";
+
+	operation.preparationProgressBlock = ^(double fraction){
+		weakSelf.progressIndicator.doubleValue = fraction;
 	};
 	
 	operation.extrusionStartedBlock = ^() {
@@ -72,7 +63,8 @@
 	self.operation = nil;
 	self.statusLabel.stringValue = @"";
 	[self.progressIndicator stopAnimation:nil];
-	
+	self.progressIndicator.hidden = YES;
+
 	[self.actionButtons enumerateObjectsUsingBlock:^(NSButton *button, NSUInteger index, BOOL *stop) {
 		button.enabled = YES;
 		button.title = self.actionButtonTitles[index];
@@ -86,7 +78,8 @@
 	__weak __typeof__(self) weakSelf = self;
 	TFPRaiseHeadOperation *operation = [[TFPRaiseHeadOperation alloc] initWithPrinter:self.printer];
 	operation.targetHeight = 70;
-	
+	self.progressIndicator.hidden = NO;
+
 	self.operation = operation;
 	
 	operation.didStartBlock = ^{

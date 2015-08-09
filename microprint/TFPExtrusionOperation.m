@@ -10,6 +10,7 @@
 #import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
 
+#import "TFAsyncOperationCoalescer.h"
 #import "MAKVONotificationCenter.h"
 
 
@@ -24,7 +25,11 @@ static const double minimumZLevelForOperation = 25;
 @property BOOL stopped;
 
 @property (readwrite) TFPOperationStage stage;
+
+@property (copy) void(^cancelHeatingBlock)();
+@property (copy) void(^cancelMovingBlock)();
 @end
+
 
 
 @implementation TFPExtrusionOperation
@@ -51,7 +56,7 @@ static const double minimumZLevelForOperation = 25;
 	
 	[self.printer sendGCode:[TFPGCode codeForExtrusion:extrusionLength feedRate:extrudeFeedRate] responseHandler:^(BOOL success, NSDictionary *value) {
 		if(weakSelf.stopped) {
-			[weakSelf runEndCode];
+			[weakSelf runEndCodeIncludingRetraction:YES];
 		} else {
 			[weakSelf extrudeStep];
 		}
@@ -60,11 +65,21 @@ static const double minimumZLevelForOperation = 25;
 
 
 - (void)stop {
+	if(self.cancelHeatingBlock) {
+		// Prep stage
+		self.cancelHeatingBlock();
+		self.cancelMovingBlock();
+		
+		self.cancelMovingBlock = nil;
+		self.cancelHeatingBlock = nil;
+		[self runEndCodeIncludingRetraction:NO];
+	}
+	
 	self.stopped = YES;
 }
 	 
 
-- (void)runEndCode {
+- (void)runEndCodeIncludingRetraction:(BOOL)retractIfNeeded {
 	__weak __typeof__(self) weakSelf = self;
 	
 	NSMutableArray *steps = [@[
@@ -73,7 +88,7 @@ static const double minimumZLevelForOperation = 25;
 							  [TFPGCode turnOffFanCode],
 							  [TFPGCode turnOffMotorsCode],
 							  ] mutableCopy];
-	if(!self.retract) {
+	if(!self.retract && retractIfNeeded) {
 		[steps insertObject:[TFPGCode codeForExtrusion:-2 feedRate:extrudeFeedRate] atIndex:0];
 	}
 	
@@ -97,58 +112,45 @@ static const double minimumZLevelForOperation = 25;
 	__weak TFPPrinter *printer = self.printer;
 	__weak __typeof__(self) weakSelf = self;
 	
-	id<MAKVOObservation> token = [printer addObserver:nil keyPath:@"heaterTemperature" options:0 block:^(MAKVONotification *notification) {
-		if(printer.heaterTemperature > 0 && weakSelf.heatingProgressBlock) {
-			weakSelf.heatingProgressBlock(printer.heaterTemperature);
-		}
-	}];
-	
-	TFPGCodeProgram *prep = [TFPGCodeProgram programWithLines:@[
-																[TFPGCode codeForSettingFanSpeed:255],
-																[TFPGCode codeForHeaterTemperature:self.temperature waitUntilDone:NO],
-																[TFPGCode absoluteModeCode],
-																]];
-	
-	TFPGCodeProgram *heatAndWait = [TFPGCodeProgram programWithLines:@[
-																	   [TFPGCode codeForHeaterTemperature:self.temperature waitUntilDone:YES],
-																	   [TFPGCode relativeModeCode],
-																	   ]];
-	
-	
-	[printer runGCodeProgram:prep completionHandler:^(BOOL success, NSArray *valueDictionaries) {
-		[printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, NSNumber *E) {
-			TFP3DVector *raisedPosition = [TFP3DVector zVector:MAX(position.z.doubleValue, minimumZLevelForOperation)];
-			
-			if(weakSelf.movingStartedBlock) {
-				weakSelf.movingStartedBlock();
-			}
-			
-			[printer moveToPosition:raisedPosition usingFeedRate:3000 completionHandler:^(BOOL success) {
-				if(weakSelf.stopped) {
-					[weakSelf runEndCode];
-					return;
-				}
-				
-				if(weakSelf.heatingStartedBlock) {
-					weakSelf.heatingStartedBlock();
-				}
-				
-				[printer runGCodeProgram:heatAndWait completionHandler:^(BOOL success, NSArray *valueDictionaries) {
-					[token remove];
-					if(weakSelf.stopped) {
-						[weakSelf runEndCode];
-						return;
-					}
 
-					if(weakSelf.extrusionStartedBlock) {
-						weakSelf.extrusionStartedBlock();
-					}
-					self.stage = TFPOperationStageRunning;
-					
-					[weakSelf extrudeStep];
-				}];
-			}];
+	[printer sendGCode:[TFPGCode codeForSettingFanSpeed:255] responseHandler:nil];
+	[printer sendGCode:[TFPGCode absoluteModeCode] responseHandler:nil];
+
+	[printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, NSNumber *E) {
+
+		TFAsyncOperationCoalescer *coalescer = [TFAsyncOperationCoalescer new];
+		
+		void(^heatingProgressBlock)(double progress) = [coalescer addOperation];
+		self.cancelHeatingBlock = [printer setHeaterTemperatureAsynchronously:self.temperature progressBlock:^(double currentTemperature) {
+			heatingProgressBlock(currentTemperature / weakSelf.temperature);
+		} completionBlock:^{
+			heatingProgressBlock(1);
 		}];
+		
+		
+		TFP3DVector *raisedPosition = [TFP3DVector zVector:MAX(position.z.doubleValue, minimumZLevelForOperation)];
+		void(^moveProgressBlock)(double progress) = [coalescer addOperation];
+		self.cancelMovingBlock = [printer moveAsynchronouslyToPosition:raisedPosition feedRate:3000 progressBlock:^(double fraction, TFP3DVector *position) {
+			moveProgressBlock(fraction);
+		} completionBlock:^{
+			moveProgressBlock(1);
+		}];
+		
+		coalescer.progressUpdateBlock = ^(double progress) {
+			if(weakSelf.preparationProgressBlock) {
+				weakSelf.preparationProgressBlock(progress);
+			}
+		};
+		
+		coalescer.completionBlock = ^{
+			if(weakSelf.extrusionStartedBlock) {
+				weakSelf.extrusionStartedBlock();
+			}
+			weakSelf.stage = TFPOperationStageRunning;
+			
+			[printer sendGCode:[TFPGCode relativeModeCode] responseHandler:nil];
+			[weakSelf extrudeStep];
+		};
 	}];
 }
 

@@ -244,13 +244,19 @@
 		TFP3DVector *delta = [targetPosition vectorBySubtracting:originPosition];
 		
 		TFP3DVector *stepVector = [[delta vectorByDividingBy:[TFP3DVector vectorWithX:@2 Y:@2 Z:@0.1]] absoluteVector];
-		NSUInteger numSteps = MAX(MAX(stepVector.x.integerValue, stepVector.y.integerValue), stepVector.z.integerValue);
+		NSUInteger numSteps = ceil(MAX(MAX(stepVector.x.integerValue, stepVector.y.integerValue), stepVector.z.integerValue));
 		
-		[self moveStepFromPosition:originPosition toPosition:targetPosition steps:numSteps currentStep:0 feedRate:feedRate cancelBlock:^BOOL{
-			return cancelFlag;
-		} progressBlock:progressBlock completionBlock:^{
-			completionBlock();
-		}];
+		if(numSteps > 0) {
+			[self moveStepFromPosition:originPosition toPosition:targetPosition steps:numSteps currentStep:0 feedRate:feedRate cancelBlock:^BOOL{
+				return cancelFlag;
+			} progressBlock:progressBlock completionBlock:^{
+				completionBlock();
+			}];
+		}else{
+			dispatch_async(dispatch_get_main_queue(), ^{
+				completionBlock();
+			});
+		}
 	}];
 	
 	return ^{

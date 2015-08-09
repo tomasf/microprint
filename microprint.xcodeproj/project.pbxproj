@@ -24,6 +24,8 @@
 		C94469641B6E6E4C008820F4 /* TFPPrinterHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = C94469621B6E6E4C008820F4 /* TFPPrinterHelpers.m */; };
 		C94469691B70283E008820F4 /* microprint.icns in Resources */ = {isa = PBXBuildFile; fileRef = C94469681B70283E008820F4 /* microprint.icns */; };
 		C94469A81B769E49008820F4 /* TFPVisualPrintProgressView.m in Sources */ = {isa = PBXBuildFile; fileRef = C94469A71B769E49008820F4 /* TFPVisualPrintProgressView.m */; };
+		C94469AB1B77DED4008820F4 /* TFAsyncOperationCoalescer.m in Sources */ = {isa = PBXBuildFile; fileRef = C94469AA1B77DED4008820F4 /* TFAsyncOperationCoalescer.m */; };
+		C94469AC1B77DEDB008820F4 /* TFAsyncOperationCoalescer.m in Sources */ = {isa = PBXBuildFile; fileRef = C94469AA1B77DED4008820F4 /* TFAsyncOperationCoalescer.m */; };
 		C94F60051B3804CA0074EC41 /* TFPGCodePreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60041B3804CA0074EC41 /* TFPGCodePreprocessor.m */; };
 		C94F60131B3814F30074EC41 /* TFPBasicPreparationPreprocessor.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60121B3814F30074EC41 /* TFPBasicPreparationPreprocessor.m */; };
 		C94F60161B3815290074EC41 /* TFPPrintParameters.m in Sources */ = {isa = PBXBuildFile; fileRef = C94F60151B3815290074EC41 /* TFPPrintParameters.m */; };
@@ -150,6 +152,8 @@
 		C94469681B70283E008820F4 /* microprint.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = microprint.icns; sourceTree = "<group>"; };
 		C94469A61B769E49008820F4 /* TFPVisualPrintProgressView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPVisualPrintProgressView.h; sourceTree = "<group>"; };
 		C94469A71B769E49008820F4 /* TFPVisualPrintProgressView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPVisualPrintProgressView.m; sourceTree = "<group>"; };
+		C94469A91B77DED4008820F4 /* TFAsyncOperationCoalescer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFAsyncOperationCoalescer.h; sourceTree = "<group>"; };
+		C94469AA1B77DED4008820F4 /* TFAsyncOperationCoalescer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFAsyncOperationCoalescer.m; sourceTree = "<group>"; };
 		C94F60031B3804CA0074EC41 /* TFPGCodePreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPGCodePreprocessor.h; sourceTree = "<group>"; };
 		C94F60041B3804CA0074EC41 /* TFPGCodePreprocessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPGCodePreprocessor.m; sourceTree = "<group>"; };
 		C94F60111B3814F30074EC41 /* TFPBasicPreparationPreprocessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPBasicPreparationPreprocessor.h; sourceTree = "<group>"; };
@@ -529,6 +533,8 @@
 				C9FD1C531B395E9900F98FF1 /* ORSSerialPort */,
 				C9FD1C5B1B39602000F98FF1 /* MAKVONotificationCenter.h */,
 				C9FD1C5C1B39602000F98FF1 /* MAKVONotificationCenter.m */,
+				C94469A91B77DED4008820F4 /* TFAsyncOperationCoalescer.h */,
+				C94469AA1B77DED4008820F4 /* TFAsyncOperationCoalescer.m */,
 			);
 			name = External;
 			path = microprint;
@@ -637,6 +643,7 @@
 				C9C871AB1B58298E0063FACB /* TFPBedLevelSettingsViewController.m in Sources */,
 				0F974CCA1B6995FC00376C8B /* TFPZeroBedOperation.m in Sources */,
 				C95F10CC1B53EBEF00F396B6 /* TFPGCodeProgram.m in Sources */,
+				C94469AB1B77DED4008820F4 /* TFAsyncOperationCoalescer.m in Sources */,
 				C95F111F1B5536D200F396B6 /* TFPPrinterCollectionViewItem.m in Sources */,
 				C95F11071B54107500F396B6 /* TFPPreprocessing.m in Sources */,
 				C95F11101B54108400F396B6 /* TFPPrintJob.m in Sources */,
@@ -723,6 +730,7 @@
 				C96590E11B3F5CAA009D028F /* TFPThermalBondingPreprocessor.m in Sources */,
 				C99E87211B3AA56D0099E79E /* GBPrint.m in Sources */,
 				C94F60051B3804CA0074EC41 /* TFPGCodePreprocessor.m in Sources */,
+				C94469AC1B77DEDB008820F4 /* TFAsyncOperationCoalescer.m in Sources */,
 				C94F60161B3815290074EC41 /* TFPPrintParameters.m in Sources */,
 				C9FD1C521B395E9600F98FF1 /* ORSSerialPortManager.m in Sources */,
 				C94F60131B3814F30074EC41 /* TFPBasicPreparationPreprocessor.m in Sources */,
