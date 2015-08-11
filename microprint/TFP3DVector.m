@@ -85,4 +85,55 @@
 	return sqrt(pow(point.x.doubleValue - self.x.doubleValue, 2) + pow(point.y.doubleValue - self.y.doubleValue, 2) + pow(point.z.doubleValue - self.z.doubleValue, 2));
 }
 
+
+- (TFP3DVector*)vectorByAdding:(TFP3DVector*)vector {
+	return [TFP3DVector vectorWithX:(self.x ? @(self.x.doubleValue+vector.x.doubleValue) : nil)
+								  Y:(self.y ? @(self.y.doubleValue+vector.y.doubleValue) : nil)
+								  Z:(self.z ? @(self.z.doubleValue+vector.z.doubleValue) : nil)
+			];
+}
+
+
+- (TFP3DVector*)vectorBySubtracting:(TFP3DVector*)vector {
+	return [TFP3DVector vectorWithX:(self.x ? @(self.x.doubleValue-vector.x.doubleValue) : nil)
+								  Y:(self.y ? @(self.y.doubleValue-vector.y.doubleValue) : nil)
+								  Z:(self.z ? @(self.z.doubleValue-vector.z.doubleValue) : nil)
+			];
+}
+
+
+- (TFP3DVector*)vectorByDividingBy:(TFP3DVector*)vector {
+	return [TFP3DVector vectorWithX:(self.x ? @(self.x.doubleValue/vector.x.doubleValue) : nil)
+								  Y:(self.y ? @(self.y.doubleValue/vector.y.doubleValue) : nil)
+								  Z:(self.z ? @(self.z.doubleValue/vector.z.doubleValue) : nil)
+			];
+}
+
+
+- (TFP3DVector*)vectorByMultiplyingBy:(TFP3DVector*)vector {
+	return [TFP3DVector vectorWithX:(self.x ? @(self.x.doubleValue*vector.x.doubleValue) : nil)
+								  Y:(self.y ? @(self.y.doubleValue*vector.y.doubleValue) : nil)
+								  Z:(self.z ? @(self.z.doubleValue*vector.z.doubleValue) : nil)
+			];
+}
+
+
+- (TFP3DVector*)absoluteVector {
+	return [TFP3DVector vectorWithX:(self.x ? @(fabs(self.x.doubleValue)) : nil)
+								  Y:(self.y ? @(fabs(self.y.doubleValue)) : nil)
+								  Z:(self.z ? @(fabs(self.z.doubleValue)) : nil)
+			];
+}
+
+
+- (TFP3DVector*)vectorByMultiplyingByScalar:(double)value {
+	return [self vectorByMultiplyingBy:[TFP3DVector vectorWithX:@(value) Y:@(value) Z:@(value)]];
+}
+
+
+- (TFP3DVector*)vectorByDividingByScalar:(double)value {
+	return [self vectorByDividingBy:[TFP3DVector vectorWithX:@(value) Y:@(value) Z:@(value)]];
+}
+
+
 @end

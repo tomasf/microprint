@@ -14,6 +14,8 @@
 #import "TFPPrintParameters.h"
 #import "TFPPreprocessing.h"
 #import "TFPPrintStatusController.h"
+#import "TFPVisualPrintProgressView.h"
+
 #import "MAKVONotificationCenter.h"
 @import QuartzCore;
 
@@ -41,12 +43,7 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 
 @property BOOL viewExpanded;
 @property IBOutlet NSButton *expandButton;
-@property IBOutlet NSView *drawContainer;
-@property id bitmap;
-
-@property CALayer *drawLayer;
-@property CGAffineTransform drawTransform;
-@property CGFloat drawScale;
+@property IBOutlet TFPVisualPrintProgressView *printProgressView;
 
 @property NSDateComponentsFormatter *durationFormatter;
 @property NSDateComponentsFormatter *approximateDurationFormatter;
@@ -95,6 +92,9 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
+	
+	[self.view layoutSubtreeIfNeeded];
+	self.printProgressView.fullViewSize = self.printProgressView.bounds.size;
 
 	BOOL expand = [[NSUserDefaults standardUserDefaults] boolForKey:printProgressExpandedKey];
 	[self setExpanded:expand animated:NO];
@@ -112,27 +112,16 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 			
 			self.drawContainerHeightConstraint.animator.constant = expand ? drawContainerExpandedHeight : 0;
 			self.drawContainerBottomMarginConstraint.animator.constant = expand ? drawContainerExpandedBottomMargin : 0;
-			self.drawContainer.animator.hidden = !expand;
+			self.printProgressView.animator.hidden = !expand;
 		} completionHandler:nil];
 		
 	}else{
 		self.drawContainerHeightConstraint.constant = expand ? drawContainerExpandedHeight : 0;
 		self.drawContainerBottomMarginConstraint.constant = expand ? drawContainerExpandedBottomMargin : 0;
-		self.drawContainer.hidden = !expand;
+		self.printProgressView.hidden = !expand;
 	}
-	
-	if(expand) {
-		[self updateImageIfNeeded];
-	}
-	
+
 	[[NSUserDefaults standardUserDefaults] setBool:expand forKey:printProgressExpandedKey];
-}
-
-
-- (void)updateImageIfNeeded {
-	if(self.viewExpanded && self.bitmap) {
-		self.drawLayer.contents = CFBridgingRelease(CGBitmapContextCreateImage((CGContextRef)self.bitmap));
-	}
 }
 
 
@@ -183,52 +172,27 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 		[dockTile display];
 	}];
 	
-	__block double xAdjustment = 0;
-	__block double yAdjustment = 0;
-	
-	self.printStatusController.willMoveHandler = ^(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate, TFPGCode *code) {
-		if([code.comment hasPrefix:@"BACKLASH"]) {
-			xAdjustment += from.x - to.x;
-			yAdjustment += from.y - to.y;
-		}
-		
-		CGAffineTransform transform = weakSelf.drawTransform;
-		CGPoint fromPoint = CGPointApplyAffineTransform(CGPointMake(from.x + xAdjustment, from.y + yAdjustment), transform);
-		CGPoint toPoint = CGPointApplyAffineTransform(CGPointMake(to.x + xAdjustment, to.y + yAdjustment), transform);
-
-		/*
-		double distance = sqrt(pow(to.x - from.x, 2) + pow(to.y - from.y, 2));
-		double calculatedSpeed = (6288.78 * (feedRate-830))/((feedRate-828.465) * (feedRate+79.5622));
-		NSTimeInterval estimatedDuration = distance / calculatedSpeed;
-		estimatedDuration /= weakSelf.printer.speedMultiplier;
-		 */
-		
-		if(to.e > from.e) {
-			CGMutablePathRef path = (CGMutablePathRef)CFAutorelease(CGPathCreateMutable());
-			CGPathMoveToPoint(path, NULL, fromPoint.x, fromPoint.y);
-			CGPathAddLineToPoint(path, NULL, toPoint.x, toPoint.y);
-
-			CGContextRef context = (__bridge CGContextRef)weakSelf.bitmap;
-
-			CGContextAddPath(context, path);
-			CGContextStrokePath(context);
-			[weakSelf updateImageIfNeeded];
-		}
-	};
-	
-	self.printStatusController.layerChangeHandler = ^{
-		CGContextRef context = (__bridge CGContextRef)weakSelf.bitmap;
-		CGRect entireRect = CGRectMake(0, 0, CGBitmapContextGetWidth(context), CGBitmapContextGetHeight(context));
-		CGImageRef image = (CGImageRef)CFAutorelease(CGBitmapContextCreateImage(context));
-		
-		CGContextSaveGState(context);
-		CGContextClearRect(context, entireRect);
-		CGContextSetAlpha(context, 0.5);
-		CGContextConcatCTM(context, CGAffineTransformInvert(CGContextGetCTM(context)));
-		CGContextDrawImage(context, entireRect, image);
-		CGContextRestoreGState(context);
-	};
+	[self.printProgressView configureWithPrintStatusController:self.printStatusController parameters:self.printParameters];
 }
+
+
+- (void)warnAboutOutOfBounds {
+	NSAlert *alert = [NSAlert new];
+	alert.messageText = @"The model appears to be outside of the printer's printable area.";
+	alert.informativeText = @"This may be due to the model being too large or positioned incorrectly. Make sure your slicer has the correct print area set.";
+	[alert addButtonWithTitle:@"Cancel"];
+	[alert addButtonWithTitle:@"Continue Anyway"];
+	
+	[alert beginSheetModalForWindow:self.view.window completionHandler:^(NSModalResponse returnCode) {
+		if(returnCode == NSAlertFirstButtonReturn) {
+			[self dismissController:nil];
+			self.endHandler(NO);
+		}else{
+			[self configurePrintJob];
+		}
+	}];
+}
+
 
 
 - (void)start {
@@ -247,13 +211,20 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 			TFPGCodeProgram *program = [[TFPGCodeProgram alloc] initWithFileURL:self.GCodeFileURL error:nil];
 			program = [TFPPreprocessing programByPreprocessingProgram:program usingParameters:params];
 			
+			BOOL withinBounds = [program withinM3DMicroPrintableVolume];
+			
 			dispatch_async(dispatch_get_main_queue(), ^{
 				if(weakSelf.aborted) {
 					return;
 				}
-				self.state = TFPPrintingProgressViewControllerStateRunningJob;
+				weakSelf.state = TFPPrintingProgressViewControllerStateRunningJob;
 				weakSelf.printJob = [[TFPPrintJob alloc] initWithProgram:program printer:weakSelf.printer printParameters:params];
-				[weakSelf configurePrintJob];
+				
+				if(withinBounds) {
+					[weakSelf configurePrintJob];
+				}else{
+					[weakSelf warnAboutOutOfBounds];
+				}
 			});
 		});
 	}];
@@ -263,49 +234,6 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 - (void)viewDidAppear {
 	[super viewDidAppear];
 	self.view.window.styleMask &= ~NSResizableWindowMask;
-}
-
-
-- (void)viewWillAppear {
-	[super viewWillAppear];
-	[self.view layoutSubtreeIfNeeded];
-	
-	TFPCuboid boundingBox = self.printParameters.boundingBox;
-	CGSize viewSize = CGSizeMake(self.drawContainer.bounds.size.width, drawContainerExpandedHeight);
-	
-	CGFloat drawScale = 2;
-	self.bitmap = CFBridgingRelease(CGBitmapContextCreate(NULL, viewSize.width * drawScale, viewSize.height * drawScale, 8, (viewSize.width*drawScale)*4, [NSColorSpace deviceRGBColorSpace].CGColorSpace, (CGBitmapInfo)kCGImageAlphaPremultipliedLast));
-	
-	self.drawLayer = [CALayer layer];
-	self.drawLayer.bounds = CGRectMake(0, 0, viewSize.width, viewSize.height);
-	self.drawLayer.backgroundColor = [NSColor whiteColor].CGColor;
-	self.drawLayer.anchorPoint = CGPointZero;
-	self.drawLayer.actions = @{@"contents": [NSNull null]};
-	self.drawLayer.contentsScale = drawScale;
-	[self.drawContainer.layer addSublayer:self.drawLayer];
-	
-	CGFloat margin = 20;
-	viewSize.width -= 2*margin;
-	viewSize.height -= 2*margin;
-	
-	CGAffineTransform transform = CGAffineTransformIdentity;
-	double xScale = viewSize.width / boundingBox.xSize;
-	double yScale = viewSize.height / boundingBox.ySize;
-	double scale = MIN(xScale, yScale);
-	
-	CGFloat xOffset = (viewSize.width - (scale*boundingBox.xSize)) / 2 + margin;
-	CGFloat yOffset = (viewSize.height - (scale*boundingBox.ySize)) / 2 + margin;
-	transform = CGAffineTransformTranslate(transform, xOffset, yOffset);
-	transform = CGAffineTransformScale(transform, scale, scale);
-	transform = CGAffineTransformTranslate(transform, -boundingBox.x, -boundingBox.y);
-	self.drawScale = scale;
-	self.drawTransform = transform;
-	
-	CGContextRef context = (__bridge CGContextRef)self.bitmap;
-	CGContextSetLineCap(context, kCGLineCapRound);
-	CGContextSetLineWidth(context, self.drawScale * 0.8);
-	CGContextSetStrokeColorWithColor(context, [NSColor blackColor].CGColor);
-	CGContextScaleCTM(context, drawScale, drawScale);
 }
 
 

@@ -84,7 +84,6 @@
 	};
 	
 	self.operation.didFinishHandler = ^{
-		[weakSelf.bedLevelSettingsViewController reload];
 		[weakSelf dismissController:nil];
 	};
 	

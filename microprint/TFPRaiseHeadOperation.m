@@ -13,6 +13,7 @@
 
 @interface TFPRaiseHeadOperation ()
 @property BOOL stopped;
+@property (readwrite) TFPOperationStage stage;
 @end
 
 
@@ -20,6 +21,7 @@ static const double raiseStep = 0.1;
 
 
 @implementation TFPRaiseHeadOperation
+@synthesize stage=_stage;
 
 
 - (void)raiseStepFromZ:(double)Z toLevel:(double)targetHeight completionHandler:(void(^)())completionHandler {
@@ -31,7 +33,7 @@ static const double raiseStep = 0.1;
 	Z += raiseStep;
 	
 	TFP3DVector *position = [TFP3DVector zVector:Z];
-	[self.printer moveToPosition:position usingFeedRate:2000 completionHandler:^(BOOL success) {
+	[self.printer moveToPosition:position usingFeedRate:3000 completionHandler:^(BOOL success) {
 		[self raiseStepFromZ:Z toLevel:targetHeight completionHandler:completionHandler];
 	}];
 }
@@ -40,7 +42,8 @@ static const double raiseStep = 0.1;
 - (void)start {
 	[super start];
 	double targetHeight = self.targetHeight;
-		
+	self.stage = TFPOperationStagePreparation;
+	
 	[self.printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, NSNumber *E) {
 		[self.printer setRelativeMode:NO completionHandler:^(BOOL success) {
 			double Z = position.z.doubleValue;
@@ -49,20 +52,23 @@ static const double raiseStep = 0.1;
 				if(self.didStartBlock) {
 					self.didStartBlock();
 				}
+				self.stage = TFPOperationStageRunning;
 				
 				[self raiseStepFromZ:Z toLevel:targetHeight completionHandler:^{
+					self.stage = TFPOperationStageEnding;
+					
 					[self.printer sendGCode:[TFPGCode turnOffMotorsCode] responseHandler:^(BOOL success, NSDictionary *value) {
 						if(self.didStopBlock) {
 							self.didStopBlock(YES);
-							[self ended];
 						}
+						[self ended];
 					}];
 				}];
 			}else{
 				if(self.didStopBlock) {
-					[self ended];
 					self.didStopBlock(NO);
 				}
+				[self ended];
 			}
 		}];
 	}];
@@ -72,6 +78,11 @@ static const double raiseStep = 0.1;
 - (void)stop {
 	[super stop];
 	self.stopped = YES;
+}
+
+
+- (TFPOperationKind)kind {
+	return TFPOperationKindUtility;
 }
 
 

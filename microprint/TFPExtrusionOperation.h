@@ -15,9 +15,7 @@
 
 @property double temperature;
 
-@property (copy) void(^movingStartedBlock)();
-@property (copy) void(^heatingStartedBlock)();
-@property (copy) void(^heatingProgressBlock)(double temperature);
+@property (copy) void(^preparationProgressBlock)(double temperature);
 @property (copy) void(^extrusionStartedBlock)();
 @property (copy) void(^extrusionStoppedBlock)();
 

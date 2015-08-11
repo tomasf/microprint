@@ -60,14 +60,10 @@
 	double relativeZ = 0;
 	double relativeE = 0;
 	
-	double F = 0;
-	
 	double num4 = num3;
-	double num5 = 0;
 	TFPGCode *previousCode = nil;
 	TFPGCode *lastTackPoint = nil;
 	int num6 = 0;
-	
 	
 	for(__strong TFPGCode *code in self.program.lines) {
 		if ([(code.comment ?: @"") rangeOfString:@"LAYER:"].location != NSNotFound) {
@@ -97,10 +93,6 @@
 			relativeY += deltaY;
 			relativeZ += deltaZ;
 			relativeE += deltaE;
-			
-			if([code hasField:'F']) {
-				F = [code valueForField:'F'];
-			}
 			
 			const double segmentLength = 1.25;
 			double moveDistance = sqrt(deltaX*deltaX + deltaY*deltaY); //num12
@@ -176,7 +168,6 @@
 						}
 						code = [code codeByAdjustingField:'Z' offset:num4];
 					}
-					num5 = num29;
 				}
 			}
 			previousCode = code;

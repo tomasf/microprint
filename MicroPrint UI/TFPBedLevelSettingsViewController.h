@@ -7,9 +7,8 @@
 //
 
 @import AppKit;
+#import "TFPCalibrationViewController.h"
 #import "TFPPrinter.h"
 
-@interface TFPBedLevelSettingsViewController : NSViewController
-@property TFPPrinter *printer;
-- (void)reload;
+@interface TFPBedLevelSettingsViewController : TFPCalibrationViewController
 @end

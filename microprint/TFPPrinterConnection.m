@@ -29,6 +29,7 @@
 @end
 
 
+
 @implementation TFPPrinterConnection
 
 
@@ -190,13 +191,15 @@
 
 - (void)serialPortWasOpened:(ORSSerialPort * __nonnull)serialPort {
 	self.removed = NO;
-	[self sendGCode:[TFPGCode codeForSettingLineNumber:0]];
+	
+	[self sendGCode:[TFPGCode codeWithString:@"M115"]];
 }
 
 
 - (void)serialPortWasClosed:(ORSSerialPort * __nonnull)serialPort {
+	
 	if(self.pendingConnection) {
-		dispatch_after(dispatch_time(0, 3 * NSEC_PER_SEC), self.serialPortQueue, ^{
+		dispatch_after(dispatch_time(0, 4 * NSEC_PER_SEC), self.serialPortQueue, ^{
 			[self.serialPort open];
 		});
 	}else{

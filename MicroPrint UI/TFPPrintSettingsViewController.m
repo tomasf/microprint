@@ -147,6 +147,8 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 - (IBAction)print:(id)sender {
 	__weak __typeof__(self) weakSelf = self;
 	
+	[self.document saveSettings];
+	
 	TFPPrintingProgressViewController *viewController = [self.storyboard instantiateControllerWithIdentifier:@"PrintingProgressViewController"];
 	viewController.printer = self.document.selectedPrinter;
 	viewController.printParameters = [self printParameters];

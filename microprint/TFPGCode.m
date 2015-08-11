@@ -16,9 +16,6 @@
 @end
 
 
-const char *canonicalFieldOrder = "NMGXYZE FTSP    IJRD";
-
-
 @implementation TFPGCode
 
 
@@ -27,6 +24,11 @@ const char *canonicalFieldOrder = "NMGXYZE FTSP    IJRD";
 	
 	self.comment = comment;
 	self.fields = fields;
+	
+	for(NSNumber *key in fields) {
+		double value = [fields[key] doubleValue];
+		NSAssert(!isnan(value) && !isinf(value), @"G-code values can't be NaN or infinite");
+	}
 	
 	return self;
 }
@@ -69,7 +71,6 @@ const char *canonicalFieldOrder = "NMGXYZE FTSP    IJRD";
 	
 	[scanner scanWhitespace];
 	
-	
 	while(!scanner.atEnd) {
 		unichar type = [scanner scanCharacter];
 		if(type == ';') {
@@ -82,13 +83,18 @@ const char *canonicalFieldOrder = "NMGXYZE FTSP    IJRD";
 		}
 		
 		NSString *valueString = [scanner scanStringFromCharacterSet:valueCharacterSet];
-		BOOL ended = [scanner scanWhitespace] || scanner.isAtEnd;
 		
+		if(!valueString) {
+			// Not a valid number after field start character
+			return nil;
+		}
+		
+		BOOL ended = [scanner scanWhitespace] || scanner.isAtEnd;
 		if(!ended) {
 			return nil; // Parse error; invalid value or garbage after value
 		}
 		
-		fields[@(type)] = valueString ? @(valueString.doubleValue) : [NSNull null];
+		fields[@(type)] = @(valueString.doubleValue);
 	}
 	
 	return [self initWithFields:fields comment:comment];
@@ -119,18 +125,13 @@ const char *canonicalFieldOrder = "NMGXYZE FTSP    IJRD";
 
 
 - (double)valueForField:(char)field {
-	NSNumber *value = self.fields[@(field)];
-	if([value isKindOfClass:[NSNumber class]]) {
-		return value.doubleValue;
-	}else return NAN;
+	return [self.fields[@(field)] doubleValue];
 }
 
 
 - (double)valueForField:(char)field fallback:(double)fallbackValue {
-	double value = [self valueForField:field];
-	
-	if([self hasField:field] && !isnan(value)) {
-		return value;
+	if([self hasField:field]) {
+		return [self valueForField:field];
 	} else {
 		return fallbackValue;
 	}
@@ -147,49 +148,41 @@ const char *canonicalFieldOrder = "NMGXYZE FTSP    IJRD";
 }
 
 
-- (TFP3DVector*)movementVector {
-	return [TFP3DVector vectorWithX:self['X'] Y:self['Y'] Z:self['Z']];
-}
-
-
-- (BOOL)hasExtrusion {
-	return [self hasField:'E'];
-}
-
-
-- (double)extrusion {
-	return [self valueForField:'E'];
-}
-
-
-- (double)feedRate {
-	return [self valueForField:'F'];
-}
-
-- (BOOL)hasFeedRate {
-	return [self hasField:'F'];
+- (void)enumerateFieldsWithBlock:(void(^)(char field, double value, BOOL *stopFlag))block {
+	const char *canonicalFieldOrder = "NMGXYZE FTSP    IJRD";
+	
+	for(NSUInteger i=0; i<strlen(canonicalFieldOrder); i++) {
+		char field = canonicalFieldOrder[i];
+		
+		if(![self hasField:field]) {
+			continue;
+		}
+		
+		double value = [self valueForField:field];
+		BOOL stop = NO;
+		block(field, value, &stop);
+		if(stop) {
+			break;
+		}
+	}
 }
 
 
 - (NSString *)ASCIIRepresentation {
-	NSNumberFormatter *formatter = [NSNumberFormatter new];
-	formatter.locale = [NSLocale systemLocale];
-	formatter.maximumFractionDigits = 5;
-	formatter.minimumIntegerDigits = 1;
-
+	static NSNumberFormatter *formatter;
+	if(!formatter) {
+		formatter = [NSNumberFormatter new];
+		formatter.locale = [NSLocale systemLocale];
+		formatter.maximumFractionDigits = 5;
+		formatter.minimumFractionDigits = 0;
+		formatter.minimumIntegerDigits = 1;
+	}
+	
 	NSMutableArray *items = [NSMutableArray new];
 	
-	for(NSUInteger i=0; i<strlen(canonicalFieldOrder); i++) {
-		char field = canonicalFieldOrder[i];
-		if([self hasField:field]) {
-			id value = self.fields[@(field)];
-			if(value == [NSNull null]) {
-				[items addObject:[NSString stringWithFormat:@"%c", field]];
-			}else{
-				[items addObject:[NSString stringWithFormat:@"%c%@", field, [formatter stringFromNumber:value]]];
-			}
-		}
-	}
+	[self enumerateFieldsWithBlock:^(char field, double value, BOOL *stopFlag) {
+		[items addObject:[NSString stringWithFormat:@"%c%@", field, [formatter stringFromNumber:@(value)]]];
+	}];
 	
 	if(self.comment) {
 		[items addObject:[NSString stringWithFormat:@";%@", self.comment]];
@@ -200,28 +193,26 @@ const char *canonicalFieldOrder = "NMGXYZE FTSP    IJRD";
 
 
 - (NSData*)repetierV2Representation {
-	uint16_t flags = 1<<7 | 1<<12; // non-ASCII indicator + v2 flag
-	
-	char *valueTypes = "sssffff fbii    ffff";
+	__block uint16_t flags = 1<<7 | 1<<12; // non-ASCII indicator + v2 flag
 	
 	TFDataBuilder *valueDataBuilder = [TFDataBuilder new];
 	valueDataBuilder.byteOrder = TFDataBuilderByteOrderLittleEndian;
 	
-	for(NSUInteger i=0; i<strlen(canonicalFieldOrder); i++) {
-		NSNumber *value = self[canonicalFieldOrder[i]];
-		if(!value) {
-			continue;
-		}
+	NSString *fieldBits = @"NMGXYZE FTSP    IJRD";
+	char *fieldTypes = "sssffff fbii    ffff";
+	
+	[self enumerateFieldsWithBlock:^(char field, double value, BOOL *stopFlag) {
+		NSUInteger index = [fieldBits rangeOfString:[NSString stringWithFormat:@"%c", field]].location;
 		
-		flags |= (1<<i);
+		flags |= (1<<index);
 		
-		switch(valueTypes[i]) {
-			case 's': [valueDataBuilder appendInt16:value.unsignedShortValue]; break;
-			case 'i': [valueDataBuilder appendInt32:value.unsignedIntValue]; break;
-			case 'b': [valueDataBuilder appendByte:value.unsignedCharValue]; break;
-			case 'f': [valueDataBuilder appendFloat:value.floatValue]; break;
+		switch(fieldTypes[index]) {
+			case 's': [valueDataBuilder appendInt16:value]; break;
+			case 'i': [valueDataBuilder appendInt32:value]; break;
+			case 'b': [valueDataBuilder appendByte:value]; break;
+			case 'f': [valueDataBuilder appendFloat:value]; break;
 		}
-	}
+	}];
 	
 	TFDataBuilder *dataBuilder = [TFDataBuilder new];
 	dataBuilder.byteOrder = TFDataBuilderByteOrderLittleEndian;

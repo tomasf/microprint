@@ -7,14 +7,6 @@
 @class TFP3DVector;
 
 
-typedef struct {
-	double x;
-	double y;
-	double z;
-	double e;
-} TFPAbsolutePosition;
-
-
 @interface TFPGCodeProgram : NSObject
 + (instancetype)programWithLines:(NSArray*)lines;
 - (instancetype)initWithLines:(NSArray*)lines;
