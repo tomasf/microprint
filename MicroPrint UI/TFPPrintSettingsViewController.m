@@ -158,7 +158,7 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 	[self presentViewControllerAsSheet:viewController];
 	[viewController start];
 	
-	viewController.endHandler = ^(BOOL didFinish){		
+	viewController.endHandler = ^(BOOL didFinish){
 		if(didFinish && weakSelf.document.completionScriptURL) {
 			NSDictionary *error;
 			BOOL success = [[TFPScriptManager sharedManager] runScriptFile:weakSelf.document.completionScriptURL printName:self.document.displayName duration:weakSelf.printingProgressViewController.elapsedTimeString errorInfo:&error];
@@ -171,6 +171,13 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 				NSError *error = [NSError errorWithDomain:TFPErrorDomain code:TFPScriptExecutionError userInfo:userInfo];
 				[weakSelf presentError:error];
 			}
+		}
+		
+		if(didFinish) {
+			NSAlert *alert = [NSAlert new];
+			alert.messageText = [NSString stringWithFormat:@"Printing finished in %@.", weakSelf.printingProgressViewController.elapsedTimeString];
+			[alert addButtonWithTitle:@"OK"];
+			[alert beginSheetModalForWindow:weakSelf.view.window completionHandler:nil];
 		}
 		
 		weakSelf.printingProgressViewController = nil;
