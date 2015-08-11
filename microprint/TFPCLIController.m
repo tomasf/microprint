@@ -199,7 +199,6 @@
 
 - (TFPPrintParameters*)printParametersForSettings:(GBSettings*)settings {
 	TFPPrintParameters *params = [TFPPrintParameters new];
-	params.bufferSize = [settings integerForKey:@"buffer"];
 	params.verbose = [settings boolForKey:@"verbose"];
 	params.useWaveBonding = [settings boolForKey:@"wavebonding"];
 	params.useBacklashCompensation = [settings boolForKey:@"backlash"];

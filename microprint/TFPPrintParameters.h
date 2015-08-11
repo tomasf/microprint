@@ -31,7 +31,6 @@ extern NSString *TFPBacklashValuesDescription(TFPBacklashValues values);
 
 
 @interface TFPPrintParameters : NSObject
-@property (readwrite) NSUInteger bufferSize;
 @property (readwrite) BOOL verbose;
 
 @property (readwrite) TFPFilament *filament;

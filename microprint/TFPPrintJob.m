@@ -171,7 +171,7 @@
 		return;
 	}
 	
-	while(self.pendingRequestCount < self.parameters.bufferSize) {
+	while(self.pendingRequestCount < 1) {
 		TFPGCode *code = [self popNextLine];
 		if(!code) {
 			break;
