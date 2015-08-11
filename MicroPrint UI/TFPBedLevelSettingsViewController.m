@@ -9,7 +9,6 @@
 #import "TFPBedLevelSettingsViewController.h"
 #import "TFPBedLevelCalibrationViewController.h"
 #import "MAKVONotificationCenter.h"
-#import "TFPTestBorderProgressViewController.h"
 
 
 @interface TFPBedLevelSettingsViewController ()
@@ -28,23 +27,20 @@
 @implementation TFPBedLevelSettingsViewController
 
 
-- (void)reload {
-	[self.printer fetchBedOffsetsWithCompletionHandler:^(BOOL success, TFPBedLevelOffsets offsets) {
-		self.backLeftOffset = offsets.backLeft;
-		self.backRightOffset = offsets.backRight;
-		self.frontRightOffset = offsets.frontRight;
-		self.frontLeftOffset = offsets.frontLeft;
-		self.commonOffset = offsets.common;
-		self.hasChanges = NO;
-	}];
-}
-
-
 - (void)viewDidAppear {
     [super viewDidAppear];
 	__weak __typeof__(self) weakSelf = self;
-	
-	[self reload];
+		
+	[self addObserver:self keyPath:@"printer.bedLevelOffsets" options:NSKeyValueObservingOptionInitial block:^(MAKVONotification *notification) {
+		if(!weakSelf.hasChanges) {
+			weakSelf.backLeftOffset = weakSelf.printer.bedLevelOffsets.backLeft;
+			weakSelf.backRightOffset = weakSelf.printer.bedLevelOffsets.backRight;
+			weakSelf.frontRightOffset = weakSelf.printer.bedLevelOffsets.frontRight;
+			weakSelf.frontLeftOffset = weakSelf.printer.bedLevelOffsets.frontLeft;
+			weakSelf.commonOffset = weakSelf.printer.bedLevelOffsets.common;
+			weakSelf.hasChanges = NO;
+		}
+	}];
 	
 	[self addObserver:self keyPath:@[@"backLeftOffset", @"backRightOffset", @"frontRightOffset", @"frontLeftOffset", @"commonOffset"] options:0 block:^(MAKVONotification *notification) {
 		weakSelf.hasChanges = YES;
@@ -60,17 +56,8 @@
 	offsets.frontLeft = self.frontLeftOffset;
 	offsets.common = self.commonOffset;
 	
-	[self.printer setBedOffsets:offsets completionHandler:nil];
+	self.printer.bedLevelOffsets = offsets;
 	self.hasChanges = NO;
-}
-
-
-- (IBAction)printTestBorder:(id)sender {
-	NSWindowController *windowController = [self.storyboard instantiateControllerWithIdentifier:@"TestBorderProgressWindowController"];
-	TFPTestBorderProgressViewController *viewController = (TFPTestBorderProgressViewController*)windowController.contentViewController;
-	viewController.printer = self.printer;
-	
-	[self presentViewControllerAsSheet:viewController];
 }
 
 
@@ -81,6 +68,11 @@
 	viewController.bedLevelSettingsViewController = self;
 	
 	[self presentViewControllerAsSheet:viewController];
+}
+
+
+- (void)prepareForSegue:(NSStoryboardSegue *)segue sender:(id)sender {
+	[(TFPCalibrationViewController*)segue.destinationController setPrinter:self.printer];
 }
 
 

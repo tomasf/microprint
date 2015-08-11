@@ -21,16 +21,12 @@
 	  [TFPGCode codeForHeaterTemperature:parameters.idealTemperature waitUntilDone:NO],
 	  
 	  [TFPGCode absoluteModeCode],
-	  //[TFPGCode turnOnMotorsCode],
 	  [TFPGCode moveWithPosition:[TFP3DVector zVector:5] feedRate:2900],
 	  [TFPGCode moveHomeCode],
-	  //[TFPGCode turnOffMotorsCode],
 	  [TFPGCode codeForHeaterTemperature:parameters.idealTemperature waitUntilDone:YES],
-	  //[TFPGCode waitCodeWithDuration:10],
 	  
-	  //[TFPGCode turnOnMotorsCode],
 	  [TFPGCode relativeModeCode],
-	  [TFPGCode codeForExtrusion:7.5 feedRate:2000],
+	  [TFPGCode codeForExtrusion:2 feedRate:2000],
 	  [TFPGCode resetExtrusionCode],
 	  [TFPGCode absoluteModeCode],
 	  [TFPGCode codeForSettingFeedRate:2400],
@@ -51,14 +47,10 @@
 	NSArray *postamble =
 	@[
 	  [TFPGCode codeWithComment:@"POSTAMBLE"],
-	  
-	  [TFPGCode relativeModeCode],
-	  [TFPGCode codeForExtrusion:-1 feedRate:2000],
-	  [TFPGCode moveWithPosition:[TFP3DVector xyVectorWithX:5 y:5] feedRate:2000],
-	  [TFPGCode codeForExtrusion:-8 feedRate:2000],
 	  [TFPGCode codeForTurningOffHeater],
 
-	  [TFPGCode moveWithPosition:[TFP3DVector zVector:raiseHeight] feedRate:2900],
+	  [TFPGCode relativeModeCode],
+	  [TFPGCode moveWithPosition:[TFP3DVector vectorWithX:@5 Y:@5 Z:@(raiseHeight)] feedRate:2000],
 	  [TFPGCode absoluteModeCode],
 	  [TFPGCode moveWithPosition:backPosition feedRate:-1],
 	  

@@ -21,8 +21,8 @@
 #import "TFPPreprocessing.h"
 #import "TFPBedLevelCalibration.h"
 #import "TFPGCodeHelpers.h"
-#import "TFPTestBorderPrinting.h"
 #import "TFPGCodeHelpers.h"
+#import "TFPZeroBedOperation.h"
 
 #import "MAKVONotificationCenter.h"
 #import "GBCli.h"
@@ -66,8 +66,6 @@
 
 - (void)runWithArgumentCount:(int)argc arguments:(char **)argv {
 	__weak __typeof__(self) weakSelf = self;
-	
-	[TFPTestBorderPrinting testBorderProgram];
 	
 	GBSettings *factoryDefaults = [GBSettings settingsWithName:@"Factory" parent:nil];
 	[factoryDefaults setInteger:0 forKey:@"temperature"];
@@ -169,25 +167,24 @@
 	TFLog(@"  console");
 	TFLog(@"    Starts an interactive console where you can send arbitrary G-codes to the printer.");
 	
-	//TFLog(@"  bedlevel [--start 2] [--target 0.3]");
-	//TFLog(@"    Fast interactive calibration for bed level offsets by measuring the distance between nozzle and bed. The 'start' parameter is the Z level to start from in mm. Using 'target' changes the target thickness.");
-	
-	TFLog(@"  testborder");
-	TFLog(@"    Prints a test border.");
-	
 	TFLog(@"  off");
 	TFLog(@"    Turn off fan, heater and motors.");
 	
-	TFLog(@"  extrude [--temperature 215]");
+	TFLog(@"  extrude [--temperature 230]");
 	TFLog(@"    Extrude filament. Useful for loading new filament.");
 	
-	TFLog(@"  retract [--temperature 215]");
+	TFLog(@"  retract [--temperature 275]");
 	TFLog(@"    \"Reverse extrude\" that feeds filament backwards. Useful for unloading filament.");
 	
 	TFLog(@"  raise [--height 70]");
 	TFLog(@"    Raises the print head until you press Return or it reaches the set limit (default is 70 mm)");
+
+    TFLog(@"  zerobed");
+    TFLog(@"    Calibrates the zero Z location for the bed. This takes two or three minutes and does not change bed height calibration values.");
 	
-	
+    TFLog(@"  values");
+    TFLog(@"    Queries the printer for Bed level and Backlash values and displays the results. Record this information so that the values may be restored easily in case they are erased.");
+
 	TFLog(@"");
 	TFLog(@"Options:");
 	TFLog(@"  --dryrun: Don't connect to an actual printer; instead simulate a mock printer that echos sent G-codes.");
@@ -251,6 +248,28 @@
 }
 
 
+- (void)zerobed {
+    TFPZeroBedOperation* zeroOperation = [[TFPZeroBedOperation alloc] initWithPrinter:self.printer];
+    __weak TFPZeroBedOperation* weakOperation = zeroOperation;
+
+    zeroOperation.progressFeedback = ^(NSString* msg){
+        TFLog(msg);
+    };
+
+    zeroOperation.didStopBlock = ^() {
+        TFLog(@"Complete");
+        exit(EXIT_SUCCESS);
+    };
+
+    self.operation = zeroOperation;
+    [zeroOperation start];
+
+    TFPListenForInputLine(^(NSString *line) {
+        TFLog(@"Stopping...");
+        [weakOperation stop];
+    });
+}
+
 
 - (void)performCommand:(NSString *)command withArgument:(NSString *)value usingSettings:(GBSettings *)settings {
 	command = [command lowercaseString];
@@ -267,49 +286,6 @@
 		
 	}else if([command isEqual:@"preprocess"]) {
 		[self preprocessGCodePath:value outputPath:[settings objectForKey:@"output"] usingParameters:[self printParametersForSettings:settings]];
-		
-	}else if([command isEqual:@"testborder"]) {
-		__block TFPGCodeProgram *program = [TFPTestBorderPrinting testBorderProgram];
-		TFPPrintParameters *params = [self printParametersForSettings:settings];
-		
-		[self.printer fillInOffsetAndBacklashValuesInPrintParameters:params completionHandler:^(BOOL success) {
-			program = [TFPPreprocessing programByPreprocessingProgram:program usingParameters:params];
-			
-			TFPPrintJob *printJob = [[TFPPrintJob alloc] initWithProgram:program printer:self.printer printParameters:params];
-			__weak TFPPrintJob *weakPrintJob = printJob;
-			__weak __typeof__(self) weakSelf = self;
-			self.operation = printJob;
-			
-			printJob.abortionBlock = ^{
-				exit(EXIT_SUCCESS);
-			};
-			
-			printJob.completionBlock = ^ {
-				exit(EXIT_SUCCESS);
-			};
-			
-			weakSelf.interruptSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_SIGNAL, SIGINT, 0, dispatch_get_main_queue());
-			dispatch_source_set_event_handler(weakSelf.interruptSource, ^{
-				TFLog(@"Cancelling print...");
-				[weakPrintJob abort];
-			});
-			dispatch_resume(weakSelf.interruptSource);
-			
-			struct sigaction action = { 0 };
-			action.sa_handler = SIG_IGN;
-			sigaction(SIGINT, &action, NULL);
-			
-			[printJob start];
-		}];
-		
-		/*
-	}else if([command isEqual:@"bedlevel"]) {
-		TFPBedLevelCalibration *bedLevelCalibrationOperation = [[TFPBedLevelCalibration alloc] initWithPrinter:self.printer];
-		bedLevelCalibrationOperation.heightTarget = [settings floatForKey:@"target"];
-		bedLevelCalibrationOperation.startZ = [settings floatForKey:@"start"];
-		[bedLevelCalibrationOperation start];
-		self.operation = bedLevelCalibrationOperation;
-		*/
 		
 	}else if([command isEqualTo:@"off"]) {
 		[self turnOff];
@@ -352,7 +328,10 @@
 			exit(EXIT_SUCCESS);
 		}];
 		
-	}else{
+	}else if([command isEqual:@"zerobed"]) {
+        [self zerobed];
+//        exit(EXIT_SUCCESS);
+    }else{
 		TFLog(@"Invalid command '%@'", command);
 		exit(EXIT_FAILURE);
 	}

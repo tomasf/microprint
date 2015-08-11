@@ -27,8 +27,29 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 };
 
 
+typedef NS_ENUM(NSUInteger, TFPPrinterResponseErrorCode) {
+	TFPPrinterResponseErrorCodeM110MissingLineNumber = 1000,
+	TFPPrinterResponseErrorCodeCannotColdExtrude,
+	TFPPrinterResponseErrorCodeCannotCalibrateInUnknownState,
+	TFPPrinterResponseErrorCodeUnknownGCode,
+	TFPPrinterResponseErrorCodeUnknownMCode,
+	TFPPrinterResponseErrorCodeUnknownCommand,
+	TFPPrinterResponseErrorCodeHeaterFailed,
+	TFPPrinterResponseErrorCodeMoveTooLarge,
+	TFPPrinterResponseErrorCodeIdleTimeHeaterAndMotorsTurnedOff,
+	TFPPrinterResponseErrorCodeTargetAddressOutOfRange,
+	
+	TFPPrinterResponseErrorCodeMin = TFPPrinterResponseErrorCodeM110MissingLineNumber,
+	TFPPrinterResponseErrorCodeMax = TFPPrinterResponseErrorCodeTargetAddressOutOfRange,
+};
+
+
+extern const NSString *TFPPrinterResponseErrorCodeKey;
+
+
 @interface TFPPrinter : NSObject
 - (instancetype)initWithConnection:(TFPPrinterConnection*)connection;
+@property (readonly) TFPPrinterConnection *connection;
 
 @property TFPOperation *currentOperation;
 
@@ -43,12 +64,16 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 @property (readonly) double speedMultiplier;
 
 
-// Basics. Implied response queue is main.
+// Sending of G-code. Implied response queue is main.
+// If success is YES, value dictionary contains parameters from OK response
+// If success is NO, value dictionary contains an NSNumber-wrapped TFPPrinterResponseErrorCode in TFPPrinterResponseErrorCodeKey
+
 - (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSDictionary *value))block;
 - (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSDictionary *value))block responseQueue:(dispatch_queue_t)queue;
 - (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success, NSArray *valueDictionaries))completionHandler;
 - (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success, NSArray *valueDictionaries))completionHandler responseQueue:(dispatch_queue_t)queue;
 
++ (NSString*)descriptionForErrorCode:(TFPPrinterResponseErrorCode)code;
 
 // State (observable)
 @property (readonly) TFPPrinterColor color;
@@ -57,8 +82,14 @@ typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
 
 @property (readonly) double heaterTemperature;
 @property (readonly) BOOL hasValidZLevel;
+@property (readonly) NSComparisonResult firmwareVersionComparedToTestedRange;
+
+@property (nonatomic) TFPBedLevelOffsets bedLevelOffsets;
+@property (readonly) BOOL hasAllZeroBedLevelOffsets;
 
 + (NSString*)nameForPrinterColor:(TFPPrinterColor)color;
++ (NSString*)minimumTestedFirmwareVersion;
++ (NSString*)maximumTestedFirmwareVersion;
 @end
 
 

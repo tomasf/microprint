@@ -8,6 +8,7 @@
 
 #import "TFPGCode.h"
 #import "TFPGCodeProgram.h"
+#import "TFP3DVector.h"
 
 
 @interface TFPGCode (TFPHelpers)
@@ -44,6 +45,7 @@
 // Heater
 + (instancetype)codeForHeaterTemperature:(double)temperature waitUntilDone:(BOOL)wait;
 + (instancetype)codeForTurningOffHeater;
++ (instancetype)codeForReadingHeaterTemperature;
 
 // Fan
 + (instancetype)turnOnFanCode;
@@ -55,6 +57,14 @@
 + (instancetype)codeForWritingVirtualEEPROMAtIndex:(NSUInteger)valueIndex value:(int32_t)value;
 
 @property (readonly) NSInteger layerIndexFromComment;
+
+@property (readonly) TFP3DVector *movementVector;
+
+@property (readonly) BOOL hasExtrusion;
+@property (readonly) double extrusion;
+
+@property (readonly) double feedRate;
+@property (readonly) BOOL hasFeedRate;
 @end
 
 
@@ -80,14 +90,33 @@ typedef struct {
 	double x;
 	double y;
 	double z;
+	double e;
+} TFPAbsolutePosition;
+
+
+
+typedef struct {
+	double x;
+	double y;
+	double z;
 	double xSize;
 	double ySize;
 	double zSize;
 } TFPCuboid;
 
 
+extern BOOL TFPCuboidContainsPosition(TFPCuboid cuboid, TFPAbsolutePosition position);
+extern BOOL TFPCuboidContainsCuboid(TFPCuboid outer, TFPCuboid inner);
+extern TFPCuboid TFPCuboidInfinite;
+
+extern TFPCuboid TFPCuboidM3DMicroPrintVolumeLower;
+extern TFPCuboid TFPCuboidM3DMicroPrintVolumeUpper;
+
+
 @interface TFPGCodeProgram (TFPHelpers)
+- (TFPCuboid)measureBoundingBoxWithinBox:(TFPCuboid)limit;
 - (TFPCuboid)measureBoundingBox;
+- (BOOL)withinM3DMicroPrintableVolume;
 
 - (void)enumerateMovesWithBlock:(void(^)(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate, TFPGCode *code, NSUInteger index))block;
 

@@ -17,7 +17,7 @@ static const NSInteger minimumPrintCodeOffsetForEstimation = 100;
 
 
 @interface TFPPrintStatusController ()
-@property TFPPrintJob *printJob;
+@property (readwrite) TFPPrintJob *printJob;
 
 @property TFTimer *timer;
 @property NSDictionary *phaseRanges;

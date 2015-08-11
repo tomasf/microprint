@@ -22,6 +22,13 @@
 @end
 
 
+@interface TFPPrinter (HelpersPrivate)
+- (void)fetchBedOffsetsWithCompletionHandler:(void(^)(BOOL success, TFPBedLevelOffsets offsets))completionHandler;
+- (void)setBedOffsets:(TFPBedLevelOffsets)offsets completionHandler:(void(^)(BOOL success))completionHandler;
+@end
+
+
+
 
 @implementation TFPDryRunPrinter
 
@@ -61,7 +68,17 @@
 		
 	} else if(G == 91) {
 		self.relativeMode = YES;
-	}
+    } else if(G == 30 || G == 28) {
+        TFP3DVector *movement = [TFP3DVector vectorWithX:@50 Y:@50 Z:(G == 30 ? @0 : self.simulatedPosition.z)];
+        self.feedRate = [code valueForField:'F' fallback:self.feedRate];
+
+        double distance = [self.simulatedPosition distanceToPoint:movement];
+
+        double calculatedSpeed = (6288.78 * (self.feedRate-830))/((self.feedRate-828.465) * (self.feedRate+79.5622));
+        duration = distance / calculatedSpeed;
+        duration = (duration / self.speedMultiplier) + 4;   // At least 4 seconds
+        self.simulatedPosition = movement;
+    }
 	
 	dispatch_after(dispatch_time(0, duration * NSEC_PER_SEC), queue, ^{
 		if(block) {

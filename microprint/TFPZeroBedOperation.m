@@ -13,10 +13,13 @@
 @interface TFPZeroBedOperation ()
 
 @property BOOL stopped;
-
+@property (readwrite) TFPOperationStage stage;
 @end
 
+
 @implementation TFPZeroBedOperation
+@synthesize stage=_stage;
+
 
 - (void)start {
     [super start];
@@ -31,46 +34,48 @@
     __weak __typeof__(self) weakSelf = self;
 
     TFPGCodeProgram *prep = [TFPGCodeProgram programWithLines:@[
-                                [TFPGCode codeForHeaterTemperature:temperature waitUntilDone:YES],
-                                [TFPGCode codeForTurningOffHeater],
-                                [TFPGCode turnOffFanCode],
+																[TFPGCode codeForHeaterTemperature:temperature waitUntilDone:YES],
+																[TFPGCode codeForTurningOffHeater],
+																[TFPGCode turnOffFanCode],
                                 ]];
 
     TFPGCodeProgram *zero = [TFPGCodeProgram programWithLines:@[
-                                [TFPGCode codeWithField:'G' value:30],
+																[TFPGCode codeWithField:'G' value:30],
                                 ]];
 
-    TFLog(@"Zero prep");
+    TFPGCodeProgram *park = [TFPGCodeProgram programWithLines:@[
+																[TFPGCode absoluteModeCode],
+																[TFPGCode moveWithPosition:parkingLocation feedRate:moveFeedRate],
+																[TFPGCode waitCodeWithDuration:0],
+																]];
 
-    if(self.prepStartedBlock) {
-        TFLog(@"didStart Prep");
-        self.prepStartedBlock();
+    if(self.progressFeedback) {
+        self.progressFeedback(@"Zero prep - warming the print head.");
     }
+	
+	self.stage = TFPOperationStagePreparation;
 
     [printer runGCodeProgram:prep completionHandler:^(BOOL success, NSArray *valueDictionaries) {
-
         if (weakSelf.stopped) {
             [weakSelf doStop];
         }else{
 
-            if(weakSelf.zeroStartedBlock) {
-                TFLog(@"didStart Zero");
-                weakSelf.zeroStartedBlock();
+            if(weakSelf.progressFeedback) {
+                weakSelf.progressFeedback(@"Running Zero routine");
             }
-            
-            [printer runGCodeProgram:zero completionHandler:^(BOOL success, NSArray *valueDictionaries) {
 
+			self.stage = TFPOperationStageRunning;
+            [printer runGCodeProgram:zero completionHandler:^(BOOL success, NSArray *valueDictionaries) {
+				self.stage = TFPOperationStageEnding;
                 if (weakSelf.stopped) {
                     [weakSelf doStop];
                 }else{
                     
-                    if(weakSelf.parkStartedBlock) {
-                        TFLog(@"didStart Park");
-                        weakSelf.parkStartedBlock();
+                    if(weakSelf.progressFeedback) {
+                        weakSelf.progressFeedback(@"Zeroing done, parking...");
                     }
-                    
-                    TFLog(@"Zeroing done, parking...");
-                    [printer moveToPosition:parkingLocation usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
+
+                    [printer runGCodeProgram:park completionHandler:^(BOOL success, NSArray *valueDictionaries) {
                         [weakSelf doStop];
                     }];
                 }
@@ -82,7 +87,9 @@
 - (void)stop {
     [super stop];
     self.stopped = YES;
-    TFLog(@"Stop requested");
+    if(self.progressFeedback) {
+        self.progressFeedback(@"Stopping...");
+    }
 }
 
 - (NSString *)activityDescription {
@@ -90,11 +97,16 @@
 }
 
 - (void)doStop {
-    TFLog(@"didStop");
     [self ended];
     if(self.didStopBlock) {
         self.didStopBlock();
     }
 }
+
+
+- (TFPOperationKind)kind {
+	return TFPOperationKindCalibration;
+}
+
 
 @end

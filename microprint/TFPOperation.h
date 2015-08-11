@@ -9,11 +9,32 @@
 @import Foundation;
 #import "TFPPrinter.h"
 
+
+// Make sure these ones are in sync with MicroPrint.sdef
+
+typedef NS_ENUM(NSUInteger, TFPOperationKind) {
+	TFPOperationKindIdle = 'idle',
+	TFPOperationKindPrintJob = 'prjb',
+	TFPOperationKindCalibration = 'clbr',
+	TFPOperationKindUtility = 'util',
+};
+
+typedef NS_ENUM(NSUInteger, TFPOperationStage) {
+	TFPOperationStageIdle = 'idle',
+	TFPOperationStagePreparation = 'prep',
+	TFPOperationStageRunning = 'rung',
+	TFPOperationStageEnding = 'endg',
+};
+
+
 @interface TFPOperation : NSObject
 - (instancetype)initWithPrinter:(TFPPrinter*)printer;
 
 @property (readonly, weak) TFPPrinter *printer;
 @property (readonly) NSString *activityDescription;
+
+@property (readonly) TFPOperationKind kind;
+@property (readonly) TFPOperationStage stage;
 
 - (void)start;
 - (void)stop;

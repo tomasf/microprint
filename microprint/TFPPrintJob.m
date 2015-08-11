@@ -31,11 +31,14 @@
 @property double targetTemperature;
 @property NSUInteger pendingRequestCount;
 @property (readwrite) NSUInteger completedRequests;
+
+@property (readwrite) TFPOperationStage stage;
 @end
 
 
 
 @implementation TFPPrintJob
+@synthesize stage=_stage;
 
 
 - (instancetype)initWithProgram:(TFPGCodeProgram*)program printer:(TFPPrinter*)printer printParameters:(TFPPrintParameters*)params {
@@ -111,7 +114,9 @@
 		}
 		if(weakSelf.progressBlock && !self.aborted) {
 			dispatch_async(dispatch_get_main_queue(), ^{
-				weakSelf.progressBlock();
+				if(weakSelf.progressBlock) {
+					weakSelf.progressBlock();
+				}
 			});
 		}
 	}];
@@ -175,6 +180,7 @@
 	self.pendingRequestCount = 0;
 	self.completedRequests = 0;
 	self.startTime = TFNanosecondTime();
+	self.stage = TFPOperationStageRunning;
 	
 	if(self.parameters.verbose) {
 		self.printer.incomingCodeBlock = ^(NSString *line){
@@ -207,18 +213,16 @@
 
 
 - (void)sendAbortSequenceWithCompletionHandler:(void(^)())completionHandler {
-	const double retractFeedRate = 1995;
+	const double retractFeedRate = 1500;
 	const double raiseFeedRate = 870;
 	
 	NSArray *codes = @[
 					   [TFPGCode relativeModeCode],
-					   [TFPGCode codeForExtrusion:-5 feedRate:retractFeedRate],
-					   [TFPGCode moveWithPosition:[TFP3DVector zVector:1] feedRate:raiseFeedRate],
-					   [TFPGCode codeForExtrusion:-4 feedRate:retractFeedRate],
-					   [TFPGCode moveWithPosition:[TFP3DVector zVector:4] feedRate:raiseFeedRate],
+					   [TFPGCode codeForExtrusion:-2 feedRate:retractFeedRate],
+					   [TFPGCode moveWithPosition:[TFP3DVector zVector:5] feedRate:raiseFeedRate],
 					   [TFPGCode absoluteModeCode],
 					   
-					   [TFPGCode moveWithPosition:[TFP3DVector yVector:84] feedRate:-1],
+					   [TFPGCode moveWithPosition:[TFP3DVector xyVectorWithX:90 y:84] feedRate:2000],
 					   [TFPGCode turnOffFanCode],
 					   [TFPGCode turnOffMotorsCode],
 					   [TFPGCode codeForTurningOffHeater],
@@ -231,19 +235,26 @@
 
 
 - (void)abort {
+	self.stage = TFPOperationStageEnding;
+	
 	dispatch_async(self.printQueue, ^{
 		self.aborted = YES;
 		
 		[self sendAbortSequenceWithCompletionHandler:^{
-			[self jobEnded];
-			
 			dispatch_async(dispatch_get_main_queue(), ^{
+				[self jobEnded];
+				
 				if(self.abortionBlock) {
 					self.abortionBlock();
 				}
 			});
 		}];
 	});
+}
+
+
+- (TFPOperationKind)kind {
+	return TFPOperationKindPrintJob;
 }
 
 
