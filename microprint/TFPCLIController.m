@@ -222,12 +222,8 @@
 	extrusionOperation.temperature = temperature;
 	__weak TFPExtrusionOperation *weakOperation = extrusionOperation;
 	
-	extrusionOperation.movingStartedBlock = ^{
-		TFLog(@"Raising print head...");
-	};
-	
-	extrusionOperation.heatingStartedBlock = ^{
-		TFLog(@"Heating to %.0f°C...", weakOperation.temperature);
+	extrusionOperation.preparationProgressBlock = ^(double progress) {
+		TFLog(@"Preparing: %.0f%%", progress * 100);
 	};
 	
 	extrusionOperation.extrusionStartedBlock = ^{
@@ -256,7 +252,7 @@
         TFLog(msg);
     };
 
-    zeroOperation.didStopBlock = ^() {
+    zeroOperation.didStopBlock = ^(BOOL completed) {
         TFLog(@"Complete");
         exit(EXIT_SUCCESS);
     };
