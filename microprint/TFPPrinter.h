@@ -79,10 +79,11 @@ extern const NSString *TFPPrinterResponseErrorCodeKey;
 @property (readonly) TFPPrinterColor color;
 @property (readonly, copy) NSString *serialNumber;
 @property (readonly, copy) NSString *firmwareVersion;
+@property (readonly) NSComparisonResult firmwareVersionComparedToTestedRange;
 
+@property (readonly) double feedrate;
 @property (readonly) double heaterTemperature;
 @property (readonly) BOOL hasValidZLevel;
-@property (readonly) NSComparisonResult firmwareVersionComparedToTestedRange;
 
 @property (nonatomic) TFPBedLevelOffsets bedLevelOffsets;
 @property (readonly) BOOL hasAllZeroBedLevelOffsets;

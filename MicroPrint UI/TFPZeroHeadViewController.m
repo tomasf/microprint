@@ -20,10 +20,12 @@
 
 @implementation TFPZeroHeadViewController
 
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.operation = nil;
 }
+
 
 - (void)start {
     __weak __typeof__(self) weakSelf = self;
@@ -34,8 +36,19 @@
         weakSelf.statusLabel.stringValue = msg;
     };
 
-    operation.didStopBlock = ^{
+    operation.didStopBlock = ^(BOOL completed){
         [weakSelf operationDidStop];
+		
+		if(completed) {
+			NSAlert *alert = [NSAlert new];
+			alert.messageText = @"Bed location calibration finished";
+			alert.informativeText = @"You should now run the Bed Level Calibration to make sure corner levels are correct.";
+			[alert addButtonWithTitle:@"OK"];
+			
+			[alert beginSheetModalForWindow:weakSelf.view.window completionHandler:^(NSModalResponse returnCode) {
+				[weakSelf dismissController:nil];
+			}];
+		}
     };
 
     [operation start];

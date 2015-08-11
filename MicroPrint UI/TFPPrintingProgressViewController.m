@@ -194,7 +194,6 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 }
 
 
-
 - (void)start {
 	__weak __typeof__(self) weakSelf = self;
 	
@@ -263,6 +262,39 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 }
 
 
+- (NSString*)pauseActionName {
+	if(self.printJob.state == TFPPrintJobStatePaused) {
+		return @"Resume";
+	} else {
+		return @"Pause";
+	}
+}
+
+
++ (NSSet *)keyPathsForValuesAffectingPauseActionName {
+	return @[@"printJob.state"].tf_set;
+}
+
+
+- (BOOL)canPause {
+	return self.printJob.state == TFPPrintJobStatePrinting || self.printJob.state == TFPPrintJobStatePaused;
+}
+
+
++ (NSSet *)keyPathsForValuesAffectingCanPause {
+	return @[@"printJob.state"].tf_set;
+}
+
+
+- (IBAction)pause:(id)sender {
+	if(self.printJob.state == TFPPrintJobStatePrinting) {
+		[self.printJob pause];
+	}else if(self.printJob.state == TFPPrintJobStatePaused) {
+		[self.printJob resume];
+	}
+}
+
+
 - (NSString*)layerString {
 	if(self.printStatusController.currentLayer) {
 		NSInteger number = self.printStatusController.currentLayer.layerIndex;
@@ -314,28 +346,52 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 		case TFPPrintingProgressViewControllerStatePreprocessing:
 			return @"Pre-processing…";
 		case TFPPrintingProgressViewControllerStateRunningJob: {
-			NSString *progress = [self.longPercentFormatter stringFromNumber:@(self.printStatusController.phaseProgress)];
-			NSString *phase;
 			
-			switch(self.printStatusController.currentPhase) {
-				case TFPPrintPhasePreamble:
-					phase = @"Starting Print";
-					break;
-				case TFPPrintPhaseAdhesion:
-					phase = @"Printing Bed Adhesion";
-					break;
-				case TFPPrintPhaseModel:
-					phase = @"Printing Model";
-					break;
-				case TFPPrintPhasePostamble:
-					phase = @"Finishing";
-					break;
+			switch(self.printJob.state) {
+				case TFPPrintJobStatePreparing:
+					return @"Preparing…";
+
+				case TFPPrintJobStatePrinting: {
+					NSString *progress = [self.longPercentFormatter stringFromNumber:@(self.printStatusController.phaseProgress)];
+					NSString *phase;
 					
-				case TFPPrintPhaseInvalid:
-					return @"";
+					switch(self.printStatusController.currentPhase) {
+						case TFPPrintPhasePreamble:
+							phase = @"Starting Print";
+							break;
+						case TFPPrintPhaseAdhesion:
+							phase = @"Printing Bed Adhesion";
+							break;
+						case TFPPrintPhaseModel:
+							phase = @"Printing Model";
+							break;
+						case TFPPrintPhasePostamble:
+							phase = @"Finishing";
+							break;
+							
+						case TFPPrintPhaseInvalid:
+							return @"";
+					}
+					
+					return [NSString stringWithFormat:@"%@: %@", phase, progress];
+				}
+					
+				case TFPPrintJobStatePaused:
+					return @"Paused";
+					
+				case TFPPrintJobStatePausing:
+					return @"Pausing…";
+					
+				case TFPPrintJobStateResuming:
+					return @"Resuming…";
+					
+				case TFPPrintJobStateAborting:
+					return @"Stopping…";
+					
+				case TFPPrintJobStateFinishing:
+					return @"Finishing…";
 			}
 			
-			return [NSString stringWithFormat:@"%@: %@", phase, progress];
 		}
 			
 		case TFPPrintingProgressViewControllerStateCancelling:
@@ -345,7 +401,8 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 
 
 + (NSSet *)keyPathsForValuesAffectingStatusString {
-	return @[@"state", @"printStatusController.currentPhase", @"printStatusController.phaseProgress"].tf_set;
+	return @[@"state", @"printStatusController.currentPhase", @"printStatusController.phaseProgress",
+			 @"printJob.state"].tf_set;
 }
 
 
