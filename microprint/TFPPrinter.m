@@ -94,6 +94,7 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 @property (readwrite, copy) NSString *serialNumber;
 @property (readwrite, copy) NSString *firmwareVersion;
 
+@property (readwrite) double feedrate;
 @property (readwrite) double heaterTemperature;
 @property (readwrite) BOOL hasValidZLevel;
 @property (readwrite) NSComparisonResult firmwareVersionComparedToTestedRange;
@@ -293,6 +294,18 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 }
 
 
+- (void)processSentCode:(TFPGCode*)code {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		NSInteger G = [code valueForField:'G' fallback:-1];
+		if(G == 0 || G == 1) {
+			if([code hasField:'F']) {
+				self.feedrate = [code valueForField:'F'];
+			}
+		}
+	});
+}
+
+
 // On communication queue here
 - (void)dequeueCode {
 	if(self.pendingCodeEntry) {
@@ -301,8 +314,11 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 	
 	TFPPrinterGCodeEntry *entry = self.queuedCodeEntries.firstObject;
 	if(entry) {
+		[self processSentCode:entry.code];
+		TFPGCode *code = [self adjustLine:entry.code];
+		
 		[self.queuedCodeEntries removeObjectAtIndex:0];
-		[self.connection sendGCode:entry.code];
+		[self.connection sendGCode:code];
 		self.pendingCodeEntry = entry;
 		
 		if(self.outgoingCodeBlock) {
@@ -388,7 +404,6 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 			code = [inputCode codeBySettingLineNumber:lineNumber];
 			self.codeRegistry[@(lineNumber)] = code;
 		}
-		code = [self adjustLine:code];
 		
 		TFPPrinterGCodeEntry *entry = [[TFPPrinterGCodeEntry alloc] initWithCode:code lineNumber:lineNumber responseBlock:block queue:queue];
 		[self.queuedCodeEntries addObject:entry];

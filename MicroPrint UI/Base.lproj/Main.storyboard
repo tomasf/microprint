@@ -2147,11 +2147,24 @@ DQ
                                     <binding destination="loo-rf-9XD" name="value" keyPath="layerString" id="OHt-LB-mZu"/>
                                 </connections>
                             </textField>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="sZW-QA-S21">
+                                <rect key="frame" x="124" y="13" width="79" height="32"/>
+                                <buttonCell key="cell" type="push" title="Pause" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="sdv-xB-7fz">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="pause:" target="loo-rf-9XD" id="LJz-wB-bH3"/>
+                                    <binding destination="loo-rf-9XD" name="enabled" keyPath="canPause" id="COA-Ea-f9P"/>
+                                    <binding destination="loo-rf-9XD" name="title" keyPath="pauseActionName" id="Vqh-zx-IkR"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <constraints>
                             <constraint firstItem="QyU-bR-nIm" firstAttribute="leading" secondItem="NkQ-q7-BVC" secondAttribute="leading" id="0cw-uY-rAE"/>
                             <constraint firstItem="NM8-Rf-ZEj" firstAttribute="leading" secondItem="Qyk-qP-HWV" secondAttribute="leading" id="2fF-2L-8X7"/>
                             <constraint firstItem="Rud-SD-Vbs" firstAttribute="baseline" secondItem="Qyk-qP-HWV" secondAttribute="baseline" id="2ke-Rn-0Rn"/>
+                            <constraint firstItem="760-oe-YO2" firstAttribute="leading" secondItem="sZW-QA-S21" secondAttribute="trailing" constant="12" id="5gx-E5-IvJ"/>
                             <constraint firstItem="Rud-SD-Vbs" firstAttribute="trailing" secondItem="uIy-u9-VHA" secondAttribute="trailing" id="8K0-eb-zGv"/>
                             <constraint firstItem="8Cf-Zv-xd9" firstAttribute="top" secondItem="d9W-Vn-QR7" secondAttribute="bottom" constant="12" id="8ru-K6-TNL"/>
                             <constraint firstItem="OKE-bC-0aN" firstAttribute="top" secondItem="NkQ-q7-BVC" secondAttribute="top" constant="20" id="F69-rB-fon"/>
@@ -2161,6 +2174,7 @@ DQ
                             <constraint firstAttribute="centerX" secondItem="Q6K-wf-Psv" secondAttribute="leading" constant="15" id="SA8-Sd-s01"/>
                             <constraint firstItem="Rud-SD-Vbs" firstAttribute="top" secondItem="uIy-u9-VHA" secondAttribute="bottom" constant="6" id="UC6-rl-oNC"/>
                             <constraint firstAttribute="centerX" secondItem="OKE-bC-0aN" secondAttribute="centerX" id="UcD-cE-uoe"/>
+                            <constraint firstItem="760-oe-YO2" firstAttribute="baseline" secondItem="sZW-QA-S21" secondAttribute="baseline" id="YRo-Cf-Oh6"/>
                             <constraint firstAttribute="centerX" secondItem="760-oe-YO2" secondAttribute="centerX" id="ad9-ax-tdy"/>
                             <constraint firstAttribute="trailing" secondItem="7CK-pN-69S" secondAttribute="trailing" constant="20" id="bFC-Ue-E6T"/>
                             <constraint firstItem="8Cf-Zv-xd9" firstAttribute="trailing" secondItem="uIy-u9-VHA" secondAttribute="trailing" id="gVT-rC-pNc"/>

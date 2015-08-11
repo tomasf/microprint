@@ -12,6 +12,17 @@
 #import "TFPOperation.h"
 
 
+typedef NS_ENUM(NSUInteger, TFPPrintJobState) {
+	TFPPrintJobStatePreparing,
+	TFPPrintJobStatePrinting,
+	TFPPrintJobStateAborting,
+	TFPPrintJobStatePausing,
+	TFPPrintJobStatePaused,
+	TFPPrintJobStateResuming,
+	TFPPrintJobStateFinishing,
+};
+
+
 @interface TFPPrintJob : TFPOperation
 - (instancetype)initWithProgram:(TFPGCodeProgram*)program printer:(TFPPrinter*)printer printParameters:(TFPPrintParameters*)params;
 
@@ -20,6 +31,8 @@
 @property (readonly) NSUInteger completedRequests; //Observable
 @property (readonly) NSTimeInterval elapsedTime;
 
+@property (readonly) TFPPrintJobState state;
+
 @property (copy) void(^progressBlock)(void);
 @property (copy) void(^completionBlock)(void);
 @property (copy) void(^abortionBlock)(void);
@@ -27,4 +40,7 @@
 
 - (void)start;
 - (void)abort;
+
+- (void)pause;
+- (void)resume;
 @end
