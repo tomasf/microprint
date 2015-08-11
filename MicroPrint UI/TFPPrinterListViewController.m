@@ -36,7 +36,9 @@
 
 - (void)openRecentDocument:(NSMenuItem*)menuItem {
 	NSURL *URL = menuItem.representedObject;
-	[[NSDocumentController sharedDocumentController] openDocumentWithContentsOfURL:URL display:YES completionHandler:nil];
+	[[NSDocumentController sharedDocumentController] openDocumentWithContentsOfURL:URL display:YES completionHandler:^(NSDocument * _Nullable document, BOOL documentWasAlreadyOpen, NSError * _Nullable error) {
+		
+	}];
 }
 
 

@@ -10,6 +10,7 @@
 #import "TFPGCode.h"
 #import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
+#import "TFPStopwatch.h"
 
 @import IOKit.pwr_mgt;
 #import "MAKVONotificationCenter.h"
@@ -24,15 +25,22 @@
 @property IOPMAssertionID powerAssertionID;
 
 @property NSInteger codeOffset;
-@property uint64_t startTime;
 
+@property (readwrite) TFPPrintJobState state;
 @property BOOL aborted;
+
+@property BOOL paused;
+@property TFP3DVector *pausePosition;
+@property double pauseEValue;
+@property double pauseFeedRate;
 
 @property double targetTemperature;
 @property NSUInteger pendingRequestCount;
 @property (readwrite) NSUInteger completedRequests;
 
 @property (readwrite) TFPOperationStage stage;
+
+@property TFPStopwatch *stopwatch;
 @end
 
 
@@ -48,6 +56,8 @@
 	self.program = program;
 	self.parameters = params;
 	
+	self.stopwatch = [TFPStopwatch new];
+	
 	return self;
 }
 
@@ -62,20 +72,25 @@
 
 
 - (NSTimeInterval)elapsedTime {
-	if(self.startTime == 0) {
-		return 0;
-	}else{
-		return ((double)(TFNanosecondTime() - self.startTime)) / NSEC_PER_SEC;
-	}
+	return self.stopwatch.elapsedTime;
 }
 
 
 - (void)jobDidComplete {
+	[self.stopwatch stop];
 	[self jobEnded];
 	
 	if(self.completionBlock) {
 		self.completionBlock();
 	}
+}
+
+
+// Called on any queue
+- (void)setStateOnMainQueue:(TFPPrintJobState)state {
+	dispatch_async(dispatch_get_main_queue(), ^{
+		self.state = state;
+	});
 }
 
 
@@ -152,11 +167,11 @@
 
 // Called on print queue
 - (void)sendMoreIfNeeded {
-	if(self.aborted) {
+	if(self.aborted || self.paused) {
 		return;
 	}
 	
-	while(self.pendingRequestCount < self.parameters.bufferSize) {
+	while(self.pendingRequestCount < 1) {
 		TFPGCode *code = [self popNextLine];
 		if(!code) {
 			break;
@@ -179,8 +194,11 @@
 	self.codeOffset = 0;
 	self.pendingRequestCount = 0;
 	self.completedRequests = 0;
-	self.startTime = TFNanosecondTime();
+
+	[self.stopwatch start];
+	
 	self.stage = TFPOperationStageRunning;
+	[self setStateOnMainQueue:TFPPrintJobStatePrinting];
 	
 	if(self.parameters.verbose) {
 		self.printer.incomingCodeBlock = ^(NSString *line){
@@ -235,7 +253,12 @@
 
 
 - (void)abort {
+	if(self.state != TFPPrintJobStatePrinting && self.state != TFPPrintJobStatePaused) {
+		return;
+	}
 	self.stage = TFPOperationStageEnding;
+	[self setStateOnMainQueue:TFPPrintJobStateAborting];
+	[self.stopwatch stop];
 	
 	dispatch_async(self.printQueue, ^{
 		self.aborted = YES;
@@ -251,6 +274,62 @@
 		}];
 	});
 }
+
+
+- (void)pause {
+	if(self.state != TFPPrintJobStatePrinting) {
+		return;
+	}
+	[self setStateOnMainQueue:TFPPrintJobStatePausing];
+	[self.stopwatch stop];
+	
+	dispatch_async(self.printQueue, ^{
+		self.paused = YES;
+		[self.printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, NSNumber *E) {
+			self.pausePosition = position;
+			self.pauseEValue = E.doubleValue;
+			self.pauseFeedRate = self.printer.feedrate;
+			
+			const double raiseLength = 20;
+			const double stationaryRetractAmount = 5;
+			const double raiseRetractAmount = 1;
+			TFP3DVector *raisedPosition = [TFP3DVector zVector:raiseLength];
+			
+			[self.printer setRelativeMode:YES completionHandler:nil];
+			[self.printer sendGCode:[TFPGCode codeForExtrusion:-stationaryRetractAmount feedRate:3000] responseHandler:nil];
+			[self.printer sendGCode:[TFPGCode moveWithPosition:raisedPosition extrusion:@(-raiseRetractAmount) feedRate:3000] responseHandler:nil];
+			[self.printer setRelativeMode:NO completionHandler:nil];
+			[self.printer waitForMoveCompletionWithHandler:^{
+				[self setStateOnMainQueue:TFPPrintJobStatePaused];
+			}];
+		}];
+	});
+}
+
+
+- (void)resume {
+	if(self.state != TFPPrintJobStatePaused) {
+		return;
+	}
+	
+	[self setStateOnMainQueue:TFPPrintJobStateResuming];
+	dispatch_async(self.printQueue, ^{
+		NSLog(@"Resuming from position %@, E: %.02f, feed rate: %.0f", self.pausePosition, self.pauseEValue, self.pauseFeedRate);
+		
+		[self.printer moveToPosition:self.pausePosition usingFeedRate:3000 completionHandler:nil];
+		//[self.printer sendGCode:[TFPGCode codeForExtrusion:self.pauseEValue feedRate:3000] responseHandler:nil];
+		[self.printer sendGCode:[TFPGCode codeForSettingFeedRate:self.pauseFeedRate] responseHandler:nil];
+		[self.printer waitForMoveCompletionWithHandler:^{
+			self.paused = NO;
+			[self setStateOnMainQueue:TFPPrintJobStatePrinting];
+			dispatch_async(dispatch_get_main_queue(), ^{
+				[self.stopwatch start];
+			});
+			[self sendMoreIfNeeded];
+		}];
+	});
+}
+
 
 
 - (TFPOperationKind)kind {
