@@ -7,6 +7,8 @@
 //
 
 #import "TFPConsoleViewController.h"
+#import "TFPExtras.h"
+
 
 @interface TFPConsoleViewController ()
 @property IBOutlet NSTextView *textView;
@@ -64,9 +66,18 @@
 
 
 - (IBAction)fieldAction:(id)sender {
-	TFPGCode *code = [TFPGCode codeWithString:self.inputField.stringValue];
-	if(code) {
-		[self.printer sendGCode:code responseHandler:nil];
+	__block BOOL valid = YES;
+	
+	NSArray *codes = [[self.inputField.stringValue componentsSeparatedByString:@"\n"] tf_mapWithBlock:^TFPGCode*(NSString *line) {
+		TFPGCode *code = [TFPGCode codeWithString:line];
+		if(!code) {
+			valid = NO;
+		}
+		return code;
+	}];
+	
+	if(codes) {
+		[self.printer runGCodeProgram:[TFPGCodeProgram programWithLines:codes] completionHandler:nil];
 		self.inputField.stringValue = @"";
 	} else {
 		NSBeep();
