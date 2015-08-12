@@ -369,10 +369,12 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 				case TFPPrintJobStatePrinting: {
 					NSString *progress = [self.longPercentFormatter stringFromNumber:@(self.printStatusController.phaseProgress)];
 					NSString *phase;
+					BOOL printProgress = YES;
 					
 					switch(self.printStatusController.currentPhase) {
 						case TFPPrintPhasePreamble:
 							phase = @"Starting Print";
+							printProgress = NO;
 							break;
 						case TFPPrintPhaseAdhesion:
 							phase = @"Printing Bed Adhesion";
@@ -382,13 +384,18 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 							break;
 						case TFPPrintPhasePostamble:
 							phase = @"Finishing";
+							printProgress = NO;
 							break;
 							
 						case TFPPrintPhaseInvalid:
 							return @"";
 					}
 					
-					return [NSString stringWithFormat:@"%@: %@", phase, progress];
+					if(printProgress) {
+						return [NSString stringWithFormat:@"%@: %@", phase, progress];
+					} else {
+						return phase;
+					}
 				}
 					
 				case TFPPrintJobStatePaused:
