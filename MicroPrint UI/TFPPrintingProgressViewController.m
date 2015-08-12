@@ -249,6 +249,7 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 	}
 	
 	NSAlert *alert = [NSAlert new];
+	alert.alertStyle = NSCriticalAlertStyle;
 	alert.messageText = @"Are you sure you want to abort the print?";
 	[alert addButtonWithTitle:@"Don't Abort"];
 	[alert addButtonWithTitle:@"Abort Print"];
@@ -288,7 +289,21 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 
 - (IBAction)pause:(id)sender {
 	if(self.printJob.state == TFPPrintJobStatePrinting) {
-		[self.printJob pause];
+		
+		NSAlert *alert = [NSAlert new];
+		alert.alertStyle = NSCriticalAlertStyle;
+		alert.messageText = @"Are you sure you want to pause?";
+		alert.informativeText = @"Pausing and resuming is likely to produce a small dent or blob in your print. Cleaning the nozzle before resuming often helps and is recommended, but keep in mind the nozzle is hot.";
+		
+		[alert addButtonWithTitle:@"Pause"];
+		[alert addButtonWithTitle:@"Don't Pause"];
+		
+		[alert beginSheetModalForWindow:self.view.window completionHandler:^(NSModalResponse returnCode) {
+			if(returnCode == NSAlertFirstButtonReturn) {
+				[self.printJob pause];
+			}
+		}];
+		
 	}else if(self.printJob.state == TFPPrintJobStatePaused) {
 		[self.printJob resume];
 	}

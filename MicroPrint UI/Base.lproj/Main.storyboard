@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="7706" systemVersion="14E46" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="8173.3" systemVersion="14E46" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="7706"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="8173.3"/>
         <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
     </dependencies>
     <scenes>
@@ -1329,7 +1329,7 @@ DQ
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                                 <scroller key="verticalScroller" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="jfh-LO-cpB">
-                                    <rect key="frame" x="224" y="1" width="15" height="133"/>
+                                    <rect key="frame" x="465" y="0.0" width="15" height="250"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </scroller>
                             </scrollView>
@@ -1413,11 +1413,7 @@ DQ
                                     <constraint firstAttribute="width" constant="48" id="4tR-yD-qyC"/>
                                 </constraints>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="-12,12" drawsBackground="YES" id="MlT-Gm-L82">
-                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="vKU-nQ-F5I">
-                                        <metadata>
-                                            <real key="inspectorSampleValue" value="1"/>
-                                        </metadata>
-                                    </numberFormatter>
+                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="vKU-nQ-F5I"/>
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1440,11 +1436,7 @@ DQ
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="RCA-Pn-XQU">
                                 <rect key="frame" x="203" y="287" width="48" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="12,12" drawsBackground="YES" id="sIU-c9-RbT">
-                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="TUO-7m-w5d">
-                                        <metadata>
-                                            <real key="inspectorSampleValue" value="1"/>
-                                        </metadata>
-                                    </numberFormatter>
+                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="TUO-7m-w5d"/>
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1467,11 +1459,7 @@ DQ
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="SUr-4V-9fE">
                                 <rect key="frame" x="153" y="134" width="48" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="12,12" drawsBackground="YES" id="kxS-3n-b0D">
-                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="Qce-zG-7Ya">
-                                        <metadata>
-                                            <real key="inspectorSampleValue" value="1"/>
-                                        </metadata>
-                                    </numberFormatter>
+                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="Qce-zG-7Ya"/>
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1494,11 +1482,7 @@ DQ
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="NYr-Me-dVU">
                                 <rect key="frame" x="20" y="177" width="48" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="12,12" drawsBackground="YES" id="fLt-cB-4cd">
-                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="mFZ-j8-5Bp">
-                                        <metadata>
-                                            <real key="inspectorSampleValue" value="1"/>
-                                        </metadata>
-                                    </numberFormatter>
+                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="mFZ-j8-5Bp"/>
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1521,11 +1505,7 @@ DQ
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="UPf-I3-bE0">
                                 <rect key="frame" x="203" y="177" width="48" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="12,12" drawsBackground="YES" id="2vp-XV-b8i">
-                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="61s-O1-M2N">
-                                        <metadata>
-                                            <real key="inspectorSampleValue" value="1"/>
-                                        </metadata>
-                                    </numberFormatter>
+                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="61s-O1-M2N"/>
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1684,11 +1664,7 @@ DQ
                                     <constraint firstAttribute="width" constant="44" id="HfB-PB-ynf"/>
                                 </constraints>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="PYD-mn-9tp">
-                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="0Co-ik-XKm">
-                                        <metadata>
-                                            <real key="inspectorSampleValue" value="1"/>
-                                        </metadata>
-                                    </numberFormatter>
+                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="0Co-ik-XKm"/>
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1720,11 +1696,7 @@ DQ
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="o9q-HM-VUG">
                                 <rect key="frame" x="145" y="91" width="44" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="12,12" drawsBackground="YES" id="ueh-lr-naZ">
-                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="Vje-ba-dwD">
-                                        <metadata>
-                                            <real key="inspectorSampleValue" value="1"/>
-                                        </metadata>
-                                    </numberFormatter>
+                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" maximumFractionDigits="2" id="Vje-ba-dwD"/>
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1748,11 +1720,7 @@ DQ
                             <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="MNI-Ap-ERJ">
                                 <rect key="frame" x="145" y="61" width="44" height="22"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" title="2500" drawsBackground="YES" id="3yj-6t-chP">
-                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" allowsFloats="NO" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" id="58A-Eg-HiQ">
-                                        <metadata>
-                                            <real key="inspectorSampleValue" value="1"/>
-                                        </metadata>
-                                    </numberFormatter>
+                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" allowsFloats="NO" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="2000000000" minimumFractionDigits="2" id="58A-Eg-HiQ"/>
                                     <font key="font" metaFont="system"/>
                                     <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1842,11 +1810,11 @@ DQ
                                 </constraints>
                                 <textFieldCell key="cell" sendsActionOnEndEditing="YES" alignment="left" placeholderString="" allowsEditingTextAttributes="YES" id="F7R-VH-KoF">
                                     <font key="font" metaFont="system"/>
-                                    <mutableString key="title">The bed location calibration routine automatically determines the zero position of the head above the bed. This is performed by the printer firmware and takes several minutes. During the calibration the printer head will move up and down with long pauses as the correct position is determined.
+                                    <string key="title">The bed location calibration routine automatically determines the zero position of the head above the bed. This is performed by the printer firmware and takes several minutes. During the calibration the printer head will move up and down with long pauses as the correct position is determined.
 
 The printer must remain on a stable surface and undisturbed during the entire calibration.
 
-The calibration can be performed any time and will not change the related bed level settings. The bed location calibration should be performed before the bed level calibration and at any time that the height may be incorrect, such as after an unexpected reset of the printer.</mutableString>
+The calibration can be performed any time and will not change the related bed level settings. The bed location calibration should be performed before the bed level calibration and at any time that the height may be incorrect, such as after an unexpected reset of the printer.</string>
                                     <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                     <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
                                 </textFieldCell>
@@ -2118,16 +2086,6 @@ DQ
                                     <action selector="toggleExpanded:" target="loo-rf-9XD" id="5Z7-iI-Lzj"/>
                                 </connections>
                             </button>
-                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="760-oe-YO2">
-                                <rect key="frame" x="203" y="13" width="83" height="32"/>
-                                <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="M8j-13-wew">
-                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                    <font key="font" metaFont="system"/>
-                                </buttonCell>
-                                <connections>
-                                    <action selector="abort:" target="loo-rf-9XD" id="Jb9-8B-TcR"/>
-                                </connections>
-                            </button>
                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Rud-SD-Vbs">
                                 <rect key="frame" x="179" y="381" width="42" height="17"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Layer:" id="mw7-sE-ACr">
@@ -2148,7 +2106,7 @@ DQ
                                 </connections>
                             </textField>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="sZW-QA-S21">
-                                <rect key="frame" x="124" y="13" width="79" height="32"/>
+                                <rect key="frame" x="246" y="13" width="79" height="32"/>
                                 <buttonCell key="cell" type="push" title="Pause" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="sdv-xB-7fz">
                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                     <font key="font" metaFont="system"/>
@@ -2159,29 +2117,58 @@ DQ
                                     <binding destination="loo-rf-9XD" name="title" keyPath="pauseActionName" id="Vqh-zx-IkR"/>
                                 </connections>
                             </button>
+                            <customView hidden="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1gm-7J-eXo">
+                                <rect key="frame" x="0.0" y="20" width="169" height="10"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="10" id="BEm-46-fCr"/>
+                                </constraints>
+                            </customView>
+                            <customView hidden="YES" translatesAutoresizingMaskIntoConstraints="NO" id="hvJ-cm-drH">
+                                <rect key="frame" x="319" y="20" width="169" height="10"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="10" id="Kfk-1g-vKB"/>
+                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="10" id="zia-cf-mWq"/>
+                                </constraints>
+                            </customView>
+                            <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="760-oe-YO2">
+                                <rect key="frame" x="163" y="13" width="83" height="32"/>
+                                <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="M8j-13-wew">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                </buttonCell>
+                                <connections>
+                                    <action selector="abort:" target="loo-rf-9XD" id="Jb9-8B-TcR"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <constraints>
                             <constraint firstItem="QyU-bR-nIm" firstAttribute="leading" secondItem="NkQ-q7-BVC" secondAttribute="leading" id="0cw-uY-rAE"/>
+                            <constraint firstAttribute="bottom" secondItem="hvJ-cm-drH" secondAttribute="bottom" constant="20" id="2Bt-cB-E3E"/>
                             <constraint firstItem="NM8-Rf-ZEj" firstAttribute="leading" secondItem="Qyk-qP-HWV" secondAttribute="leading" id="2fF-2L-8X7"/>
                             <constraint firstItem="Rud-SD-Vbs" firstAttribute="baseline" secondItem="Qyk-qP-HWV" secondAttribute="baseline" id="2ke-Rn-0Rn"/>
-                            <constraint firstItem="760-oe-YO2" firstAttribute="leading" secondItem="sZW-QA-S21" secondAttribute="trailing" constant="12" id="5gx-E5-IvJ"/>
+                            <constraint firstItem="sZW-QA-S21" firstAttribute="leading" secondItem="760-oe-YO2" secondAttribute="trailing" constant="12" id="7HW-N7-e2l"/>
+                            <constraint firstItem="hvJ-cm-drH" firstAttribute="leading" secondItem="sZW-QA-S21" secondAttribute="trailing" id="7kR-tU-gfn"/>
                             <constraint firstItem="Rud-SD-Vbs" firstAttribute="trailing" secondItem="uIy-u9-VHA" secondAttribute="trailing" id="8K0-eb-zGv"/>
                             <constraint firstItem="8Cf-Zv-xd9" firstAttribute="top" secondItem="d9W-Vn-QR7" secondAttribute="bottom" constant="12" id="8ru-K6-TNL"/>
                             <constraint firstItem="OKE-bC-0aN" firstAttribute="top" secondItem="NkQ-q7-BVC" secondAttribute="top" constant="20" id="F69-rB-fon"/>
                             <constraint firstItem="d9W-Vn-QR7" firstAttribute="leading" secondItem="NkQ-q7-BVC" secondAttribute="leading" constant="20" id="FI2-py-2nq"/>
+                            <constraint firstAttribute="bottom" secondItem="1gm-7J-eXo" secondAttribute="bottom" constant="20" id="GWy-cS-gBZ"/>
                             <constraint firstItem="8Cf-Zv-xd9" firstAttribute="baseline" secondItem="Q6K-wf-Psv" secondAttribute="baseline" id="GsJ-j5-YHn"/>
                             <constraint firstAttribute="bottom" secondItem="7CK-pN-69S" secondAttribute="bottom" constant="20" id="No2-lp-EgD"/>
                             <constraint firstAttribute="centerX" secondItem="Q6K-wf-Psv" secondAttribute="leading" constant="15" id="SA8-Sd-s01"/>
                             <constraint firstItem="Rud-SD-Vbs" firstAttribute="top" secondItem="uIy-u9-VHA" secondAttribute="bottom" constant="6" id="UC6-rl-oNC"/>
                             <constraint firstAttribute="centerX" secondItem="OKE-bC-0aN" secondAttribute="centerX" id="UcD-cE-uoe"/>
                             <constraint firstItem="760-oe-YO2" firstAttribute="baseline" secondItem="sZW-QA-S21" secondAttribute="baseline" id="YRo-Cf-Oh6"/>
-                            <constraint firstAttribute="centerX" secondItem="760-oe-YO2" secondAttribute="centerX" id="ad9-ax-tdy"/>
                             <constraint firstAttribute="trailing" secondItem="7CK-pN-69S" secondAttribute="trailing" constant="20" id="bFC-Ue-E6T"/>
+                            <constraint firstItem="1gm-7J-eXo" firstAttribute="leading" secondItem="NkQ-q7-BVC" secondAttribute="leading" id="cRf-qW-lOI"/>
+                            <constraint firstAttribute="trailing" secondItem="hvJ-cm-drH" secondAttribute="trailing" id="f0L-ZB-Nag"/>
                             <constraint firstItem="8Cf-Zv-xd9" firstAttribute="trailing" secondItem="uIy-u9-VHA" secondAttribute="trailing" id="gVT-rC-pNc"/>
                             <constraint firstItem="uIy-u9-VHA" firstAttribute="baseline" secondItem="NM8-Rf-ZEj" secondAttribute="baseline" id="geH-om-2nJ"/>
                             <constraint firstItem="Q6K-wf-Psv" firstAttribute="leading" secondItem="NM8-Rf-ZEj" secondAttribute="leading" id="heC-gO-wvw"/>
+                            <constraint firstItem="hvJ-cm-drH" firstAttribute="width" secondItem="1gm-7J-eXo" secondAttribute="width" id="i7X-ZY-0Sc"/>
                             <constraint firstAttribute="bottom" secondItem="760-oe-YO2" secondAttribute="bottom" constant="20" id="iBY-iP-mzP"/>
                             <constraint firstItem="760-oe-YO2" firstAttribute="top" secondItem="QyU-bR-nIm" secondAttribute="bottom" constant="20" id="jWA-I9-ezm"/>
+                            <constraint firstItem="760-oe-YO2" firstAttribute="leading" secondItem="1gm-7J-eXo" secondAttribute="trailing" id="r8z-Nn-1Zp"/>
                             <constraint firstAttribute="trailing" secondItem="QyU-bR-nIm" secondAttribute="trailing" id="sOJ-DG-pkq"/>
                             <constraint firstItem="uIy-u9-VHA" firstAttribute="top" secondItem="8Cf-Zv-xd9" secondAttribute="bottom" constant="6" id="sjN-jN-4Ek"/>
                             <constraint firstItem="d9W-Vn-QR7" firstAttribute="top" secondItem="OKE-bC-0aN" secondAttribute="bottom" constant="10" id="sjh-fG-xca"/>
