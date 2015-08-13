@@ -9,4 +9,5 @@
 
 @interface TFPDryRunPrinter : TFPPrinter
 
++ (void)setSpeedMultiplier:(double)multiplier;
 @end

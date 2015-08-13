@@ -9,6 +9,7 @@
 #import "TFPApplicationDelegate.h"
 #import "TFPPrinterManager.h"
 #import "TFPPrinter.h"
+#import "TFPDryRunPrinter.h"
 
 #import "TFPExtras.h"
 
@@ -111,6 +112,11 @@
 		TFLog(@"Cancelled move");
 		self.debugCancelBlock = nil;
 	}
+}
+
+
+- (IBAction)setDryRunSpeedMultiplier:(id)sender {
+	[TFPDryRunPrinter setSpeedMultiplier:[sender tag]];
 }
 
 

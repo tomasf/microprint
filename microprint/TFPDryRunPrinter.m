@@ -9,6 +9,9 @@
 #import "TFPExtras.h"
 
 
+static double speedMultiplier = 10;
+
+
 @interface TFPPrinter (Private)
 @property (readwrite) BOOL pendingConnection;
 @property (readwrite) NSString *serialNumber;
@@ -131,9 +134,13 @@
 
 
 - (double)speedMultiplier {
-	return 10;
+	return speedMultiplier;
 }
 
+
++ (void)setSpeedMultiplier:(double)multiplier {
+	speedMultiplier = multiplier;
+}
 
 
 @end

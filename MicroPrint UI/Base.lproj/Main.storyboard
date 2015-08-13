@@ -623,6 +623,37 @@
                                                 </items>
                                             </menu>
                                         </menuItem>
+                                        <menuItem title="Dry-run printer speed multiplier" id="AWE-rS-IOR">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <menu key="submenu" title="Dry-run printer speed multiplier" id="NPb-IF-Teo">
+                                                <items>
+                                                    <menuItem title="1x" tag="1" id="xID-yZ-vVK">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="setDryRunSpeedMultiplier:" target="Voe-Tx-rLC" id="F4x-3b-SAG"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="10x" tag="10" id="K0B-59-i93">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="setDryRunSpeedMultiplier:" target="Voe-Tx-rLC" id="slk-yQ-OiO"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="100x" tag="100" id="1Bn-TB-DZT">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="setDryRunSpeedMultiplier:" target="Voe-Tx-rLC" id="HIx-sV-spP"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="1000x" tag="1000" id="Oo5-eZ-eIg">
+                                                        <modifierMask key="keyEquivalentModifierMask"/>
+                                                        <connections>
+                                                            <action selector="setDryRunSpeedMultiplier:" target="Voe-Tx-rLC" id="M80-38-tW1"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                </items>
+                                            </menu>
+                                        </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>
@@ -853,7 +884,7 @@
                                     <binding destination="bpn-zK-R5E" name="value" keyPath="representedObject.printerImage" id="G2T-iw-Xfr"/>
                                 </connections>
                             </imageView>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="eed-Wx-7lZ">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eed-Wx-7lZ">
                                 <rect key="frame" x="82" y="51" width="165" height="17"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="GR-15-04-30-01-050-049" id="iQE-eO-7gf">
                                     <font key="font" metaFont="systemBold"/>
@@ -2021,7 +2052,7 @@ DQ
                                     <binding destination="loo-rf-9XD" name="value" keyPath="printStatusController.printProgress" id="aqM-Jd-yiq"/>
                                 </connections>
                             </progressIndicator>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="OKE-bC-0aN">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="OKE-bC-0aN">
                                 <rect key="frame" x="210" y="484" width="69" height="17"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Printing…" id="aeq-d9-bW2">
                                     <font key="font" metaFont="systemBold"/>
@@ -2305,7 +2336,7 @@ Gw
                                                         <action selector="cancel:" target="meg-yd-2SE" id="UxQ-W0-UhL"/>
                                                     </connections>
                                                 </button>
-                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Rri-KT-pDB">
+                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Rri-KT-pDB">
                                                     <rect key="frame" x="151" y="90" width="111" height="17"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Back-left corner" id="PKg-SY-F1G">
                                                         <font key="font" metaFont="systemBold"/>
