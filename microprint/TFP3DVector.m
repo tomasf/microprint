@@ -136,4 +136,24 @@
 }
 
 
+- (TFP3DVector*)vectorBySettingX:(double)x {
+	return [self.class vectorWithX:@(x) Y:self.y Z:self.z];
+}
+
+
+- (TFP3DVector*)vectorBySettingY:(double)y {
+	return [self.class vectorWithX:self.x Y:@(y) Z:self.z];
+}
+
+
+- (TFP3DVector*)vectorBySettingZ:(double)z {
+	return [self.class vectorWithX:self.x Y:self.y Z:@(z)];
+}
+
+
+- (TFP3DVector*)vectorBySettingY:(double)y z:(double)z {
+	return [self.class vectorWithX:self.x Y:@(y) Z:@(z)];
+}
+
+
 @end
