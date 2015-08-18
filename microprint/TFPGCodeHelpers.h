@@ -105,6 +105,8 @@ typedef struct {
 } TFPCuboid;
 
 
+extern double TFPAbsolutePositionDistance(TFPAbsolutePosition a, TFPAbsolutePosition b);
+
 extern BOOL TFPCuboidContainsPosition(TFPCuboid cuboid, TFPAbsolutePosition position);
 extern BOOL TFPCuboidContainsCuboid(TFPCuboid outer, TFPCuboid inner);
 extern TFPCuboid TFPCuboidInfinite;

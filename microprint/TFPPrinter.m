@@ -421,15 +421,19 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 				[newValues addObject:value];
 				[self runGCodeProgram:program previousValues:newValues completionHandler:completionHandler responseQueue:queue];
 			}else{
-				dispatch_async(queue, ^{
-					completionHandler(NO, previousValues);
-				});
+				if(completionHandler) {
+					dispatch_async(queue, ^{
+						completionHandler(NO, previousValues);
+					});
+				}
 			}
 		} responseQueue:queue];
 	}else{
-		dispatch_async(queue, ^{
-			completionHandler(YES, previousValues);
-		});
+		if(completionHandler) {
+			dispatch_async(queue, ^{
+				completionHandler(YES, previousValues);
+			});
+		}
 	}
 }
 

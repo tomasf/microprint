@@ -318,6 +318,7 @@
 		
 		[self.printer moveToPosition:self.pausePosition usingFeedRate:3000 completionHandler:nil];
 		//[self.printer sendGCode:[TFPGCode codeForExtrusion:self.pauseEValue feedRate:3000] responseHandler:nil];
+		[self.printer sendGCode:[TFPGCode codeForResettingPosition:nil extrusion:@(self.pauseEValue-5.5)]responseHandler:nil];
 		[self.printer sendGCode:[TFPGCode codeForSettingFeedRate:self.pauseFeedRate] responseHandler:nil];
 		[self.printer waitForMoveCompletionWithHandler:^{
 			self.paused = NO;

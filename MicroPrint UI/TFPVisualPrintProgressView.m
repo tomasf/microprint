@@ -69,6 +69,8 @@
 	__block double yAdjustment = 0;
 	
 	statusController.willMoveHandler = ^(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate, TFPGCode *code) {
+		double distance = TFPAbsolutePositionDistance(from, to);
+		
 		if([code.comment hasPrefix:@"BACKLASH"]) {
 			xAdjustment += from.x - to.x;
 			yAdjustment += from.y - to.y;
@@ -85,7 +87,7 @@
 		 estimatedDuration /= weakSelf.printer.speedMultiplier;
 		 */
 		
-		if(to.e > from.e) {
+		if(to.e > from.e && distance > FLT_EPSILON) {
 			CGMutablePathRef path = (CGMutablePathRef)CFAutorelease(CGPathCreateMutable());
 			CGPathMoveToPoint(path, NULL, fromPoint.x, fromPoint.y);
 			CGPathAddLineToPoint(path, NULL, toPoint.x, toPoint.y);
