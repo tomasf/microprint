@@ -257,6 +257,11 @@
 @end
 
 
+double TFPAbsolutePositionDistance(TFPAbsolutePosition a, TFPAbsolutePosition b) {
+	return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2) + pow(a.z - b.z, 2));
+
+}
+
 
 BOOL TFPCuboidContainsPosition(TFPCuboid cuboid, TFPAbsolutePosition position) {
 	return	position.x >= cuboid.x && position.x <= cuboid.x+cuboid.xSize &&

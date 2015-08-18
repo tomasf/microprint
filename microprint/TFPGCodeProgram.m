@@ -54,9 +54,7 @@
 		return nil;
 	}
 	
-	if(!(self = [self initWithLines:lines])) return nil;
-	
-	return self;
+	return [self initWithLines:lines];
 }
 
 

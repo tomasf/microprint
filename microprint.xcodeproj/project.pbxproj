@@ -98,6 +98,8 @@
 		C9C871AB1B58298E0063FACB /* TFPBedLevelSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C871A91B58298D0063FACB /* TFPBedLevelSettingsViewController.m */; };
 		C9C871B01B582F340063FACB /* TFPBacklashSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C871AE1B582F340063FACB /* TFPBacklashSettingsViewController.m */; };
 		C9C871BB1B5AD2070063FACB /* TFPBedLevelCalibrationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C871BA1B5AD2070063FACB /* TFPBedLevelCalibrationViewController.m */; };
+		C9CEF7D61B7E404700D7A750 /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9CEF7D51B7E404700D7A750 /* Sparkle.framework */; };
+		C9CEF7D81B7E408200D7A750 /* Sparkle.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = C9CEF7D51B7E404700D7A750 /* Sparkle.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		C9E59B6C1B316AF400343D58 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B6B1B316AF400343D58 /* main.m */; };
 		C9E59B741B316BE800343D58 /* TFPGCode.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B731B316BE800343D58 /* TFPGCode.m */; };
 		C9E59B771B316F0D00343D58 /* TFPExtras.m in Sources */ = {isa = PBXBuildFile; fileRef = C9E59B761B316F0D00343D58 /* TFPExtras.m */; };
@@ -114,6 +116,17 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		C9CEF7D71B7E406C00D7A750 /* Copy Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				C9CEF7D81B7E408200D7A750 /* Sparkle.framework in Copy Frameworks */,
+			);
+			name = "Copy Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C9E59B661B316AF400343D58 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -230,6 +243,7 @@
 		C9C871AE1B582F340063FACB /* TFPBacklashSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPBacklashSettingsViewController.m; sourceTree = "<group>"; };
 		C9C871B91B5AD2070063FACB /* TFPBedLevelCalibrationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPBedLevelCalibrationViewController.h; sourceTree = "<group>"; };
 		C9C871BA1B5AD2070063FACB /* TFPBedLevelCalibrationViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPBedLevelCalibrationViewController.m; sourceTree = "<group>"; };
+		C9CEF7D51B7E404700D7A750 /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Sparkle.framework; sourceTree = "<group>"; };
 		C9E59B681B316AF400343D58 /* microprint */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = microprint; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9E59B6B1B316AF400343D58 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		C9E59B721B316BE800343D58 /* TFPGCode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPGCode.h; sourceTree = "<group>"; };
@@ -264,6 +278,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C9B940EB1B61008700E42864 /* libz.dylib in Frameworks */,
+				C9CEF7D61B7E404700D7A750 /* Sparkle.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -534,6 +549,7 @@
 		C9FD1C5A1B39601900F98FF1 /* External */ = {
 			isa = PBXGroup;
 			children = (
+				C9CEF7D51B7E404700D7A750 /* Sparkle.framework */,
 				C9B940EA1B61008700E42864 /* libz.dylib */,
 				C96776E01B565BC600D2D6CB /* TFTimer.h */,
 				C96776DF1B565BC600D2D6CB /* TFTimer.m */,
@@ -561,6 +577,7 @@
 				C95F10981B53E3E200F396B6 /* Sources */,
 				C95F10991B53E3E200F396B6 /* Frameworks */,
 				C95F109A1B53E3E200F396B6 /* Resources */,
+				C9CEF7D71B7E406C00D7A750 /* Copy Frameworks */,
 			);
 			buildRules = (
 			);
@@ -772,6 +789,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Developer ID Application";
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/microprint",
+				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -779,6 +800,7 @@
 				INFOPLIST_FILE = "MicroPrint UI/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				OTHER_LDFLAGS = "-Wl,-rpath,@loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = se.tomasf.microprint;
 				PRODUCT_NAME = MicroPrint;
 			};
@@ -790,9 +812,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Developer ID Application";
 				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/microprint",
+				);
 				INFOPLIST_FILE = "MicroPrint UI/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				OTHER_LDFLAGS = "-Wl,-rpath,@loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = se.tomasf.microprint;
 				PRODUCT_NAME = MicroPrint;
 			};
