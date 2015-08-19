@@ -40,6 +40,12 @@ enum VirtualEEPROMIndexes {
 	VirtualEEPROMIndexReservedForSpooler = 21,
 	
 	VirtualEEPROMIndexBacklashCompensationSpeed = 22,
+	
+	VirtualEEPROMIndexG32Version = 23,
+	
+	VirtualEEPROMIndexG32FirstSample = 64,
+	// ...
+	VirtualEEPROMIndexG32LastSample = 126,
 };
 
 
