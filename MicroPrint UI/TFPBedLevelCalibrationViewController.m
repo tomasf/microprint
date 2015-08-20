@@ -34,7 +34,7 @@
 
 
 - (NSString*)cornerString {
-	return @[@"Back-left corner", @"Back-right corner", @"Front-right corner", @"Front-left corner"][self.currentCorner];
+	return @[@"Back-left corner", @"Back-right corner", @"Front-right corner", @"Front-left corner", @"Center"][self.currentCorner];
 }
 
 

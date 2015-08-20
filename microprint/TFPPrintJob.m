@@ -62,6 +62,11 @@
 }
 
 
+- (dispatch_queue_t)printerContextQueue {
+	return self.printQueue;
+}
+
+
 - (void)jobEnded {
 	[self ended];
 	
@@ -97,9 +102,9 @@
 // Called on print queue
 - (void)sendCode:(TFPGCode*)code completionHandler:(void(^)())completionHandler {
 	if(code.hasFields) {
-		[self.printer sendGCode:code responseHandler:^(BOOL success, NSDictionary *value) {
+		[self.context sendGCode:code responseHandler:^(BOOL success, NSDictionary *value) {
 			completionHandler();
-		} responseQueue:self.printQueue];
+		}];
 	}else{
 		completionHandler();
 	}
@@ -187,8 +192,10 @@
 }
 
 
-- (void)start {
-	[super start];
+- (BOOL)start {
+	if(![super start]) {
+		return NO;
+	}
 	__weak __typeof__(self) weakSelf = self;
 	
 	self.codeOffset = 0;
@@ -227,6 +234,8 @@
 		TFLog(@"Failed to assert kIOPMAssertionTypeNoIdleSleep!");
 		self.powerAssertionID = kIOPMNullAssertionID;
 	}
+	
+	return YES;
 }
 
 
@@ -246,9 +255,9 @@
 					   [TFPGCode codeForTurningOffHeater],
 					   ];
 	
-	[self.printer runGCodeProgram:[TFPGCodeProgram programWithLines:codes] completionHandler:^(BOOL success, NSArray *valueDictionaries) {
+	[self.context runGCodeProgram:[TFPGCodeProgram programWithLines:codes] completionHandler:^(BOOL success, NSArray *valueDictionaries) {
 		completionHandler();
-	} responseQueue:self.printQueue];
+	}];
 }
 
 
@@ -295,11 +304,11 @@
 			const double raiseRetractAmount = 1;
 			TFP3DVector *raisedPosition = [TFP3DVector zVector:raiseLength];
 			
-			[self.printer setRelativeMode:YES completionHandler:nil];
-			[self.printer sendGCode:[TFPGCode codeForExtrusion:-stationaryRetractAmount feedRate:3000] responseHandler:nil];
-			[self.printer sendGCode:[TFPGCode moveWithPosition:raisedPosition extrusion:@(-raiseRetractAmount) feedRate:3000] responseHandler:nil];
-			[self.printer setRelativeMode:NO completionHandler:nil];
-			[self.printer waitForMoveCompletionWithHandler:^{
+			[self.context setRelativeMode:YES completionHandler:nil];
+			[self.context sendGCode:[TFPGCode codeForExtrusion:-stationaryRetractAmount feedRate:3000] responseHandler:nil];
+			[self.context sendGCode:[TFPGCode moveWithPosition:raisedPosition extrusion:@(-raiseRetractAmount) feedRate:3000] responseHandler:nil];
+			[self.context setRelativeMode:NO completionHandler:nil];
+			[self.context waitForMoveCompletionWithHandler:^{
 				[self setStateOnMainQueue:TFPPrintJobStatePaused];
 			}];
 		}];
@@ -316,11 +325,11 @@
 	dispatch_async(self.printQueue, ^{
 		NSLog(@"Resuming from position %@, E: %.02f, feed rate: %.0f", self.pausePosition, self.pauseEValue, self.pauseFeedRate);
 		
-		[self.printer moveToPosition:self.pausePosition usingFeedRate:3000 completionHandler:nil];
+		[self.context moveToPosition:self.pausePosition usingFeedRate:3000 completionHandler:nil];
 		//[self.printer sendGCode:[TFPGCode codeForExtrusion:self.pauseEValue feedRate:3000] responseHandler:nil];
-		[self.printer sendGCode:[TFPGCode codeForResettingPosition:nil extrusion:@(self.pauseEValue-5.5)]responseHandler:nil];
-		[self.printer sendGCode:[TFPGCode codeForSettingFeedRate:self.pauseFeedRate] responseHandler:nil];
-		[self.printer waitForMoveCompletionWithHandler:^{
+		[self.context sendGCode:[TFPGCode codeForResettingPosition:nil extrusion:@(self.pauseEValue-5.5)] responseHandler:nil];
+		[self.context sendGCode:[TFPGCode codeForSettingFeedRate:self.pauseFeedRate] responseHandler:nil];
+		[self.context waitForMoveCompletionWithHandler:^{
 			self.paused = NO;
 			[self setStateOnMainQueue:TFPPrintJobStatePrinting];
 			dispatch_async(dispatch_get_main_queue(), ^{

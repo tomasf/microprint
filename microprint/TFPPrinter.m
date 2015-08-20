@@ -16,6 +16,7 @@
 #import "TFPPrinter+VirtualEEPROM.h"
 #import "TFPPrinterConnection.h"
 #import "TFTimer.h"
+#import "TFPBedLevelCompensator.h"
 
 #import "MAKVONotificationCenter.h"
 
@@ -26,32 +27,55 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 #define ZERO(x) (x < DBL_EPSILON && x > -DBL_EPSILON)
 
 
+@interface TFPPrinter (HelpersPrivate)
+- (void)fetchBedOffsetsWithCompletionHandler:(void(^)(BOOL success, TFPBedLevelOffsets offsets))completionHandler;
+- (void)setBedOffsets:(TFPBedLevelOffsets)offsets completionHandler:(void(^)(BOOL success))completionHandler;
+- (void)fetchBedBaseLevelsWithCompletionHandler:(void(^)(BOOL success, TFPBedLevelOffsets offsets))completionHandler;
+@end
+
+@interface TFPPrinterContext (Private)
+- (instancetype)initWithPrinter:(TFPPrinter*)printer queue:(dispatch_queue_t)queue options:(TFPPrinterContextOptions)options;
+@end
+
+
+
+typedef NS_OPTIONS(NSUInteger, TFPGCodeOptions) {
+	TFPGCodeOptionNoLevelCompensation = 1<<0,
+	TFPGCodeOptionNoBacklashCompensation = 1<<1,
+	TFPGCodeOptionNoFeedRateConversion = 1<<2,
+	
+	TFPGCodeOptionPrioritized = 1<<3,
+};
+
+
 @interface TFPPrinterGCodeEntry : NSObject
 @property TFPGCode *code;
 @property NSInteger lineNumber;
+@property TFPGCodeOptions options;
 
 @property dispatch_queue_t responseQueue;
-@property (copy) void(^responseBlock)(BOOL success, NSDictionary *values);
+@property (copy) void(^responseBlock)(BOOL success, TFPGCodeResponseDictionary values);
 @end
 
 
 @implementation TFPPrinterGCodeEntry
 
 
-- (instancetype)initWithCode:(TFPGCode*)code lineNumber:(NSInteger)line responseBlock:(void(^)(BOOL, NSDictionary*))block queue:(dispatch_queue_t)blockQueue {
+- (instancetype)initWithCode:(TFPGCode*)code lineNumber:(NSInteger)line options:(TFPGCodeOptions)options responseBlock:(void(^)(BOOL, TFPGCodeResponseDictionary))block queue:(dispatch_queue_t)blockQueue {
 	if(!(self = [super init])) return nil;
 	
 	self.code = code;
 	self.lineNumber = line;
 	self.responseBlock = block;
 	self.responseQueue = blockQueue;
+	self.options = options;
 	
 	return self;
 }
 
 
 + (instancetype)lineNumberResetEntry {
-	return [[self alloc] initWithCode:[TFPGCode codeForSettingLineNumber:0] lineNumber:0 responseBlock:nil queue:nil];
+	return [[self alloc] initWithCode:[TFPGCode codeForSettingLineNumber:0] lineNumber:0 options:0 responseBlock:nil queue:nil];
 }
 
 
@@ -79,6 +103,11 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 
 
 
+typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
+	TFPMovementDirectionNeutral,
+	TFPMovementDirectionNegative,
+	TFPMovementDirectionPositive,
+};
 
 
 
@@ -88,7 +117,7 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 
 @property BOOL connectionFinished;
 @property (readwrite) BOOL pendingConnection;
-@property NSMutableArray *establishmentBlocks;
+@property NSMutableArray<void(^)(NSError*)> *establishmentBlocks;
 
 @property (readwrite) TFPPrinterColor color;
 @property (readwrite, copy) NSString *serialNumber;
@@ -97,18 +126,29 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 @property (readwrite) double feedrate;
 @property (readwrite) double heaterTemperature;
 @property (readwrite) BOOL hasValidZLevel;
+@property (nonatomic, readwrite) TFPBedLevelOffsets bedBaseOffsets;
 @property (readwrite) NSComparisonResult firmwareVersionComparedToTestedRange;
 
+@property TFPBedLevelCompensator *bedLevelCompensator;
+@property double positionX;
+@property double positionY;
+@property double positionZ;
+@property double unadjustedPositionZ;
+@property BOOL relativeMode;
+@property double currentFeedRate;
+@property BOOL needsFeedRateReset;
+
+@property TFPMovementDirection movementDirectionX;
+@property TFPMovementDirection movementDirectionY;
+@property double adjustmentX;
+@property double adjustmentY;
+
 @property TFPPrinterGCodeEntry *pendingCodeEntry;
-@property NSMutableArray *queuedCodeEntries;
-
+@property NSMutableArray<TFPPrinterGCodeEntry*> *queuedCodeEntries;
 @property NSUInteger lineNumberCounter;
-@property NSMutableDictionary *codeRegistry;
-@end
+@property NSMutableDictionary<NSNumber*, TFPGCode*> *codeRegistry;
 
-@interface TFPPrinter (HelpersPrivate)
-- (void)fetchBedOffsetsWithCompletionHandler:(void(^)(BOOL success, TFPBedLevelOffsets offsets))completionHandler;
-- (void)setBedOffsets:(TFPBedLevelOffsets)offsets completionHandler:(void(^)(BOOL success))completionHandler;
+@property (unsafe_unretained) TFPPrinterContext *primaryContext;
 @end
 
 
@@ -128,13 +168,11 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 	};
 	
 	self.connection.rawLineHandler = ^(NSString *string) {
-		if(weakSelf.incomingCodeBlock) {
-			dispatch_async(dispatch_get_main_queue(), ^{
-				if(![string isEqual:@"wait"]) {
-					weakSelf.incomingCodeBlock(string);
-				}
-			});
-		}
+		TFMainThread(^{
+			if(weakSelf.incomingCodeBlock && ![string isEqual:@"wait"]) {
+				weakSelf.incomingCodeBlock(string);
+			}
+		});
 	};
 	
 	self.communicationQueue = dispatch_queue_create("se.tomasf.microprint.serialPortQueue", DISPATCH_QUEUE_SERIAL);
@@ -166,6 +204,20 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 		if(weakSelf.connectionFinished && !weakSelf.currentOperation) {
 			[weakSelf refreshState];
 		}
+	}];
+	
+	[self addObserver:self keyPath:@[@"bedLevelOffsets", @"bedBaseOffsets"] options:0 block:^(MAKVONotification *notification) {
+		TFPBedLevelOffsets offsets = weakSelf.bedLevelOffsets;
+		offsets.backLeft += weakSelf.bedBaseOffsets.backLeft;
+		offsets.backRight += weakSelf.bedBaseOffsets.backRight;
+		offsets.frontLeft += weakSelf.bedBaseOffsets.frontLeft;
+		offsets.frontRight += weakSelf.bedBaseOffsets.frontRight;
+		offsets.common += weakSelf.bedBaseOffsets.common;
+		
+		dispatch_async(weakSelf.communicationQueue, ^{
+			[weakSelf sendNotice:@"Re-adjusted bed level compensator for %@", TFPBedLevelOffsetsDescription(offsets)];
+			weakSelf.bedLevelCompensator = [[TFPBedLevelCompensator alloc] initWithBedLevel:offsets];
+		});
 	}];
 	
 	return self;
@@ -237,12 +289,34 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 			[self didChangeValueForKey:@"bedLevelOffsets"];
 		}
 	}];
+	
+	[self fetchBacklashValuesWithCompletionHandler:^(BOOL success, TFPBacklashValues values) {
+		if(success) {
+			[self willChangeValueForKey:@"backlashValues"];
+			_backlashValues = values;
+			[self didChangeValueForKey:@"backlashValues"];
+		}
+	}];
+	
+	[self fetchBedBaseLevelsWithCompletionHandler:^(BOOL success, TFPBedLevelOffsets offsets) {
+		if(success) {
+			self.bedBaseOffsets = offsets;
+		}
+	}];
+	
+	[self syncPositionFastTracked:NO];
 }
 
 
 - (void)setBedLevelOffsets:(TFPBedLevelOffsets)bedLevelOffsets {
 	_bedLevelOffsets = bedLevelOffsets;
 	[self setBedOffsets:bedLevelOffsets completionHandler:nil];
+}
+
+
+- (void)setBacklashValues:(TFPBacklashValues)backlashValues {
+	_backlashValues = backlashValues;
+	[self setBacklashValues:backlashValues completionHandler:nil];
 }
 
 
@@ -266,6 +340,7 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 	va_start(list, noticeFormat);
 	NSString *string = [[NSString alloc] initWithFormat:noticeFormat arguments:list];
 	va_end(list);
+	
 	TFMainThread(^{
 		if(self.noticeBlock) {
 			self.noticeBlock(string);
@@ -280,7 +355,7 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 	TFLog(@"Got resend request for line %@", code);
 	
 	if(code) {
-		TFPPrinterGCodeEntry *entry = [[TFPPrinterGCodeEntry alloc] initWithCode:code lineNumber:lineNumber responseBlock:nil queue:nil];
+		TFPPrinterGCodeEntry *entry = [[TFPPrinterGCodeEntry alloc] initWithCode:code lineNumber:lineNumber options:0 responseBlock:nil queue:nil];
 		[self.queuedCodeEntries insertObject:entry atIndex:0];
 		[self dequeueCode];
 	} else {
@@ -289,20 +364,8 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 }
 
 
-- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSDictionary *value))block {
+- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSDictionary<NSString *, NSString*> *value))block {
 	[self sendGCode:code responseHandler:block responseQueue:dispatch_get_main_queue()];
-}
-
-
-- (void)processSentCode:(TFPGCode*)code {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		NSInteger G = [code valueForField:'G' fallback:-1];
-		if(G == 0 || G == 1) {
-			if([code hasField:'F']) {
-				self.feedrate = [code valueForField:'F'];
-			}
-		}
-	});
 }
 
 
@@ -314,18 +377,26 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 	
 	TFPPrinterGCodeEntry *entry = self.queuedCodeEntries.firstObject;
 	if(entry) {
-		[self processSentCode:entry.code];
-		TFPGCode *code = [self adjustLine:entry.code];
-		
 		[self.queuedCodeEntries removeObjectAtIndex:0];
-		[self.connection sendGCode:code];
+		
+		TFPGCode *code = entry.code;
+		BOOL supplement = NO;
+		code = [self adjustCodeForCalibrationIfNeeded:code options:entry.options supplement:&supplement];
+		
+		if(supplement) {
+			[self.queuedCodeEntries insertObject:entry atIndex:0];
+			entry = [[TFPPrinterGCodeEntry alloc] initWithCode:code lineNumber:-1 options:entry.options responseBlock:nil queue:nil];
+		}
+		code = [self adjustLineBeforeSending:code];
 		self.pendingCodeEntry = entry;
 		
-		if(self.outgoingCodeBlock) {
-			dispatch_async(dispatch_get_main_queue(), ^{
-				self.outgoingCodeBlock(entry.code.ASCIIRepresentation);
-			});
-		}
+		[self.connection sendGCode:code];
+		
+		TFMainThread(^{
+			if(self.outgoingCodeBlock) {
+				self.outgoingCodeBlock(code.ASCIIRepresentation);
+			}
+		});
 	}
 }
 
@@ -350,14 +421,156 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 }
 
 
-- (TFPGCode*)adjustLine:(TFPGCode*)code {
-	if([code hasField:'G'] && [code hasField:'F']) {
+// On communication queue here
+- (TFPGCode*)adjustLineBeforeSending:(TFPGCode*)code {
+	NSInteger G = [code valueForField:'G' fallback:-1];
+	
+	if(G > -1 && [code hasField:'F']) {
 		double feedRate = code.feedRate;
 		feedRate = [self convertToM3DSpecificFeedRate:feedRate];
 		code = [code codeBySettingField:'F' toValue:feedRate];
 	}
 	
 	return code;
+}
+
+
+- (TFPMovementDirection)directionForDelta:(double)delta {
+	if(delta > DBL_EPSILON) {
+		return TFPMovementDirectionPositive;
+	}else if(delta < -DBL_EPSILON) {
+		return TFPMovementDirectionNegative;
+	}else{
+		return TFPMovementDirectionNeutral;
+	}
+}
+
+
+- (TFPGCode*)adjustCodeForCalibrationIfNeeded:(TFPGCode*)code options:(TFPGCodeOptions)options supplement:(BOOL*)supplement {
+	NSInteger G = [code valueForField:'G' fallback:-1];
+
+	BOOL backlashEnabled = !(options & TFPGCodeOptionNoBacklashCompensation);
+	BOOL levelAdjustmentEnabled = !(options & TFPGCodeOptionNoLevelCompensation);
+	
+	
+	if(G == 0 || G == 1) {
+		if([code hasField:'X'] || [code hasField:'Y'] || [code hasField:'Z']) {
+			double X, Y, Z;
+			if(self.relativeMode) {
+				X = self.positionX + [code valueForField:'X' fallback:0];
+				Y = self.positionY + [code valueForField:'Y' fallback:0];
+				Z = self.unadjustedPositionZ + [code valueForField:'Z' fallback:0];
+			}else{
+				X = [code valueForField:'X' fallback:self.positionX];
+				Y = [code valueForField:'Y' fallback:self.positionY];
+				Z = [code valueForField:'Z' fallback:self.unadjustedPositionZ];
+			}
+			
+			double zAdjustment = [self.bedLevelCompensator zAdjustmentAtX:X Y:Y];
+			
+			TFPMovementDirection newDirectionX = [self directionForDelta:X - self.positionX];
+			TFPMovementDirection newDirectionY = [self directionForDelta:Y - self.positionY];
+			BOOL doBacklashX = NO, doBacklashY = NO;
+			
+			
+			if(newDirectionX != TFPMovementDirectionNeutral && newDirectionX != self.movementDirectionX && self.movementDirectionX != TFPMovementDirectionNeutral) {
+				self.adjustmentX += (newDirectionX == TFPMovementDirectionPositive ? self.backlashValues.x : -self.backlashValues.x);
+				doBacklashX = YES;
+			}
+			
+			if(newDirectionY != TFPMovementDirectionNeutral && newDirectionY != self.movementDirectionY && self.movementDirectionY != TFPMovementDirectionNeutral) {
+				self.adjustmentY += (newDirectionY == TFPMovementDirectionPositive ? self.backlashValues.y : -self.backlashValues.y);
+				doBacklashY = YES;
+			}
+			
+			
+			if(newDirectionX != TFPMovementDirectionNeutral)
+				self.movementDirectionX = newDirectionX;
+			if(newDirectionY != TFPMovementDirectionNeutral)
+				self.movementDirectionY = newDirectionY;
+
+			if((doBacklashX || doBacklashY) && backlashEnabled) {
+				TFPGCode *backlashCode = [TFPGCode codeWithField:'G' value:0];
+				backlashCode = [backlashCode codeBySettingField:'F' toValue:self.backlashValues.speed];
+				backlashCode = [backlashCode codeBySettingComment:@"AUTO-BACKLASH"];
+				
+				if(doBacklashX) {
+					backlashCode = [backlashCode codeBySettingField:'X' toValue:self.positionX + self.adjustmentX];
+				}
+				if(doBacklashY) {
+					backlashCode = [backlashCode codeBySettingField:'Y' toValue:self.positionY + self.adjustmentY];
+				}
+				
+				self.needsFeedRateReset = YES;
+				*supplement = YES;
+				code = backlashCode;
+				
+			}else{
+				double newZ = Z + zAdjustment;
+				if (self.relativeMode) {
+					newZ -= self.unadjustedPositionZ;
+				}
+				
+				if(levelAdjustmentEnabled) {
+					code = [code codeBySettingField:'Z' toValue:newZ];
+				}
+				
+				if([code hasField:'X'] && !self.relativeMode && backlashEnabled) {
+					code = [code codeByAdjustingField:'X' offset:self.adjustmentX];
+				}
+				
+				if([code hasField:'Y'] && !self.relativeMode && backlashEnabled) {
+					code = [code codeByAdjustingField:'Y' offset:self.adjustmentY];
+				}
+				
+				if(self.needsFeedRateReset) {
+					if(![code hasField:'F']) {
+						code = [code codeBySettingField:'F' toValue:self.currentFeedRate];
+					}
+					self.needsFeedRateReset = NO;
+				}
+				
+				if([code hasField:'F']) {
+					self.currentFeedRate = [code valueForField:'F'];
+					TFMainThread(^{
+						self.feedrate = [code valueForField:'F'];
+					});
+				}
+			}
+			
+			self.positionX = X;
+			self.positionY = Y;
+			self.positionZ = Z + zAdjustment;
+			self.unadjustedPositionZ = Z;
+			
+		} else if([code hasField:'F']) {
+			self.currentFeedRate = [code valueForField:'F'];
+			TFMainThread(^{
+				self.feedrate = [code valueForField:'F'];
+			});
+		}
+		
+	} else if(G == 28) {
+		[self syncPositionFastTracked:YES];
+		self.movementDirectionX = TFPMovementDirectionNegative;
+		self.movementDirectionY = TFPMovementDirectionNegative;
+		self.adjustmentX = 0;
+		self.adjustmentY = 0;
+		
+	} else if(G == 90) {
+		self.relativeMode = NO;
+		
+	} else if(G == 91) {
+		self.relativeMode = YES;
+	}
+	
+	return code;
+}
+
+
+- (void)syncPositionFastTracked:(BOOL)fastTracked {
+	TFPGCodeOptions options = (fastTracked ? TFPGCodeOptionPrioritized : 0);
+	[self sendGCode:[TFPGCode codeForGettingPosition] options:options responseHandler:nil responseQueue:self.communicationQueue];
 }
 
 
@@ -391,35 +604,46 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 }
 
 
-- (void)sendGCode:(TFPGCode*)inputCode responseHandler:(void(^)(BOOL success, NSDictionary *value))block responseQueue:(dispatch_queue_t)queue {
+- (void)sendGCode:(TFPGCode*)inputCode options:(TFPGCodeOptions)options responseHandler:(void(^)(BOOL success, NSDictionary<NSString *, NSString*> *value))block responseQueue:(dispatch_queue_t)queue {
 	if([self sendReplacementsForGCodeIfNeeded:inputCode responseHandler:block responseQueue:queue]) {
 		return;
 	}
 	
+	BOOL prio = options & TFPGCodeOptionPrioritized;
+	
 	dispatch_async(self.communicationQueue, ^{
 		TFPGCode *code = inputCode;
 		NSInteger lineNumber = -1;
-		if([self codeNeedsLineNumber:code]) {
+		if([self codeNeedsLineNumber:code] && !prio) {
 			lineNumber = [self consumeLineNumber];
 			code = [inputCode codeBySettingLineNumber:lineNumber];
 			self.codeRegistry[@(lineNumber)] = code;
 		}
 		
-		TFPPrinterGCodeEntry *entry = [[TFPPrinterGCodeEntry alloc] initWithCode:code lineNumber:lineNumber responseBlock:block queue:queue];
-		[self.queuedCodeEntries addObject:entry];
+		TFPPrinterGCodeEntry *entry = [[TFPPrinterGCodeEntry alloc] initWithCode:code lineNumber:lineNumber options:options responseBlock:block queue:queue];
+		if(prio) {
+			[self.queuedCodeEntries insertObject:entry atIndex:0];
+		}else{
+			[self.queuedCodeEntries addObject:entry];
+		}
 		[self dequeueCode];
 	});
 }
 
 
-- (void)runGCodeProgram:(TFPGCodeProgram *)program previousValues:(NSArray*)previousValues completionHandler:(void (^)(BOOL success, NSArray *valueDictionaries))completionHandler responseQueue:(dispatch_queue_t)queue {
+- (void)sendGCode:(TFPGCode*)inputCode responseHandler:(void(^)(BOOL success, NSDictionary<NSString *, NSString*> *value))block responseQueue:(dispatch_queue_t)queue {
+	[self sendGCode:inputCode options:0 responseHandler:block responseQueue:queue];
+}
+
+
+- (void)runGCodeProgram:(TFPGCodeProgram *)program options:(TFPGCodeOptions)options previousValues:(NSArray*)previousValues completionHandler:(void (^)(BOOL success, NSArray *valueDictionaries))completionHandler responseQueue:(dispatch_queue_t)queue {
 	if(previousValues.count < program.lines.count) {
 		TFPGCode *code = program.lines[previousValues.count];
-		[self sendGCode:code responseHandler:^(BOOL success, NSDictionary *value) {
+		[self sendGCode:code options:options responseHandler:^(BOOL success, NSDictionary *value) {
 			if(success) {
 				NSMutableArray *newValues = [previousValues mutableCopy];
 				[newValues addObject:value];
-				[self runGCodeProgram:program previousValues:newValues completionHandler:completionHandler responseQueue:queue];
+				[self runGCodeProgram:program options:options previousValues:newValues completionHandler:completionHandler responseQueue:queue];
 			}else{
 				if(completionHandler) {
 					dispatch_async(queue, ^{
@@ -438,13 +662,33 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 }
 
 
-- (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success, NSArray *valueDictionaries))completionHandler responseQueue:(dispatch_queue_t)queue {
-	[self runGCodeProgram:program previousValues:@[] completionHandler:completionHandler responseQueue:queue];
+- (TFPPrinterContext*)acquireContextWithOptions:(TFPPrinterContextOptions)options queue:(dispatch_queue_t)queue {
+	if(self.primaryContext && !(options & TFPPrinterContextOptionConcurrent)) {
+		return nil;
+	}
+	
+	TFPPrinterContext *context = [[TFPPrinterContext alloc] initWithPrinter:self queue:queue options:options];
+	if(!(options & TFPPrinterContextOptionConcurrent)) {
+		self.primaryContext = context;
+	}
+	return context;
 }
 
 
-- (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success, NSArray *valueDictionaries))completionHandler {
-	[self runGCodeProgram:program completionHandler:completionHandler responseQueue:dispatch_get_main_queue()];
+- (void)invalidateContext:(TFPPrinterContext*)context {
+	if(self.primaryContext == context) {
+		self.primaryContext = nil;
+	}
+}
+
+
+- (void)runGCodeProgram:(TFPGCodeProgram*)program options:(TFPGCodeOptions)options completionHandler:(void(^)(BOOL success, NSArray<TFPGCodeResponseDictionary> *values))completionHandler responseQueue:(dispatch_queue_t)queue {
+	[self runGCodeProgram:program options:options previousValues:@[] completionHandler:completionHandler responseQueue:queue];
+}
+
+
+- (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success, NSArray<TFPGCodeResponseDictionary> *values))completionHandler {
+	[self runGCodeProgram:program options:0 completionHandler:completionHandler responseQueue:dispatch_get_main_queue()];
 }
 
 
@@ -514,12 +758,33 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 
 - (void)processTemperatureUpdate:(double)temperature {
 	// On communication queue here
-	dispatch_async(dispatch_get_main_queue(), ^{
+	TFMainThread(^{
 		if(temperature != self.heaterTemperature) {
 			self.heaterTemperature = temperature;
 		}
 	});
 }
+
+
+- (void)updateStateForResponse:(NSDictionary<NSString*, NSString*> *)values entry:(TFPPrinterGCodeEntry*)entry {
+	NSInteger M = [entry.code valueForField:'M' fallback:-1];
+	
+	if(M == 114) {
+		if(values[@"X"]) {
+			self.positionX = values[@"X"].doubleValue;
+		}
+		if(values[@"Y"]) {
+			self.positionY = values[@"Y"].doubleValue;
+		}
+		if(values[@"Z"]) {
+			self.positionZ = values[@"Z"].doubleValue;
+			self.unadjustedPositionZ = self.positionZ - [self.bedLevelCompensator zAdjustmentAtX:self.positionX Y:self.positionY];
+		}
+		
+		[self sendNotice:@"Synced position to (%.02f, %.02f, %.02f [%.02f])", self.positionX, self.positionY, self.unadjustedPositionZ, self.positionZ];
+	}
+}
+
 
 
 - (void)handleMessage:(TFPPrinterMessageType)type lineNumber:(NSInteger)lineNumber value:(id)value {
@@ -534,6 +799,8 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 		case TFPPrinterMessageTypeConfirmation: {
 			TFPPrinterGCodeEntry *entry = self.pendingCodeEntry;
 			self.pendingCodeEntry = nil;
+			[self updateStateForResponse:value entry:entry];
+			
 			[self dequeueCode];
 			
 			if(entry.lineNumber != -1 && entry.lineNumber != lineNumber) {
@@ -607,6 +874,64 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 	NSLog(@"my state %d", (int)self.connection.state);
 	
 	return self.connection.state != TFPPrinterConnectionStatePending && self.connection.serialPort && [ports containsObject:self.connection.serialPort];
+}
+
+
+@end
+
+
+
+@interface TFPPrinterContext ()
+@property dispatch_queue_t queue;
+@property (readwrite) TFPPrinter *printer;
+@property TFPGCodeOptions codeOptions;
+@end
+
+
+@implementation TFPPrinterContext
+
+
+- (instancetype)initWithPrinter:(TFPPrinter*)printer queue:(dispatch_queue_t)queue options:(TFPPrinterContextOptions)options {
+	if(!(self = [super init])) return nil;
+	
+	self.printer = printer;
+	self.queue = queue;
+	
+	TFPGCodeOptions codeOptions = 0;
+	if(options & TFPPrinterContextOptionDisableLevelCompensation) {
+		codeOptions |= TFPGCodeOptionNoLevelCompensation;
+	}
+	if(options & TFPPrinterContextOptionDisableBacklashCompensation) {
+		codeOptions |= TFPGCodeOptionNoBacklashCompensation;
+	}
+	if(options & TFPPrinterContextOptionDisableFeedRateConversion) {
+		codeOptions |= TFPGCodeOptionNoFeedRateConversion;
+	}
+	
+	self.codeOptions = codeOptions;
+	
+	return self;
+}
+
+
+- (void)dealloc {
+	[self invalidate];
+}
+
+
+- (void)invalidate {
+	[self.printer invalidateContext:self];
+	self.printer = nil;
+}
+
+
+- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, TFPGCodeResponseDictionary value))block {
+	[self.printer sendGCode:code options:self.codeOptions responseHandler:block responseQueue:self.queue];
+}
+
+
+- (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success, NSArray<TFPGCodeResponseDictionary> *values))completionHandler {
+	[self.printer runGCodeProgram:program options:self.codeOptions completionHandler:completionHandler responseQueue:self.queue];
 }
 
 

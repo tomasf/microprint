@@ -10,6 +10,7 @@
 
 @interface TFPOperation ()
 @property (readwrite, weak) TFPPrinter *printer;
+@property (readwrite) TFPPrinterContext *context;
 @end
 
 
@@ -20,7 +21,7 @@
 	if(!(self = [super init])) return nil;
 	
 	self.printer = printer;
-
+	
 	return self;
 }
 
@@ -30,13 +31,21 @@
 }
 
 
-- (void)start {
-	self.printer.currentOperation = self;
+- (BOOL)start {
+	self.context = [self.printer acquireContextWithOptions:[self printerContextOptions] queue:[self printerContextQueue]];
+	
+	if(self.context) {
+		self.printer.currentOperation = self;
+		return YES;
+	} else {
+		return NO;
+	}
 }
 
 
 - (void)ended {
 	self.printer.currentOperation = nil;
+	[self.context invalidate];
 }
 
 
@@ -52,6 +61,16 @@
 
 - (TFPOperationStage)stage {
 	return TFPOperationStageRunning;
+}
+
+
+- (TFPPrinterContextOptions)printerContextOptions {
+	return 0;
+}
+
+
+- (dispatch_queue_t)printerContextQueue {
+	return nil;
 }
 
 

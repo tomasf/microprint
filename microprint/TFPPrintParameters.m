@@ -15,9 +15,7 @@
 	if(!(self = [super init])) return nil;
 	
 	self.filament = [TFPFilament defaultFilament];
-	self.useWaveBonding = NO;
-	self.useBacklashCompensation = YES;
-	self.useBasicPreparation = YES;
+	self.useWaveBonding = YES;
 	
 	return self;
 }

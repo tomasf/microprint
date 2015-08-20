@@ -660,6 +660,18 @@
                                                 </items>
                                             </menu>
                                         </menuItem>
+                                        <menuItem title="Dump Bed Leveling Table" id="q88-o8-676">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="bedLevelTest:" target="Voe-Tx-rLC" id="Iyy-EX-qtV"/>
+                                            </connections>
+                                        </menuItem>
+                                        <menuItem title="Dump Level Values" id="X3g-qT-dGh">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="levelTest:" target="Voe-Tx-rLC" id="2b3-UK-iXW"/>
+                                            </connections>
+                                        </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>

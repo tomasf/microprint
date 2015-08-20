@@ -10,6 +10,7 @@
 #import "TFPPrinterManager.h"
 #import "TFPPrinter.h"
 #import "TFPDryRunPrinter.h"
+#import "TFPBedLevelCompensator.h"
 
 #import "TFPExtras.h"
 
@@ -17,6 +18,7 @@
 @interface TFPApplicationDelegate ()
 @property NSWindow *mainWindow;
 
+@property TFPPrinterContext *debugContext;
 @property (copy) void(^debugCancelBlock)();
 @end
 
@@ -58,7 +60,8 @@
 	__weak __typeof__(self) weakSelf = self;
 	
 	TFPPrinter *printer = [TFPPrinterManager sharedManager].printers.firstObject;
-	self.debugCancelBlock = [printer setHeaterTemperatureAsynchronously:200 progressBlock:^(double currentTemperature) {
+	self.debugContext = [printer acquireContextWithOptions:TFPPrinterContextOptionConcurrent queue:nil];
+	self.debugCancelBlock = [self.debugContext setHeaterTemperatureAsynchronously:200 progressBlock:^(double currentTemperature) {
 		TFLog(@"Temp: %.02f", currentTemperature);
 	} completionBlock:^{
 		TFLog(@"Heated!");
@@ -84,8 +87,9 @@
 
 - (void)testMoveToPosition:(TFP3DVector*)target {
 	TFPPrinter *printer = [TFPPrinterManager sharedManager].printers.firstObject;
-
-	self.debugCancelBlock = [printer moveAsynchronouslyToPosition:target feedRate:3000 progressBlock:^(double fraction, TFP3DVector *position) {
+	self.debugContext = [printer acquireContextWithOptions:TFPPrinterContextOptionConcurrent queue:nil];
+	
+	self.debugCancelBlock = [self.debugContext moveAsynchronouslyToPosition:target feedRate:3000 progressBlock:^(double fraction, TFP3DVector *position) {
 		NSLog(@"Progress: %d, %@", (int)(fraction*100), position);
 	} completionBlock:^{
 		NSLog(@"Done!");
@@ -117,6 +121,26 @@
 
 - (IBAction)setDryRunSpeedMultiplier:(id)sender {
 	[TFPDryRunPrinter setSpeedMultiplier:[sender tag]];
+}
+
+
+- (IBAction)bedLevelTest:(id)sender {
+	TFPPrinter *printer = [TFPPrinterManager sharedManager].printers.firstObject;
+	TFPBedLevelCompensator *compensator = [[TFPBedLevelCompensator alloc] initWithBedLevel:printer.bedBaseOffsets];
+	
+	for(NSUInteger x=9; x<=99; x++) {
+		for(NSUInteger y=5; y<=95; y++) {
+			double z = [compensator zAdjustmentAtX:x Y:y];
+			TFLog(@"SCNVector3Make(%.02f, %.02f, %.03f),", (double)x, (double)y, z);
+		}
+	}
+}
+
+
+- (IBAction)levelTest:(id)sender {
+	TFPPrinter *printer = [TFPPrinterManager sharedManager].printers.firstObject;
+	TFLog(@"Base level: %@", TFPBedLevelOffsetsDescription(printer.bedBaseOffsets));
+	TFLog(@"Bed level offset: %@", TFPBedLevelOffsetsDescription(printer.bedLevelOffsets));
 }
 
 

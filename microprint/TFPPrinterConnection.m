@@ -69,7 +69,6 @@
 }
 
 
-
 + (NSDictionary*)dictionaryFromResponseValueString:(NSString*)string {
 	NSMutableDictionary *dictionary = [NSMutableDictionary new];
 	NSArray *parts = [string componentsSeparatedByString:@" "];

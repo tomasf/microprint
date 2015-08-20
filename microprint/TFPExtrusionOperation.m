@@ -105,23 +105,25 @@ static const double minimumZLevelForOperation = 25;
 
 
 
-- (void)start {
-	[super start];
+- (BOOL)start {
+	if(![super start]) {
+		return NO;
+	}
 	self.stage = TFPOperationStagePreparation;
 	
 	__weak TFPPrinter *printer = self.printer;
 	__weak __typeof__(self) weakSelf = self;
 	
 
-	[printer sendGCode:[TFPGCode codeForSettingFanSpeed:255] responseHandler:nil];
-	[printer sendGCode:[TFPGCode absoluteModeCode] responseHandler:nil];
+	[self.context sendGCode:[TFPGCode codeForSettingFanSpeed:255] responseHandler:nil];
+	[self.context sendGCode:[TFPGCode absoluteModeCode] responseHandler:nil];
 
 	[printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, NSNumber *E) {
 
 		TFAsyncOperationCoalescer *coalescer = [TFAsyncOperationCoalescer new];
 		
 		void(^heatingProgressBlock)(double progress) = [coalescer addOperation];
-		self.cancelHeatingBlock = [printer setHeaterTemperatureAsynchronously:self.temperature progressBlock:^(double currentTemperature) {
+		self.cancelHeatingBlock = [self.context setHeaterTemperatureAsynchronously:self.temperature progressBlock:^(double currentTemperature) {
 			heatingProgressBlock(currentTemperature / weakSelf.temperature);
 		} completionBlock:^{
 			heatingProgressBlock(1);
@@ -130,7 +132,7 @@ static const double minimumZLevelForOperation = 25;
 		
 		TFP3DVector *raisedPosition = [TFP3DVector zVector:MAX(position.z.doubleValue, minimumZLevelForOperation)];
 		void(^moveProgressBlock)(double progress) = [coalescer addOperation];
-		self.cancelMovingBlock = [printer moveAsynchronouslyToPosition:raisedPosition feedRate:3000 progressBlock:^(double fraction, TFP3DVector *position) {
+		self.cancelMovingBlock = [self.context moveAsynchronouslyToPosition:raisedPosition feedRate:3000 progressBlock:^(double fraction, TFP3DVector *position) {
 			moveProgressBlock(fraction);
 		} completionBlock:^{
 			moveProgressBlock(1);
@@ -152,6 +154,8 @@ static const double minimumZLevelForOperation = 25;
 			[weakSelf extrudeStep];
 		};
 	}];
+	
+	return YES;
 }
 
 

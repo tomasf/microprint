@@ -9,6 +9,7 @@
 #import "TFPOperation.h"
 
 typedef NS_ENUM(NSUInteger, TFPBedLevelCalibrationCorner) {
+	TFPBedLevelCalibrationCornerCenter,
 	TFPBedLevelCalibrationCornerBackLeft,
 	TFPBedLevelCalibrationCornerBackRight,
 	TFPBedLevelCalibrationCornerBackFrontRight,
@@ -17,15 +18,13 @@ typedef NS_ENUM(NSUInteger, TFPBedLevelCalibrationCorner) {
 
 
 @interface TFPBedLevelCalibration : TFPOperation
-- (void)startAtLevel:(double)startZ heightTarget:(double)heightTarget;
+- (BOOL)startAtLevel:(double)startZ heightTarget:(double)heightTarget;
 
 - (void)adjustUp;
 - (void)adjustDown;
 @property (readonly) double currentLevel;
 
 - (void)continue;
-
-- (void)stop;
 
 @property (copy) void(^didStartMovingHandler)();
 @property (copy) void(^didStopAtCornerHandler)(TFPBedLevelCalibrationCorner corner);
