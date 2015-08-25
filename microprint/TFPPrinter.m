@@ -472,6 +472,8 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 			TFPMovementDirection newDirectionY = [self directionForDelta:Y - self.positionY];
 			BOOL doBacklashX = NO, doBacklashY = NO;
 			
+			double previousAdjustmentX = self.adjustmentX;
+			double previousAdjustmentY = self.adjustmentY;
 			
 			if(newDirectionX != TFPMovementDirectionNeutral && newDirectionX != self.movementDirectionX && self.movementDirectionX != TFPMovementDirectionNeutral) {
 				self.adjustmentX += (newDirectionX == TFPMovementDirectionPositive ? self.backlashValues.x : -self.backlashValues.x);
@@ -495,10 +497,18 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 				backlashCode = [backlashCode codeBySettingComment:@"AUTO-BACKLASH"];
 				
 				if(doBacklashX) {
-					backlashCode = [backlashCode codeBySettingField:'X' toValue:self.positionX + self.adjustmentX];
+					double value = self.positionX + self.adjustmentX;
+					if(self.relativeMode) {
+						value -= self.positionX + previousAdjustmentX;
+					}
+					backlashCode = [backlashCode codeBySettingField:'X' toValue:value];
 				}
 				if(doBacklashY) {
-					backlashCode = [backlashCode codeBySettingField:'Y' toValue:self.positionY + self.adjustmentY];
+					double value = self.positionY + self.adjustmentY;
+					if(self.relativeMode) {
+						value -= self.positionY + previousAdjustmentY;
+					}
+					backlashCode = [backlashCode codeBySettingField:'Y' toValue:value];
 				}
 				
 				self.needsFeedRateReset = YES;
