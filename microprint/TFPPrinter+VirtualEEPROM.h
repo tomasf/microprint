@@ -50,6 +50,10 @@ enum VirtualEEPROMIndexes {
 
 
 @interface TFPPrinter (VirtualEEPROM)
+
++ (uint32_t)encodeVirtualEEPROMIntegerValueForFloat:(float)value;
++ (float)decodeVirtualEEPROMFloatValueForInteger:(uint32_t)value;
+
 // Single values, int32
 - (void)readVirtualEEPROMValueAtIndex:(NSUInteger)index completionHandler:(void(^)(BOOL success, int32_t value))completionHandler;
 - (void)writeVirtualEEPROMValueAtIndex:(NSUInteger)index value:(int32_t)value completionHandler:(void(^)(BOOL success))completionHandler;
