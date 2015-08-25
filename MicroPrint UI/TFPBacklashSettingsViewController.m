@@ -26,11 +26,13 @@
 	[super viewDidAppear];
 	__weak __typeof__(self) weakSelf = self;
 	
-	[self.printer fetchBacklashValuesWithCompletionHandler:^(BOOL success, TFPBacklashValues values) {
-		self.xValue = values.x;
-		self.yValue = values.y;
-		self.speed = values.speed;
-		self.hasChanges = NO;
+	[self addObserver:self keyPath:@"printer.backlashValues" options:NSKeyValueObservingOptionInitial block:^(MAKVONotification *notification) {
+		if(!weakSelf.hasChanges) {
+			weakSelf.xValue = weakSelf.printer.backlashValues.x;
+			weakSelf.yValue = weakSelf.printer.backlashValues.y;
+			weakSelf.speed = weakSelf.printer.backlashValues.speed;
+			weakSelf.hasChanges = NO;
+		}
 	}];
 	
 	[self addObserver:self keyPath:@[@"xValue", @"yValue", @"speed"] options:0 block:^(MAKVONotification *notification) {
@@ -41,8 +43,7 @@
 
 - (IBAction)apply:(id)sender {
 	TFPBacklashValues values = {.x = self.xValue, .y = self.yValue, .speed = self.speed};
-	[self.printer setBacklashValues:values completionHandler:nil];
-	
+	self.printer.backlashValues = values;
 	self.hasChanges = NO;
 }
 

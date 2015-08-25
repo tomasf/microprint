@@ -72,8 +72,10 @@ const double adjustmentAmount = 0.05;
 	__weak __typeof__(self) weakSelf = self;
 	
 	TFP3DVector *position = vectors.firstObject;
-	TFP3DVector *offsetPosition = [position vectorByAdjustingZ:zOffset];
 	self.zCompensation = [self.compensator zAdjustmentAtX:position.x.doubleValue Y:position.y.doubleValue];
+	
+	position = [position vectorByAdjustingZ:self.zCompensation];
+	TFP3DVector *offsetPosition = [position vectorByAdjustingZ:zOffset];
 	
 	self.didStartMovingHandler();
 	[weakSelf.context moveToPosition:offsetPosition usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {

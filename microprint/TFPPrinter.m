@@ -646,7 +646,7 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 				[self runGCodeProgram:program options:options previousValues:newValues completionHandler:completionHandler responseQueue:queue];
 			}else{
 				if(completionHandler) {
-					dispatch_async(queue, ^{
+					dispatch_async(queue ?: dispatch_get_main_queue(), ^{
 						completionHandler(NO, previousValues);
 					});
 				}
@@ -654,7 +654,7 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 		} responseQueue:queue];
 	}else{
 		if(completionHandler) {
-			dispatch_async(queue, ^{
+			dispatch_async(queue ?: dispatch_get_main_queue(), ^{
 				completionHandler(YES, previousValues);
 			});
 		}

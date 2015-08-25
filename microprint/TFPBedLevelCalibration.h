@@ -14,6 +14,8 @@ typedef NS_ENUM(NSUInteger, TFPBedLevelCalibrationCorner) {
 	TFPBedLevelCalibrationCornerBackRight,
 	TFPBedLevelCalibrationCornerBackFrontRight,
 	TFPBedLevelCalibrationCornerBackFrontLeft,
+	
+	TFPBedLevelCalibrationCornerLast = TFPBedLevelCalibrationCornerBackFrontLeft,
 };
 
 
