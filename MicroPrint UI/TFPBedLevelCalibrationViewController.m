@@ -77,7 +77,7 @@
 	__weak __typeof__(self) weakSelf = self;
 	
 	self.operation = [[TFPBedLevelCalibration alloc] initWithPrinter:self.printer];
-	[self.operation startAtLevel:4 heightTarget:0.3];
+	[self.operation startAtLevel:3 heightTarget:0.3];
 	
 	self.operation.didStartMovingHandler = ^{
 		[weakSelf switchToMovingMode];

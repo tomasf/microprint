@@ -516,12 +516,13 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 				code = backlashCode;
 				
 			}else{
-				double newZ = Z + zAdjustment;
-				if (self.relativeMode) {
-					newZ -= self.unadjustedPositionZ;
-				}
 				
 				if(levelAdjustmentEnabled) {
+					double newZ = Z + zAdjustment;
+					if (self.relativeMode) {
+						newZ -= self.unadjustedPositionZ;
+					}
+					
 					code = [code codeBySettingField:'Z' toValue:newZ];
 				}
 				
@@ -546,12 +547,14 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 						self.feedrate = [code valueForField:'F'];
 					});
 				}
+				
+				self.positionX = X;
+				self.positionY = Y;
+				self.positionZ = Z + zAdjustment;
+				self.unadjustedPositionZ = Z;
 			}
+			[self sendNotice:@"Z at %.02f", Z];
 			
-			self.positionX = X;
-			self.positionY = Y;
-			self.positionZ = Z + zAdjustment;
-			self.unadjustedPositionZ = Z;
 			
 		} else if([code hasField:'F']) {
 			self.currentFeedRate = [code valueForField:'F'];
