@@ -201,32 +201,28 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 	
 	self.progressIndicator.indeterminate = YES;
 	[self.progressIndicator startAnimation:nil];
+	self.state = TFPPrintingProgressViewControllerStatePreprocessing;
 	
-	[self.printer fillInOffsetAndBacklashValuesInPrintParameters:params completionHandler:^(BOOL success) {
-		TFAssertMainThread();
-		self.state = TFPPrintingProgressViewControllerStatePreprocessing;
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+		TFPGCodeProgram *program = [[TFPGCodeProgram alloc] initWithFileURL:self.GCodeFileURL error:nil];
+		program = [TFPPreprocessing programByPreprocessingProgram:program usingParameters:params];
 		
-		dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-			TFPGCodeProgram *program = [[TFPGCodeProgram alloc] initWithFileURL:self.GCodeFileURL error:nil];
-			program = [TFPPreprocessing programByPreprocessingProgram:program usingParameters:params];
+		BOOL withinBounds = [program withinM3DMicroPrintableVolume];
+		
+		dispatch_async(dispatch_get_main_queue(), ^{
+			if(weakSelf.aborted) {
+				return;
+			}
+			weakSelf.state = TFPPrintingProgressViewControllerStateRunningJob;
+			weakSelf.printJob = [[TFPPrintJob alloc] initWithProgram:program printer:weakSelf.printer printParameters:params];
 			
-			BOOL withinBounds = [program withinM3DMicroPrintableVolume];
-			
-			dispatch_async(dispatch_get_main_queue(), ^{
-				if(weakSelf.aborted) {
-					return;
-				}
-				weakSelf.state = TFPPrintingProgressViewControllerStateRunningJob;
-				weakSelf.printJob = [[TFPPrintJob alloc] initWithProgram:program printer:weakSelf.printer printParameters:params];
-				
-				if(withinBounds) {
-					[weakSelf configurePrintJob];
-				}else{
-					[weakSelf warnAboutOutOfBounds];
-				}
-			});
+			if(withinBounds) {
+				[weakSelf configurePrintJob];
+			}else{
+				[weakSelf warnAboutOutOfBounds];
+			}
 		});
-	}];
+	});
 }
 
 

@@ -8,7 +8,7 @@
 #import "TFPPrinterManager.h"
 #import "TFPPrinter.h"
 #import "TFPExtras.h"
-#import "TFPDryRunPrinter.h"
+#import "TFPDryRunPrinterConnection.h"
 #import "TFPPrinterConnection.h"
 
 #import "MAKVONotificationCenter.h"
@@ -34,7 +34,8 @@ static const uint16_t M3DMicroUSBProductID = 0x2404;
 
 
 - (void)startDryRunMode {
-	[[self mutableArrayValueForKey:@"printers"] addObject:[TFPDryRunPrinter new]];
+	TFPPrinter *printer = [[TFPPrinter alloc] initWithConnection:[TFPDryRunPrinterConnection new]];
+	[[self mutableArrayValueForKey:@"printers"] addObject:printer];
 }
 
 

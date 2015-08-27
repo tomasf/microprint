@@ -9,6 +9,7 @@
 #import "TFPBedLevelCalibration.h"
 #import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
+#import "TFPBedLevelCompensator.h"
 
 
 const double moveFeedRate = 2900;
@@ -18,9 +19,12 @@ const double adjustmentAmount = 0.05;
 
 @interface TFPBedLevelCalibration ()
 @property (readwrite) double currentLevel;
+@property double zCompensation;
+
 @property (copy) void(^continueBlock)(double level);
-@property BOOL adjusting;
 @property (readwrite) TFPOperationStage stage;
+
+@property TFPBedLevelCompensator *compensator;
 @end
 
 
@@ -31,18 +35,7 @@ const double adjustmentAmount = 0.05;
 
 - (void)moveToNewLevel:(double)level {
 	self.currentLevel = level;
-	
-	if(!self.adjusting) {
-		self.adjusting = YES;
-		
-		[self.printer moveToPosition:[TFP3DVector zVector:level] usingFeedRate:fineMoveFeedRate completionHandler:^(BOOL success) {
-			self.adjusting = NO;
-			
-			if(fabs(self.currentLevel - level) > 0.01) {
-				[self moveToNewLevel:self.currentLevel];
-			}
-		}];
-	}
+	[self.context moveToPosition:[TFP3DVector zVector:level + self.zCompensation] usingFeedRate:fineMoveFeedRate completionHandler:nil];
 }
 
 
@@ -67,25 +60,28 @@ const double adjustmentAmount = 0.05;
 	const double maxX = 102.9, maxY = 99;
 	TFP3DVector *moveAwayPosition = [TFP3DVector vectorWithX:@(maxX) Y:@(maxY) Z:@20];
 
-	[weakSelf.printer moveToPosition:moveAwayPosition usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
-		[weakSelf.printer sendGCode:[TFPGCode turnOffMotorsCode] responseHandler:^(BOOL success, NSDictionary *value) {
+	[weakSelf.context moveToPosition:moveAwayPosition usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
+		[weakSelf.context sendGCode:[TFPGCode turnOffMotorsCode] responseHandler:^(BOOL success, NSDictionary *value) {
 			[super ended];
 		}];
 	}];
 }
 
 
-- (void)promptForZFromPositions:(NSArray*)vectors index:(NSUInteger)positionIndex zOffset:(double)zOffset completionHandler:(void(^)(NSArray *zValues))completionHandler {
+- (void)promptForZFromPositions:(NSArray*)vectors index:(NSUInteger)positionIndex zOffset:(double)zOffset completionHandler:(void(^)(NSArray<NSNumber*> *zValues))completionHandler {
 	__weak __typeof__(self) weakSelf = self;
 	
 	TFP3DVector *position = vectors.firstObject;
+	self.zCompensation = [self.compensator zAdjustmentAtX:position.x.doubleValue Y:position.y.doubleValue];
+	
+	position = [position vectorByAdjustingZ:self.zCompensation];
 	TFP3DVector *offsetPosition = [position vectorByAdjustingZ:zOffset];
 	
 	self.didStartMovingHandler();
-	[weakSelf.printer moveToPosition:offsetPosition usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
-		[weakSelf.printer moveToPosition:position usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
-			[weakSelf.printer waitForMoveCompletionWithHandler:^{
-				weakSelf.currentLevel = position.z.doubleValue;
+	[weakSelf.context moveToPosition:offsetPosition usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
+		[weakSelf.context moveToPosition:position usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
+			[weakSelf.context waitForMoveCompletionWithHandler:^{
+				weakSelf.currentLevel = position.z.doubleValue - self.zCompensation;
 				
 				weakSelf.didStopAtCornerHandler(positionIndex);
 				weakSelf.continueBlock = ^(double newZ){
@@ -102,26 +98,30 @@ const double adjustmentAmount = 0.05;
 						completionHandler(@[@(newZ)]);
 					}
 				};
-				
 			}];
 		}];
 	}];
 }
 
 
-- (void)startAtLevel:(double)initialZ heightTarget:(double)targetOffset {
-	[super start];
+- (BOOL)startAtLevel:(double)initialZ heightTarget:(double)targetOffset {
+	if(![super start]) {
+		return NO;
+	}
 	__weak __typeof__(self) weakSelf = self;
 	self.stage = TFPOperationStagePreparation;
 
-	const double minX = 1, minY = 9.5, maxX = 102.9, maxY = 99;
+	self.compensator = [[TFPBedLevelCompensator alloc] initWithBedLevel:self.printer.bedBaseOffsets]; // Base offsets, but not calibration level
+	
+	const double minX = 9, minY = 5, maxX = 99, maxY = 95;
 	const double raiseLevel = 5;
 	
 	TFP3DVector *backLeft = [TFP3DVector vectorWithX:@(minX) Y:@(maxY) Z:@(initialZ)];
 	TFP3DVector *backRight = [TFP3DVector vectorWithX:@(maxX) Y:@(maxY) Z:@(initialZ)];
 	TFP3DVector *frontRight = [TFP3DVector vectorWithX:@(maxX) Y:@(minY) Z:@(initialZ)];
 	TFP3DVector *frontLeft = [TFP3DVector vectorWithX:@(minX) Y:@(minY) Z:@(initialZ)];
-	NSArray *positions = @[backLeft, backRight, frontRight, frontLeft];
+	TFP3DVector *center = [TFP3DVector vectorWithX:@(54) Y:@(50) Z:@(initialZ)];
+	NSArray *positions = @[center, backLeft, backRight, frontRight, frontLeft];
 	
 	TFP3DVector *moveAwayPosition = [TFP3DVector vectorWithX:@(maxX) Y:@(maxY) Z:@20];
 	
@@ -131,30 +131,40 @@ const double adjustmentAmount = 0.05;
 																	   [TFPGCode absoluteModeCode],
 																	   ]];
 	
-	[weakSelf.printer runGCodeProgram:preparation completionHandler:^(BOOL success, NSArray *valueDictionaries) {
+	[weakSelf.context runGCodeProgram:preparation completionHandler:^(BOOL success, NSArray *valueDictionaries) {
 		self.stage = TFPOperationStageRunning;
 
-		[weakSelf promptForZFromPositions:positions index:0 zOffset:raiseLevel completionHandler:^(NSArray *zValues) {
+		[weakSelf promptForZFromPositions:positions index:0 zOffset:raiseLevel completionHandler:^(NSArray<NSNumber*> *zValues) {
 			self.stage = TFPOperationStageEnding;
 			NSAssert(zValues.count == positions.count, @"Invalid prompt position response");
 			
-			TFPBedLevelOffsets offsets = {.common = -targetOffset};
-			offsets.backLeft = [zValues[0] doubleValue];
-			offsets.backRight = [zValues[1] doubleValue];
-			offsets.frontRight = [zValues[2] doubleValue];
-			offsets.frontLeft = [zValues[3] doubleValue];
+			TFPBedLevelOffsets offsets = {};
+			double centerValue = zValues[TFPBedLevelCalibrationCornerCenter].doubleValue;
+			
+			offsets.common = centerValue - targetOffset;
+			offsets.backLeft = [zValues[TFPBedLevelCalibrationCornerBackLeft] doubleValue] - centerValue;
+			offsets.backRight = [zValues[TFPBedLevelCalibrationCornerBackRight] doubleValue] - centerValue;
+			offsets.frontRight = [zValues[TFPBedLevelCalibrationCornerBackFrontRight] doubleValue] - centerValue;
+			offsets.frontLeft = [zValues[TFPBedLevelCalibrationCornerBackFrontLeft] doubleValue] - centerValue;
 			
 			weakSelf.printer.bedLevelOffsets = offsets;
 			weakSelf.didStartMovingHandler();
 			
-			[weakSelf.printer moveToPosition:moveAwayPosition usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
-				[weakSelf.printer sendGCode:[TFPGCode turnOffMotorsCode] responseHandler:^(BOOL success, NSDictionary *value) {
+			[weakSelf.context moveToPosition:moveAwayPosition usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
+				[weakSelf.context sendGCode:[TFPGCode turnOffMotorsCode] responseHandler:^(BOOL success, NSDictionary *value) {
 					weakSelf.didFinishHandler();
 					[weakSelf ended];
 				}];
 			}];
 		}];
 	}];
+	
+	return YES;
+}
+
+
+- (TFPPrinterContextOptions)printerContextOptions {
+	return TFPPrinterContextOptionDisableLevelCompensation;
 }
 
 

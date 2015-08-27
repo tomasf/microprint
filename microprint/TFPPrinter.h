@@ -11,7 +11,7 @@
 #import "TFPPrintParameters.h"
 #import "TFPGCodeProgram.h"
 
-@class TFPOperation, TFPPrinterConnection;
+@class TFPOperation, TFPPrinterConnection, TFPPrinterContext;
 
 
 typedef NS_ENUM(NSUInteger, TFPPrinterColor) {
@@ -44,7 +44,20 @@ typedef NS_ENUM(NSUInteger, TFPPrinterResponseErrorCode) {
 };
 
 
+typedef NS_OPTIONS(NSUInteger, TFPPrinterContextOptions) {
+	TFPPrinterContextOptionConcurrent = 1<<0,
+	
+	TFPPrinterContextOptionDisableLevelCompensation = 1<<1,
+	TFPPrinterContextOptionDisableBacklashCompensation  = 1<<2,
+	TFPPrinterContextOptionDisableFeedRateConversion = 1<<3,
+	
+	TFPPrinterContextOptionDisableCompensation = TFPPrinterContextOptionDisableLevelCompensation | TFPPrinterContextOptionDisableBacklashCompensation,
+};
+
+
 extern const NSString *TFPPrinterResponseErrorCodeKey;
+typedef NSDictionary<NSString *, NSString*>* TFPGCodeResponseDictionary;
+
 
 
 @interface TFPPrinter : NSObject
@@ -64,14 +77,15 @@ extern const NSString *TFPPrinterResponseErrorCodeKey;
 @property (readonly) double speedMultiplier;
 
 
-// Sending of G-code. Implied response queue is main.
+// Sending of G-code. Response queue is main.
 // If success is YES, value dictionary contains parameters from OK response
 // If success is NO, value dictionary contains an NSNumber-wrapped TFPPrinterResponseErrorCode in TFPPrinterResponseErrorCodeKey
 
-- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSDictionary *value))block;
-- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, NSDictionary *value))block responseQueue:(dispatch_queue_t)queue;
-- (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success, NSArray *valueDictionaries))completionHandler;
-- (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success, NSArray *valueDictionaries))completionHandler responseQueue:(dispatch_queue_t)queue;
+- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, TFPGCodeResponseDictionary value))block;
+- (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success, NSArray<TFPGCodeResponseDictionary> *values))completionHandler;
+
+- (TFPPrinterContext*)acquireContextWithOptions:(TFPPrinterContextOptions)options queue:(dispatch_queue_t)queue;
+
 
 + (NSString*)descriptionForErrorCode:(TFPPrinterResponseErrorCode)code;
 
@@ -85,12 +99,25 @@ extern const NSString *TFPPrinterResponseErrorCodeKey;
 @property (readonly) double heaterTemperature;
 @property (readonly) BOOL hasValidZLevel;
 
+@property (nonatomic, readonly) TFPBedLevelOffsets bedBaseOffsets;
 @property (nonatomic) TFPBedLevelOffsets bedLevelOffsets;
 @property (readonly) BOOL hasAllZeroBedLevelOffsets;
+
+@property (nonatomic) TFPBacklashValues backlashValues;
 
 + (NSString*)nameForPrinterColor:(TFPPrinterColor)color;
 + (NSString*)minimumTestedFirmwareVersion;
 + (NSString*)maximumTestedFirmwareVersion;
+@end
+
+
+@interface TFPPrinterContext : NSObject
+@property (readonly) TFPPrinter *printer;
+
+- (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, TFPGCodeResponseDictionary value))block;
+- (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success, NSArray<TFPGCodeResponseDictionary> *values))completionHandler;
+
+- (void)invalidate;
 @end
 
 

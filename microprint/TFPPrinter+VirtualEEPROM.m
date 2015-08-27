@@ -14,6 +14,21 @@
 @implementation TFPPrinter (VirtualEEPROM)
 
 
++ (uint32_t)encodeVirtualEEPROMIntegerValueForFloat:(float)value {
+	NSSwappedFloat swapped = NSSwapHostFloatToLittle(value);
+	int32_t intValue;
+	memcpy(&intValue, &swapped, sizeof(swapped));
+	return intValue;
+}
+
+
++ (float)decodeVirtualEEPROMFloatValueForInteger:(uint32_t)value {
+	NSSwappedFloat swapped;
+	memcpy(&swapped, &value, sizeof(float));
+	return NSSwapLittleFloatToHost(swapped);
+}
+
+
 - (void)readVirtualEEPROMValueAtIndex:(NSUInteger)index completionHandler:(void(^)(BOOL success, int32_t value))completionHandler {
 	[self sendGCode:[TFPGCode codeForReadingVirtualEEPROMAtIndex:index] responseHandler:^(BOOL success, NSDictionary *values) {
 		if(!success) {
@@ -34,20 +49,13 @@
 
 - (void)readVirtualEEPROMFloatValueAtIndex:(NSUInteger)index completionHandler:(void(^)(BOOL success, float value))completionHandler {
 	[self readVirtualEEPROMValueAtIndex:index completionHandler:^(BOOL success, int32_t value) {
-		NSSwappedFloat swapped;
-		memcpy(&swapped, &value, sizeof(float));
-		float result = NSSwapLittleFloatToHost(swapped);
-		
-		completionHandler(success, result);
+		completionHandler(success, [self.class decodeVirtualEEPROMFloatValueForInteger:value]);
 	}];
 }
 
 
 - (void)writeVirtualEEPROMFloatValueAtIndex:(NSUInteger)index value:(float)value completionHandler:(void(^)(BOOL success))completionHandler {
-	NSSwappedFloat swapped = NSSwapHostFloatToLittle(value);
-	int32_t intValue;
-	memcpy(&intValue, &swapped, sizeof(swapped));
-	
+	int32_t intValue = [self.class encodeVirtualEEPROMIntegerValueForFloat:value];
 	[self writeVirtualEEPROMValueAtIndex:index value:intValue completionHandler:completionHandler];
 }
 
@@ -68,11 +76,7 @@
 - (void)readVirtualEEPROMFloatValuesAtIndexes:(NSArray*)indexes completionHandler:(void(^)(BOOL success, NSArray *values))completionHandler {
 	[self readVirtualEEPROMValuesAtIndexes:indexes completionHandler:^(BOOL success, NSArray *values) {
 		NSArray *floatValues = [values tf_mapWithBlock:^NSNumber*(NSNumber *intNumber) {
-			int32_t value = [intNumber intValue];
-			NSSwappedFloat swapped;
-			memcpy(&swapped, &value, sizeof(float));
-			
-			return @(NSSwapLittleFloatToHost(swapped));
+			return @([self.class decodeVirtualEEPROMFloatValueForInteger:intNumber.intValue]);
 		}];
 		
 		completionHandler(success, floatValues);
@@ -109,11 +113,7 @@
 	NSMutableDictionary *intValuesForIndexes = [NSMutableDictionary new];
 	for(NSNumber *key in valuesForIndexes) {
 		NSNumber *floatNumber = valuesForIndexes[key];
-		NSSwappedFloat swapped = NSSwapHostFloatToLittle(floatNumber.floatValue);
-		int32_t intValue;
-		memcpy(&intValue, &swapped, sizeof(swapped));
-		
-		intValuesForIndexes[key] = @(intValue);
+		intValuesForIndexes[key] = @([self.class encodeVirtualEEPROMIntegerValueForFloat:floatNumber.floatValue]);
 	}
 	
 	[self writeVirtualEEPROMValues:intValuesForIndexes completionHandler:completionHandler];

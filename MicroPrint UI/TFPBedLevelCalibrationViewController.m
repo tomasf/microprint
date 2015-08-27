@@ -34,7 +34,12 @@
 
 
 - (NSString*)cornerString {
-	return @[@"Back-left corner", @"Back-right corner", @"Front-right corner", @"Front-left corner"][self.currentCorner];
+	return @{@(TFPBedLevelCalibrationCornerBackLeft): @"Back-left corner",
+			 @(TFPBedLevelCalibrationCornerBackRight): @"Back-right corner",
+			 @(TFPBedLevelCalibrationCornerBackFrontRight): @"Front-right corner",
+			 @(TFPBedLevelCalibrationCornerBackFrontLeft): @"Front-left corner",
+			 @(TFPBedLevelCalibrationCornerCenter): @"Center"
+			 }[@(self.currentCorner)];
 }
 
 
@@ -44,7 +49,7 @@
 
 
 - (NSString*)continueString {
-	if(self.currentCorner == TFPBedLevelCalibrationCornerBackFrontLeft) {
+	if(self.currentCorner == TFPBedLevelCalibrationCornerLast) {
 		return @"Finish Calibration";
 	}else{
 		return @"Next Corner";
@@ -72,7 +77,7 @@
 	__weak __typeof__(self) weakSelf = self;
 	
 	self.operation = [[TFPBedLevelCalibration alloc] initWithPrinter:self.printer];
-	[self.operation startAtLevel:2 heightTarget:0.3];
+	[self.operation startAtLevel:3 heightTarget:0.3];
 	
 	self.operation.didStartMovingHandler = ^{
 		[weakSelf switchToMovingMode];

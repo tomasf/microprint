@@ -27,7 +27,7 @@
 	TFPListenForInputLine(^(NSString *line) {
 		TFPGCode *code = [[TFPGCode alloc] initWithString:line];
 		if(code) {			
-			[self.printer sendGCode:code responseHandler:^(BOOL success, NSDictionary *value) {
+			[self.context sendGCode:code responseHandler:^(BOOL success, NSDictionary *value) {
 				[weakSelf listen];
 			}];
 		}else{
@@ -39,7 +39,11 @@
 
 
 
-- (void)start {
+- (BOOL)start {
+	if(![super start]) {
+		return NO;
+	}
+	
 	setbuf(stdout, NULL);
 	
 	self.printer.incomingCodeBlock = ^(NSString *line){
@@ -47,6 +51,7 @@
 	};
 	
 	[self listen];
+	return YES;
 }
 
 

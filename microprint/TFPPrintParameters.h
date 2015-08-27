@@ -34,13 +34,8 @@ extern NSString *TFPBacklashValuesDescription(TFPBacklashValues values);
 @property (readwrite) BOOL verbose;
 
 @property (readwrite) TFPFilament *filament;
-@property (readwrite, nonatomic) double idealTemperature;
-@property (readwrite) TFPCuboid boundingBox;
-
-@property (readwrite) TFPBedLevelOffsets bedLevelOffsets;
-@property (readwrite) TFPBacklashValues backlashValues;
-
 @property (readwrite) BOOL useWaveBonding;
-@property (readwrite) BOOL useBacklashCompensation;
-@property (readwrite) BOOL useBasicPreparation;
+@property (readwrite, nonatomic) double idealTemperature;
+
+@property (readwrite) TFPCuboid boundingBox;
 @end
