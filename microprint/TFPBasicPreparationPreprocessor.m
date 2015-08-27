@@ -50,7 +50,7 @@
 	  [TFPGCode codeForTurningOffHeater],
 
 	  [TFPGCode relativeModeCode],
-	  [TFPGCode moveWithPosition:[TFP3DVector vectorWithX:@5 Y:@5 Z:@(raiseHeight)] feedRate:2000],
+	  [TFPGCode moveWithPosition:[TFP3DVector vectorWithX:@5 Y:@5 Z:@(raiseHeight)] feedRate:2900],
 	  [TFPGCode absoluteModeCode],
 	  [TFPGCode moveWithPosition:backPosition feedRate:-1],
 	  

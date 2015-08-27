@@ -22,8 +22,10 @@
 @synthesize stage=_stage;
 
 
-- (void)start {
-    [super start];
+- (BOOL)start {
+	if(![super start]) {
+		return NO;
+	}
 
     const double temperature = 150; // Warm it up a bit
 
@@ -83,6 +85,8 @@
             }];
         }
     }];
+	
+	return YES;
 }
 
 

@@ -18,7 +18,4 @@
 @property (copy) void(^preparationProgressBlock)(double temperature);
 @property (copy) void(^extrusionStartedBlock)();
 @property (copy) void(^extrusionStoppedBlock)();
-
-- (void)start;
-- (void)stop;
 @end

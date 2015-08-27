@@ -41,6 +41,32 @@
 }
 
 
+
+- (void)fetchBedBaseLevelsWithCompletionHandler:(void(^)(BOOL success, TFPBedLevelOffsets offsets))completionHandler {
+	NSArray *indexes = @[@(VirtualEEPROMIndexBedCompensationBackLeft),
+						 @(VirtualEEPROMIndexBedCompensationBackRight),
+						 @(VirtualEEPROMIndexBedCompensationFrontRight),
+						 @(VirtualEEPROMIndexBedCompensationFrontLeft)];
+	
+	[self readVirtualEEPROMFloatValuesAtIndexes:indexes completionHandler:^(BOOL success, NSArray *values) {
+		TFPBedLevelOffsets offsets = {0};
+		
+		if(!success) {
+			completionHandler(NO, offsets);
+		}
+		
+		offsets.backLeft = [values[0] floatValue];
+		offsets.backRight = [values[1] floatValue];
+		offsets.frontRight = [values[2] floatValue];
+		offsets.frontLeft = [values[3] floatValue];
+		
+		completionHandler(YES, offsets);
+	}];
+}
+
+
+
+
 - (void)setBedOffsets:(TFPBedLevelOffsets)offsets completionHandler:(void(^)(BOOL success))completionHandler {
 	NSDictionary *EEPROMValues = @{
 								   @(VirtualEEPROMIndexBedOffsetBackLeft): @(offsets.backLeft),
@@ -49,7 +75,6 @@
 								   @(VirtualEEPROMIndexBedOffsetFrontLeft): @(offsets.frontLeft),
 								   @(VirtualEEPROMIndexBedOffsetCommon): @(offsets.common),
 								   };
-	
 	
 	[self writeVirtualEEPROMFloatValues:EEPROMValues completionHandler:^(BOOL success) {
 		if(completionHandler) {
@@ -114,6 +139,7 @@
 }
 
 
+/*
 - (void)fillInOffsetAndBacklashValuesInPrintParameters:(TFPPrintParameters*)params completionHandler:(void(^)(BOOL success))completionHandler {
 	[self fetchBedOffsetsWithCompletionHandler:^(BOOL success, TFPBedLevelOffsets offsets) {
 		if(!success) {
@@ -121,17 +147,40 @@
 			return;
 		}
 		
-		params.bedLevelOffsets = offsets;
-		[self fetchBacklashValuesWithCompletionHandler:^(BOOL success, TFPBacklashValues values) {
+		[self fetchBedBaseLevelsWithCompletionHandler:^(BOOL success, TFPBedLevelOffsets baseLevel) {
 			if(!success) {
 				completionHandler(NO);
 				return;
 			}
-			params.backlashValues = values;
-			completionHandler(YES);
+			
+			TFPBedLevelOffsets completeLevel = offsets;
+			completeLevel.backLeft += baseLevel.backLeft;
+			completeLevel.backRight += baseLevel.backRight;
+			completeLevel.frontLeft += baseLevel.frontLeft;
+			completeLevel.frontRight += baseLevel.frontRight;
+			
+			params.bedLevelOffsets = completeLevel;
+			
+			[self fetchBacklashValuesWithCompletionHandler:^(BOOL success, TFPBacklashValues values) {
+				if(!success) {
+					completionHandler(NO);
+					return;
+				}
+				params.backlashValues = values;
+				completionHandler(YES);
+			}];
 		}];
 	}];
 }
+*/
+
+
+@end
+
+
+
+
+@implementation TFPPrinterContext (CommandHelpers)
 
 
 - (void)setRelativeMode:(BOOL)relative completionHandler:(void(^)(BOOL success))completionHandler {
@@ -198,12 +247,12 @@
 		[weakSelf sendGCode:[TFPGCode codeForTurningOffHeater] responseHandler:nil];
 	} copy];
 	
-	[self addObserver:timer keyPath:@"heaterTemperature" options:0 block:^(MAKVONotification *notification) {
-		if(fabs(weakSelf.heaterTemperature - targetTemperature) < 3) {
+	[self.printer addObserver:timer keyPath:@"heaterTemperature" options:0 block:^(MAKVONotification *notification) {
+		if(fabs(weakSelf.printer.heaterTemperature - targetTemperature) < 3) {
 			[weakTimer invalidate];
 			completionBlock();
 		}else{
-			progressBlock(weakSelf.heaterTemperature);
+			progressBlock(weakSelf.printer.heaterTemperature);
 		}
 	}];
 	
@@ -230,7 +279,7 @@
 			[self moveStepFromPosition:from toPosition:to steps:stepCount currentStep:step+1 feedRate:feedRate cancelBlock:cancelBlock progressBlock:progressBlock completionBlock:completionBlock];
 		}
 	}];
-
+	
 }
 
 
@@ -240,7 +289,7 @@
 	
 	[self setRelativeMode:NO completionHandler:nil];
 	
-	[self fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *originPosition, NSNumber *E) {
+	[self.printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *originPosition, NSNumber *E) {
 		TFP3DVector *delta = [targetPosition vectorBySubtracting:originPosition];
 		
 		TFP3DVector *stepVector = [[delta vectorByDividingBy:[TFP3DVector vectorWithX:@2 Y:@2 Z:@0.1]] absoluteVector];
@@ -263,7 +312,6 @@
 		cancelFlag = YES;
 	};
 }
-
 
 
 @end

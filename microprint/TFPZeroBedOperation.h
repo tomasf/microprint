@@ -11,8 +11,4 @@
 @interface TFPZeroBedOperation : TFPOperation
 @property (copy) void(^progressFeedback)(NSString *msg);
 @property (copy) void(^didStopBlock)(BOOL completed);
-
-- (void)start;
-- (void)stop;
-
 @end

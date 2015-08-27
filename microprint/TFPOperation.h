@@ -36,7 +36,12 @@ typedef NS_ENUM(NSUInteger, TFPOperationStage) {
 @property (readonly) TFPOperationKind kind;
 @property (readonly) TFPOperationStage stage;
 
-- (void)start;
+@property (readonly) TFPPrinterContext *context;
+// Override these to customize context:
+@property (readonly) TFPPrinterContextOptions printerContextOptions;
+@property (readonly) dispatch_queue_t printerContextQueue;
+
+- (BOOL)start;
 - (void)stop;
 - (void)ended;
 @end
