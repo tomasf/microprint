@@ -282,28 +282,9 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 		self.firmwareVersionComparedToTestedRange = NSOrderedSame;
 	}
 	
-	[self fetchBedOffsetsWithCompletionHandler:^(BOOL success, TFPBedLevelOffsets offsets) {
-		if(success) {
-			[self willChangeValueForKey:@"bedLevelOffsets"];
-			_bedLevelOffsets = offsets;
-			[self didChangeValueForKey:@"bedLevelOffsets"];
-		}
-	}];
-	
-	[self fetchBacklashValuesWithCompletionHandler:^(BOOL success, TFPBacklashValues values) {
-		if(success) {
-			[self willChangeValueForKey:@"backlashValues"];
-			_backlashValues = values;
-			[self didChangeValueForKey:@"backlashValues"];
-		}
-	}];
-	
-	[self fetchBedBaseLevelsWithCompletionHandler:^(BOOL success, TFPBedLevelOffsets offsets) {
-		if(success) {
-			self.bedBaseOffsets = offsets;
-		}
-	}];
-	
+	[self fetchBedOffsetsWithCompletionHandler:nil];
+	[self fetchBacklashValuesWithCompletionHandler:nil];
+	[self fetchBedBaseLevelsWithCompletionHandler:nil];
 	[self syncPositionFastTracked:NO];
 }
 
@@ -779,6 +760,103 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 }
 
 
+- (void)setBacklashValuesWithoutWrite:(TFPBacklashValues)backlashValues {
+	_backlashValues = backlashValues;
+	
+	TFMainThread(^{
+		[self willChangeValueForKey:@"backlashValues"];
+		[self didChangeValueForKey:@"backlashValues"];
+	});
+}
+
+
+- (void)setBedLevelOffsetsWithoutWrite:(TFPBedLevelOffsets)offsets {
+	_bedLevelOffsets = offsets;
+	
+	TFMainThread(^{
+		[self willChangeValueForKey:@"bedLevelOffsets"];
+		[self didChangeValueForKey:@"bedLevelOffsets"];
+	});
+}
+
+
+- (void)setBaseOffsetsWithoutWrite:(TFPBedLevelOffsets)offsets {
+	_bedBaseOffsets = offsets;
+	
+	TFMainThread(^{
+		[self willChangeValueForKey:@"bedBaseOffsets"];
+		[self didChangeValueForKey:@"bedBaseOffsets"];
+	});
+}
+
+
+- (void)updateStateForVirtualEEPROMIndex:(NSUInteger)index value:(uint32_t)value {
+	float floatValue = [self.class decodeVirtualEEPROMFloatValueForInteger:value];
+	
+	TFPBacklashValues backlashValues = self.backlashValues;
+	TFPBedLevelOffsets bedLevelOffsets = self.bedLevelOffsets;
+	TFPBedLevelOffsets baseOffsets = self.bedBaseOffsets;
+	
+	switch(index) {
+		case VirtualEEPROMIndexBacklashCompensationSpeed:
+			backlashValues.speed = floatValue;
+			[self setBacklashValuesWithoutWrite:backlashValues];
+			break;
+		case VirtualEEPROMIndexBacklashCompensationX:
+			backlashValues.x = floatValue;
+			[self setBacklashValuesWithoutWrite:backlashValues];
+			break;
+		case VirtualEEPROMIndexBacklashCompensationY:
+			backlashValues.y = floatValue;
+			[self setBacklashValuesWithoutWrite:backlashValues];
+			break;
+			
+		case VirtualEEPROMIndexBedOffsetCommon:
+			bedLevelOffsets.common = floatValue;
+			[self setBedLevelOffsetsWithoutWrite:bedLevelOffsets];
+			break;
+		case VirtualEEPROMIndexBedOffsetBackLeft:
+			bedLevelOffsets.backLeft = floatValue;
+			[self setBedLevelOffsetsWithoutWrite:bedLevelOffsets];
+			break;
+		case VirtualEEPROMIndexBedOffsetBackRight:
+			bedLevelOffsets.backRight = floatValue;
+			[self setBedLevelOffsetsWithoutWrite:bedLevelOffsets];
+			break;
+		case VirtualEEPROMIndexBedOffsetFrontLeft:
+			bedLevelOffsets.frontLeft = floatValue;
+			[self setBedLevelOffsetsWithoutWrite:bedLevelOffsets];
+			break;
+		case VirtualEEPROMIndexBedOffsetFrontRight:
+			bedLevelOffsets.frontRight = floatValue;
+			[self setBedLevelOffsetsWithoutWrite:bedLevelOffsets];
+			break;
+			
+		case VirtualEEPROMIndexBedCompensationBackLeft:
+			baseOffsets.backLeft = floatValue;
+			[self setBaseOffsetsWithoutWrite:baseOffsets];
+			break;
+		case VirtualEEPROMIndexBedCompensationBackRight:
+			baseOffsets.backRight = floatValue;
+			[self setBaseOffsetsWithoutWrite:baseOffsets];
+			break;
+		case VirtualEEPROMIndexBedCompensationFrontLeft:
+			baseOffsets.frontLeft = floatValue;
+			[self setBaseOffsetsWithoutWrite:baseOffsets];
+			break;
+		case VirtualEEPROMIndexBedCompensationFrontRight:
+			baseOffsets.frontRight = floatValue;
+			[self setBaseOffsetsWithoutWrite:baseOffsets];
+			break;
+			
+		default:
+			return;
+	}
+	
+	NSLog(@"Updated state for EEPROM index %d", (int)index);
+}
+
+
 - (void)updateStateForResponse:(NSDictionary<NSString*, NSString*> *)values entry:(TFPPrinterGCodeEntry*)entry {
 	NSInteger M = [entry.code valueForField:'M' fallback:-1];
 	
@@ -795,6 +873,14 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 		}
 		
 		[self sendNotice:@"Synced position to (%.02f, %.02f, %.02f [%.02f])", self.positionX, self.positionY, self.unadjustedPositionZ, self.positionZ];
+
+	}else if(M == 619) {
+		NSInteger index = [entry.code valueForField:'S' fallback:-1];
+		uint32_t value = [values[@"DT"] intValue];
+		
+		if(index >= 0) {
+			[self updateStateForVirtualEEPROMIndex:index value:value];
+		}
 	}
 }
 
