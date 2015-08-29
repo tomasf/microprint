@@ -247,12 +247,13 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 			completionHandler(NO);
 		}
 		
+		self.connectionFinished = YES;
+		[self refreshState];
+		
 		for(void(^block)(NSError*) in self.establishmentBlocks) {
 			block(nil);
 		}
 		[self.establishmentBlocks removeAllObjects];
-		self.connectionFinished = YES;
-		[self refreshState];
 	}];
 }
 
@@ -852,8 +853,6 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 		default:
 			return;
 	}
-	
-	NSLog(@"Updated state for EEPROM index %d", (int)index);
 }
 
 
