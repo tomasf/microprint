@@ -853,6 +853,8 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 		default:
 			return;
 	}
+	
+	[self sendNotice:@"Updated internal state for virtual EEPROM index %ld", (long)index];
 }
 
 
