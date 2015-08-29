@@ -258,12 +258,12 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 
 
 + (NSString*)minimumTestedFirmwareVersion {
-	return @"2015071301";
+	return @"2015080602";
 }
 
 
 + (NSString*)maximumTestedFirmwareVersion {
-	return @"2015072701";
+	return @"2015080602";
 }
 
 
