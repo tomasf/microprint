@@ -80,7 +80,7 @@ const double adjustmentAmount = 0.05;
 	self.didStartMovingHandler();
 	[weakSelf.context moveToPosition:offsetPosition usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
 		[weakSelf.context moveToPosition:position usingFeedRate:moveFeedRate completionHandler:^(BOOL success) {
-			[weakSelf.context waitForMoveCompletionWithHandler:^{
+			[weakSelf.context waitForExecutionCompletionWithHandler:^{
 				weakSelf.currentLevel = position.z.doubleValue - self.zCompensation;
 				
 				weakSelf.didStopAtCornerHandler(positionIndex);

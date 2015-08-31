@@ -125,6 +125,7 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 
 @property (readwrite) double feedrate;
 @property (readwrite) double heaterTemperature;
+@property (readwrite) double heaterTargetTemperature;
 @property (readwrite) BOOL hasValidZLevel;
 @property (nonatomic, readwrite) TFPBedLevelOffsets bedBaseOffsets;
 @property (readwrite) NSComparisonResult firmwareVersionComparedToTestedRange;
@@ -134,6 +135,7 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 @property double positionY;
 @property double positionZ;
 @property double unadjustedPositionZ;
+@property double positionE;
 @property BOOL relativeMode;
 @property double currentFeedRate;
 @property BOOL needsFeedRateReset;
@@ -430,6 +432,7 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 
 - (TFPGCode*)adjustCodeForCalibrationIfNeeded:(TFPGCode*)code options:(TFPGCodeOptions)options supplement:(BOOL*)supplement {
 	NSInteger G = [code valueForField:'G' fallback:-1];
+	NSInteger M = [code valueForField:'M' fallback:-1];
 
 	BOOL backlashEnabled = !(options & TFPGCodeOptionNoBacklashCompensation);
 	BOOL levelAdjustmentEnabled = !(options & TFPGCodeOptionNoLevelCompensation);
@@ -437,15 +440,17 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 	
 	if(G == 0 || G == 1) {
 		if([code hasField:'X'] || [code hasField:'Y'] || [code hasField:'Z']) {
-			double X, Y, Z;
+			double X, Y, Z, E;
 			if(self.relativeMode) {
 				X = self.positionX + [code valueForField:'X' fallback:0];
 				Y = self.positionY + [code valueForField:'Y' fallback:0];
 				Z = self.unadjustedPositionZ + [code valueForField:'Z' fallback:0];
+				E = self.positionE + [code valueForField:'E' fallback:0];
 			}else{
 				X = [code valueForField:'X' fallback:self.positionX];
 				Y = [code valueForField:'Y' fallback:self.positionY];
 				Z = [code valueForField:'Z' fallback:self.unadjustedPositionZ];
+				E = [code valueForField:'E' fallback:self.positionE];
 			}
 			
 			double zAdjustment = [self.bedLevelCompensator zAdjustmentAtX:X Y:Y];
@@ -534,9 +539,9 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 				self.positionY = Y;
 				self.positionZ = Z + zAdjustment;
 				self.unadjustedPositionZ = Z;
+				self.positionE = E;
+				[self updatePosition];
 			}
-			[self sendNotice:@"Z at %.02f", Z];
-			
 			
 		} else if([code hasField:'F']) {
 			self.currentFeedRate = [code valueForField:'F'];
@@ -557,6 +562,13 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 		
 	} else if(G == 91) {
 		self.relativeMode = YES;
+	}
+	
+	if(M == 109 || M == 104) {
+		double temperature = [code valueForField:'S' fallback:0];
+		TFMainThread(^{
+			self.heaterTargetTemperature = temperature;
+		});
 	}
 	
 	return code;
@@ -755,8 +767,27 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 	// On communication queue here
 	TFMainThread(^{
 		if(temperature != self.heaterTemperature) {
-			self.heaterTemperature = temperature;
+			if(temperature < 0) {
+				self.heaterTemperature = self.heaterTargetTemperature;
+			}else{
+				self.heaterTemperature = temperature;
+			}
 		}
+	});
+}
+
+
+- (void)setPosition:(TFPAbsolutePosition)position {
+	_position = position;
+	[self sendGCode:[TFPGCode moveWithPosition:[TFP3DVector vectorWithX:@(position.x) Y:@(position.y) Z:@(position.z)] feedRate:-1] responseHandler:nil];
+}
+
+
+- (void)updatePosition {
+	TFMainThread(^{
+		[self willChangeValueForKey:@"position"];
+		_position = (TFPAbsolutePosition){.x = self.positionX, .y = self.positionY, .z = self.unadjustedPositionZ, .e = self.positionE};
+		[self didChangeValueForKey:@"position"];
 	});
 }
 
@@ -871,6 +902,9 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 		if(values[@"Z"]) {
 			self.positionZ = values[@"Z"].doubleValue;
 			self.unadjustedPositionZ = self.positionZ - [self.bedLevelCompensator zAdjustmentAtX:self.positionX Y:self.positionY];
+		}
+		if(values[@"E"]) {
+			self.positionE = values[@"E"].doubleValue;
 		}
 		
 		[self sendNotice:@"Synced position to (%.02f, %.02f, %.02f [%.02f])", self.positionX, self.positionY, self.unadjustedPositionZ, self.positionZ];

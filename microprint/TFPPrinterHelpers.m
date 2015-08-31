@@ -232,7 +232,7 @@
 }
 
 
-- (void)waitForMoveCompletionWithHandler:(void(^)())completionHandler {
+- (void)waitForExecutionCompletionWithHandler:(void(^)())completionHandler {
 	[self sendGCode:[TFPGCode waitForCompletionCode] responseHandler:^(BOOL success, NSDictionary *value) {
 		if(completionHandler) {
 			completionHandler();
