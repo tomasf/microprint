@@ -9,10 +9,10 @@ typedef enum {
 
 @interface TFStringScanner : NSObject
 
-@property(readonly, copy) NSString *string;
-@property NSUInteger location;
-@property(readonly, getter=isAtEnd) BOOL atEnd;
-@property(readonly) TFTokenType lastTokenType;
+@property (readonly, copy, nonatomic) NSString *string;
+@property (nonatomic) NSUInteger location;
+@property (readonly, getter=isAtEnd, nonatomic) BOOL atEnd;
+@property (readonly, nonatomic) TFTokenType lastTokenType;
 
 + (id)scannerWithString:(NSString*)string;
 - (id)initWithString:(NSString*)string;

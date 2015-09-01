@@ -62,7 +62,7 @@
 - (instancetype)initWithString:(NSString*)string {
 	TFStringScanner *scanner = [TFStringScanner scannerWithString:string];
 	NSString *comment;
-	NSMutableDictionary *fields = [NSMutableDictionary new];
+	NSMutableDictionary *fields = [NSMutableDictionary dictionaryWithCapacity:3];
 	
 	static NSCharacterSet *valueCharacterSet;
 	if(!valueCharacterSet) {
