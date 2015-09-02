@@ -4,8 +4,9 @@ static NSCharacterSet *digitCharacters, *alphaCharacters, *alphanumericCharacter
 
 
 @interface TFStringScanner ()
-@property(readwrite, copy) NSString *string;
-@property(readwrite) TFTokenType lastTokenType;
+@property (readwrite, copy, nonatomic) NSString *string;
+@property (nonatomic) NSUInteger length;
+@property (readwrite) TFTokenType lastTokenType;
 @property NSMutableArray *multicharSymbols;
 @end
 
@@ -41,7 +42,7 @@ static NSCharacterSet *digitCharacters, *alphaCharacters, *alphanumericCharacter
 	if(!(self = [super init])) return nil;
 	
 	self.string = string;
-	self.multicharSymbols = [NSMutableArray new];
+	self.length = string.length;
 	
 	return self;
 }
@@ -65,6 +66,10 @@ static NSCharacterSet *digitCharacters, *alphaCharacters, *alphanumericCharacter
 
 
 - (void)addMulticharacterSymbol:(NSString*)symbol {
+	if(!self.multicharSymbols) {
+		self.multicharSymbols = [NSMutableArray new];
+	}
+	
 	[self.multicharSymbols addObject:symbol];
 	[self resortSymbols];
 }
@@ -198,7 +203,7 @@ static NSCharacterSet *digitCharacters, *alphaCharacters, *alphanumericCharacter
 
 
 - (BOOL)isAtEnd {
-	return self.location >= self.string.length;
+	return self.location >= self.length;
 }
 
 

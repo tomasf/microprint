@@ -76,7 +76,6 @@
 	[factoryDefaults setInteger:1 forKey:@"buffer"];
 	
 	[factoryDefaults setBool:YES forKey:@"wavebonding"];
-	[factoryDefaults setBool:YES forKey:@"backlash"];
 
 	[factoryDefaults setBool:NO forKey:@"dryrun"];
 	[factoryDefaults setBool:NO forKey:@"help"];
@@ -98,7 +97,6 @@
 	[parser registerOption:@"verbose" shortcut:0 requirement:GBValueNone];
 	
 	[parser registerOption:@"wavebonding" shortcut:0 requirement:GBValueNone];
-	[parser registerOption:@"backlash" shortcut:0 requirement:GBValueNone];
 
 	[parser registerSettings:settings];
 	if(![parser parseOptionsWithArguments:argv count:argc]) {
@@ -158,7 +156,7 @@
 	TFLog(@"");
 	
 	TFLog(@"Commands:");
-	TFLog(@"  print <gcode-path> [--temperature 215] [--filament PLA] [--backlash] [--wavebonding]");
+	TFLog(@"  print <gcode-path> [--temperature 215] [--filament PLA] [--wavebonding]");
 	TFLog(@"    Prints a G-code file.");
 	
 	TFLog(@"  preprocess <gcode-path> [--output path]");
@@ -191,7 +189,6 @@
 	TFLog(@"  --temperature <number>: Heater temperature in degrees Celsius. Default is 215 for extrusion/retraction and varies depending on filament type for printing.");
 	TFLog(@"  --filament <string>: Filament type. Valid options are PLA, ABS, HIPS and Other. Affects behavior in some preprocessors. Also sets default temperature.");
 	TFLog(@"  --wavebonding: Use wave bonding. On by default. Turn off with --wavebonding=0");
-	TFLog(@"  --backlash: Use backlash compensation. On by default. Turn off with --backlash=0");
 	TFLog(@"  --rawFeedRates: For the console command, this turns off conversion of feed rates to M3D-style inverted feed rates.");
 }
 
@@ -201,7 +198,6 @@
 	TFPPrintParameters *params = [TFPPrintParameters new];
 	params.verbose = [settings boolForKey:@"verbose"];
 	params.useWaveBonding = [settings boolForKey:@"wavebonding"];
-	params.useBacklashCompensation = [settings boolForKey:@"backlash"];
 	
 	params.filament = [TFPFilament filamentForType:[TFPFilament typeForString:[settings objectForKey:@"filament"]]];
 	if(!params.filament) {
@@ -316,10 +312,9 @@
 		self.operation = consoleOperation;
 		
 	}else if([command isEqual:@"values"]) {
-		TFPPrintParameters *params = [TFPPrintParameters new];
-		[self.printer fillInOffsetAndBacklashValuesInPrintParameters:params completionHandler:^(BOOL success) {
-			TFLog(@"Bed level: %@", TFPBedLevelOffsetsDescription(params.bedLevelOffsets));
-			TFLog(@"Backlash values: %@", TFPBacklashValuesDescription(params.backlashValues));
+		[self.printer sendGCode:[TFPGCode waitForCompletionCode] responseHandler:^(BOOL success, TFPGCodeResponseDictionary value) {
+			TFLog(@"Bed level: %@", TFPBedLevelOffsetsDescription(self.printer.bedLevelOffsets));
+			TFLog(@"Backlash values: %@", TFPBacklashValuesDescription(self.printer.backlashValues));
 			exit(EXIT_SUCCESS);
 		}];
 		
@@ -388,9 +383,7 @@
 
 
 - (TFPGCodeProgram*)preprocessProgramAndLogInfo:(TFPGCodeProgram*)program usingPrintParameters:(TFPPrintParameters*)params {
-	NSString *offsetsString = TFPBedLevelOffsetsDescription(params.bedLevelOffsets);
-	NSString *backlashString = TFPBacklashValuesDescription(params.backlashValues);
-	TFLog(@"Pre-processing using bed level %@ and backlash %@", offsetsString, backlashString);
+	TFLog(@"Pre-processing");
 	
 	uint64_t start = TFNanosecondTime();
 	program = [TFPPreprocessing programByPreprocessingProgram:program usingParameters:params];
@@ -410,84 +403,80 @@
 	if(!program) {
 		exit(EXIT_FAILURE);
 	}
-
-	[self.printer fillInOffsetAndBacklashValuesInPrintParameters:params completionHandler:^(BOOL success) {
-		program = [weakSelf preprocessProgramAndLogInfo:program usingPrintParameters:params];
-		
-		TFPPrintJob *printJob = [[TFPPrintJob alloc] initWithProgram:program printer:printer printParameters:params];
-		__weak TFPPrintJob *weakPrintJob = printJob;
-		__block NSString *lastProgressString;
-		
-		printJob.progressBlock = ^() {
-			double progress = (double)weakPrintJob.completedRequests / weakPrintJob.program.lines.count;
-			NSString *progressString = [weakSelf.longPercentFormatter stringFromNumber:@(progress)];
-			if(![progressString isEqual:lastProgressString]) {
-				TFPEraseLastLine();
-				TFLog(@"Printing: %@", progressString);
-				lastProgressString = progressString;
-			}
-		};
-		
-		printJob.heatingProgressBlock = ^(double targetTemperature, double currentTemperature) {
+	
+	program = [weakSelf preprocessProgramAndLogInfo:program usingPrintParameters:params];
+	
+	TFPPrintJob *printJob = [[TFPPrintJob alloc] initWithProgram:program printer:printer printParameters:params];
+	__weak TFPPrintJob *weakPrintJob = printJob;
+	__block NSString *lastProgressString;
+	
+	printJob.progressBlock = ^() {
+		double progress = (double)weakPrintJob.completedRequests / weakPrintJob.program.lines.count;
+		NSString *progressString = [weakSelf.longPercentFormatter stringFromNumber:@(progress)];
+		if(![progressString isEqual:lastProgressString]) {
 			TFPEraseLastLine();
-			TFLog(@"Heating to %.0f°C: %@", targetTemperature, [weakSelf.shortPercentFormatter stringFromNumber:@(currentTemperature/targetTemperature)]);
-		};
-		
-		printJob.abortionBlock = ^ {
-			NSTimeInterval duration = weakPrintJob.elapsedTime;
-			TFLog(@"Print cancelled after %@.", [weakSelf.durationFormatter stringFromTimeInterval:duration]);
-			exit(EXIT_SUCCESS);
-		};
-		
-		printJob.completionBlock = ^ {
-			NSTimeInterval duration = weakPrintJob.elapsedTime;
-			TFLog(@"Done! Print time: %@", [weakSelf.durationFormatter stringFromTimeInterval:duration]);
-			exit(EXIT_SUCCESS);
-		};
-		
-		
-		weakSelf.interruptSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_SIGNAL, SIGINT, 0, dispatch_get_main_queue());
-		dispatch_source_set_event_handler(weakSelf.interruptSource, ^{
-			TFLog(@"Cancelling print...");
-			[weakPrintJob abort];
-		});
-		dispatch_resume(weakSelf.interruptSource);
-		
-		struct sigaction action = { 0 };
-		action.sa_handler = SIG_IGN;
-		sigaction(SIGINT, &action, NULL);
-		
-		[printJob start];
-		weakSelf.operation = printJob;
-	}];
+			TFLog(@"Printing: %@", progressString);
+			lastProgressString = progressString;
+		}
+	};
+	
+	printJob.heatingProgressBlock = ^(double targetTemperature, double currentTemperature) {
+		TFPEraseLastLine();
+		TFLog(@"Heating to %.0f°C: %@", targetTemperature, [weakSelf.shortPercentFormatter stringFromNumber:@(currentTemperature/targetTemperature)]);
+	};
+	
+	printJob.abortionBlock = ^ {
+		NSTimeInterval duration = weakPrintJob.elapsedTime;
+		TFLog(@"Print cancelled after %@.", [weakSelf.durationFormatter stringFromTimeInterval:duration]);
+		exit(EXIT_SUCCESS);
+	};
+	
+	printJob.completionBlock = ^ {
+		NSTimeInterval duration = weakPrintJob.elapsedTime;
+		TFLog(@"Done! Print time: %@", [weakSelf.durationFormatter stringFromTimeInterval:duration]);
+		exit(EXIT_SUCCESS);
+	};
+	
+	
+	weakSelf.interruptSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_SIGNAL, SIGINT, 0, dispatch_get_main_queue());
+	dispatch_source_set_event_handler(weakSelf.interruptSource, ^{
+		TFLog(@"Cancelling print...");
+		[weakPrintJob abort];
+	});
+	dispatch_resume(weakSelf.interruptSource);
+	
+	struct sigaction action = { 0 };
+	action.sa_handler = SIG_IGN;
+	sigaction(SIGINT, &action, NULL);
+	
+	[printJob start];
+	weakSelf.operation = printJob;
 }
 
 
 - (void)preprocessGCodePath:(NSString *)sourcePath outputPath:(NSString *)destinationPath usingParameters:(TFPPrintParameters *)params {
 	__weak __typeof__(self) weakSelf = self;
-
+	
 	__block TFPGCodeProgram *program = [self readProgramAtPathAndLogInfo:sourcePath usingPrintParameters:params];
 	if(!program) {
 		exit(EXIT_FAILURE);
 	}
 	
-	[self.printer fillInOffsetAndBacklashValuesInPrintParameters:params completionHandler:^(BOOL success) {
-		program = [weakSelf preprocessProgramAndLogInfo:program usingPrintParameters:params];
-		
-		if(destinationPath) {
-			NSURL *destinationURL = [NSURL fileURLWithPath:destinationPath];
-			NSError *error;
-			if (![program writeToFileURL:destinationURL error:&error]) {
-				TFLog(@"Writing to file failed: %@", error);
-				exit(EXIT_FAILURE);
-			}
-		}else{
-			for(TFPGCode *code in program.lines) {
-				TFLog(@"%@", code.ASCIIRepresentation);
-			}
+	program = [weakSelf preprocessProgramAndLogInfo:program usingPrintParameters:params];
+	
+	if(destinationPath) {
+		NSURL *destinationURL = [NSURL fileURLWithPath:destinationPath];
+		NSError *error;
+		if (![program writeToFileURL:destinationURL error:&error]) {
+			TFLog(@"Writing to file failed: %@", error);
+			exit(EXIT_FAILURE);
 		}
-		exit(EXIT_SUCCESS);
-	}];
+	}else{
+		for(TFPGCode *code in program.lines) {
+			TFLog(@"%@", code.ASCIIRepresentation);
+		}
+	}
+	exit(EXIT_SUCCESS);
 }
 
 

@@ -42,7 +42,7 @@
 }
 
 
-+ (instancetype)waitForMoveCompletionCode {
++ (instancetype)waitForCompletionCode {
 	return [self waitCodeWithDuration:0];
 }
 
