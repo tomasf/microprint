@@ -96,6 +96,7 @@ typedef NSDictionary<NSString *, NSString*>* TFPGCodeResponseDictionary;
 @property (readonly) NSComparisonResult firmwareVersionComparedToTestedRange;
 
 @property (readonly) double feedrate;
+@property (readonly) double heaterTargetTemperature;
 @property (readonly) double heaterTemperature;
 @property (readonly) BOOL hasValidZLevel;
 
@@ -104,6 +105,8 @@ typedef NSDictionary<NSString *, NSString*>* TFPGCodeResponseDictionary;
 @property (readonly) BOOL hasAllZeroBedLevelOffsets;
 
 @property (nonatomic) TFPBacklashValues backlashValues;
+
+@property (nonatomic) TFPAbsolutePosition position;
 
 + (NSString*)nameForPrinterColor:(TFPPrinterColor)color;
 + (NSString*)minimumTestedFirmwareVersion;

@@ -17,6 +17,8 @@
 @property IBOutlet NSTabView *tabView;
 @property IBOutlet NSStepper *levelStepper;
 @property TFPBedLevelCalibrationCorner currentCorner;
+
+@property double startLevel;
 @end
 
 
@@ -72,12 +74,23 @@
 }
 
 
+- (void)viewDidLoad {
+	[super viewDidLoad];
+	BOOL alt = !!([NSEvent modifierFlags] & NSAlternateKeyMask);
+	self.startLevel = alt ? 50 : 3;
+}
+
+
 - (void)viewDidAppear {
 	[super viewDidAppear];
 	__weak __typeof__(self) weakSelf = self;
 	
+	if(self.operation) {
+		return;
+	}
+	
 	self.operation = [[TFPBedLevelCalibration alloc] initWithPrinter:self.printer];
-	[self.operation startAtLevel:3 heightTarget:0.3];
+	[self.operation startAtLevel:self.startLevel heightTarget:0.3];
 	
 	self.operation.didStartMovingHandler = ^{
 		[weakSelf switchToMovingMode];
