@@ -30,8 +30,8 @@
 @property BOOL aborted;
 
 @property BOOL paused;
-@property TFP3DVector *pausePosition;
-@property double pauseEValue;
+@property TFPAbsolutePosition pausePosition;
+@property double pauseTemperature;
 @property double pauseFeedRate;
 
 @property double targetTemperature;
@@ -294,10 +294,10 @@
 	
 	dispatch_async(self.printQueue, ^{
 		self.paused = YES;
-		[self.printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *position, NSNumber *E) {
-			self.pausePosition = position;
-			self.pauseEValue = E.doubleValue;
+		[self.context sendGCode:[TFPGCode waitForCompletionCode] responseHandler:^(BOOL success, TFPGCodeResponseDictionary value) {
+			self.pausePosition = self.printer.position;
 			self.pauseFeedRate = self.printer.feedrate;
+			self.pauseTemperature = self.printer.heaterTargetTemperature;
 			
 			const double raiseLength = 20;
 			const double stationaryRetractAmount = 5;
@@ -308,7 +308,8 @@
 			[self.context sendGCode:[TFPGCode codeForExtrusion:-stationaryRetractAmount feedRate:3000] responseHandler:nil];
 			[self.context sendGCode:[TFPGCode moveWithPosition:raisedPosition extrusion:@(-raiseRetractAmount) feedRate:3000] responseHandler:nil];
 			[self.context setRelativeMode:NO completionHandler:nil];
-			[self.context waitForMoveCompletionWithHandler:^{
+			[self.context sendGCode:[TFPGCode codeForTurningOffHeater] responseHandler:nil];
+			[self.context waitForExecutionCompletionWithHandler:^{
 				[self setStateOnMainQueue:TFPPrintJobStatePaused];
 			}];
 		}];
@@ -323,13 +324,15 @@
 	
 	[self setStateOnMainQueue:TFPPrintJobStateResuming];
 	dispatch_async(self.printQueue, ^{
-		NSLog(@"Resuming from position %@, E: %.02f, feed rate: %.0f", self.pausePosition, self.pauseEValue, self.pauseFeedRate);
+		NSLog(@"Resuming from position X %.02f, Y %.02f, Z %.02f, E %.02f, temperature %.0f, feed rate: %.0f",
+			  self.pausePosition.x, self.pausePosition.y, self.pausePosition.z, self.pausePosition.e, self.pauseTemperature, self.pauseFeedRate);
 		
-		[self.context moveToPosition:self.pausePosition usingFeedRate:3000 completionHandler:nil];
-		//[self.printer sendGCode:[TFPGCode codeForExtrusion:self.pauseEValue feedRate:3000] responseHandler:nil];
-		[self.context sendGCode:[TFPGCode codeForResettingPosition:nil extrusion:@(self.pauseEValue-5.5)] responseHandler:nil];
+		[self.context sendGCode:[TFPGCode codeForHeaterTemperature:self.pauseTemperature waitUntilDone:YES] responseHandler:nil];
+		[self.context moveToPosition:[TFP3DVector vectorWithX:@(self.pausePosition.x) Y:@(self.pausePosition.y) Z:@(self.pausePosition.z)] usingFeedRate:3000 completionHandler:nil];
+		[self.context sendGCode:[TFPGCode codeForResettingPosition:nil extrusion:@(self.pausePosition.e - 5.5)] responseHandler:nil];
 		[self.context sendGCode:[TFPGCode codeForSettingFeedRate:self.pauseFeedRate] responseHandler:nil];
-		[self.context waitForMoveCompletionWithHandler:^{
+		
+		[self.context waitForExecutionCompletionWithHandler:^{
 			self.paused = NO;
 			[self setStateOnMainQueue:TFPPrintJobStatePrinting];
 			dispatch_async(dispatch_get_main_queue(), ^{

@@ -14,7 +14,7 @@
 @interface TFPGCode (TFPHelpers)
 + (instancetype)stopCode;
 + (instancetype)waitCodeWithDuration:(NSTimeInterval)seconds;
-+ (instancetype)waitForMoveCompletionCode;
++ (instancetype)waitForCompletionCode;
 
 // Line numbering
 + (instancetype)codeForSettingLineNumber:(uint16_t)lineNumber;

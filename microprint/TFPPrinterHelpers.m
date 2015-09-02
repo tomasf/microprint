@@ -36,7 +36,9 @@
 		offsets.frontLeft = [values[3] floatValue];
 		offsets.common = [values[4] floatValue];
 		
-		completionHandler(YES, offsets);
+		if(completionHandler) {
+			completionHandler(YES, offsets);
+		}
 	}];
 }
 
@@ -50,6 +52,9 @@
 	
 	[self readVirtualEEPROMFloatValuesAtIndexes:indexes completionHandler:^(BOOL success, NSArray *values) {
 		TFPBedLevelOffsets offsets = {0};
+		if(!completionHandler) {
+			return;
+		}
 		
 		if(!success) {
 			completionHandler(NO, offsets);
@@ -91,6 +96,10 @@
 						 ];
 	
 	[self readVirtualEEPROMFloatValuesAtIndexes:indexes completionHandler:^(BOOL success, NSArray *values) {
+		if(!completionHandler) {
+			return;
+		}
+		
 		TFPBacklashValues backlash = {0};
 		if(success) {
 			backlash.x = [values[0] floatValue];
@@ -223,8 +232,8 @@
 }
 
 
-- (void)waitForMoveCompletionWithHandler:(void(^)())completionHandler {
-	[self sendGCode:[TFPGCode waitForMoveCompletionCode] responseHandler:^(BOOL success, NSDictionary *value) {
+- (void)waitForExecutionCompletionWithHandler:(void(^)())completionHandler {
+	[self sendGCode:[TFPGCode waitForCompletionCode] responseHandler:^(BOOL success, NSDictionary *value) {
 		if(completionHandler) {
 			completionHandler();
 		}
