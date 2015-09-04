@@ -9,10 +9,13 @@
 #import "TFPConsoleViewController.h"
 #import "TFPExtras.h"
 
+#define consoleMax 100000
+#define consoleTrim consoleMax / 10
 
 @interface TFPConsoleViewController ()
 @property IBOutlet NSTextView *textView;
 @property IBOutlet NSTextField *inputField;
+@property unsigned long consoleLength;
 @end
 
 
@@ -22,7 +25,6 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-	
 }
 
 
@@ -32,12 +34,21 @@
 	[self.textView.textStorage appendAttributedString:attributedString];
 
 	[self.textView scrollRangeToVisible: NSMakeRange(self.textView.string.length, 0)];
+
+    self.consoleLength += attributedString.length;
+
+    if (self.consoleLength > consoleMax) {
+        [self.textView.textStorage deleteCharactersInRange: NSMakeRange(0, consoleTrim)];
+        self.consoleLength = self.textView.textStorage.length;
+    }
 }
 
 
 - (void)viewDidAppear {
 	[super viewDidAppear];
 	__weak __typeof__(self) weakSelf = self;
+
+    self.consoleLength = 0;
 	
 	NSDictionary *incomingAttributes = @{NSFontAttributeName: [NSFont fontWithName:@"Menlo" size:13]};
 	NSDictionary *outgoingAttributes = @{NSFontAttributeName: [NSFont fontWithName:@"Menlo-Bold" size:13]};
