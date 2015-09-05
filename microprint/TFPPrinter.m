@@ -123,7 +123,6 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 @property (readwrite, copy) NSString *serialNumber;
 @property (readwrite, copy) NSString *firmwareVersion;
 
-@property (readwrite) double feedrate;
 @property (readwrite) double heaterTemperature;
 @property (readwrite) double heaterTargetTemperature;
 @property (readwrite) BOOL hasValidZLevel;
@@ -530,9 +529,7 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 				
 				if([code hasField:'F']) {
 					self.currentFeedRate = [code valueForField:'F'];
-					TFMainThread(^{
-						self.feedrate = [code valueForField:'F'];
-					});
+					[self setFeedrateWithoutWrite:[code valueForField:'F']];
 				}
 				
 				self.positionX = X;
@@ -545,9 +542,7 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 			
 		} else if([code hasField:'F']) {
 			self.currentFeedRate = [code valueForField:'F'];
-			TFMainThread(^{
-				self.feedrate = [code valueForField:'F'];
-			});
+			[self setFeedrateWithoutWrite:[code valueForField:'F']];
 		}
 		
 	} else if(G == 28) {
@@ -774,6 +769,21 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 			}
 		}
 	});
+}
+
+
+- (void)setFeedrateWithoutWrite:(double)feedrate {
+	TFMainThread(^{
+		[self willChangeValueForKey:@"feedrate"];
+		_feedrate = feedrate;
+		[self didChangeValueForKey:@"feedrate"];
+	});
+}
+
+
+- (void)setFeedrate:(double)feedrate {
+	_feedrate = feedrate;
+	[self sendGCode:[TFPGCode codeForSettingFeedRate:feedrate] responseHandler:nil];
 }
 
 

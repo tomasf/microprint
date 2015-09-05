@@ -95,7 +95,7 @@ typedef NSDictionary<NSString *, NSString*>* TFPGCodeResponseDictionary;
 @property (readonly, copy) NSString *firmwareVersion;
 @property (readonly) NSComparisonResult firmwareVersionComparedToTestedRange;
 
-@property (readonly) double feedrate;
+@property (nonatomic) double feedrate;
 @property (readonly) double heaterTargetTemperature;
 @property (readonly) double heaterTemperature;
 @property (readonly) BOOL hasValidZLevel;
