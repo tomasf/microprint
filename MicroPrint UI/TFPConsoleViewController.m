@@ -87,8 +87,11 @@
 		return code;
 	}];
 	
-	if(codes) {
-		[self.printer runGCodeProgram:[TFPGCodeProgram programWithLines:codes] completionHandler:nil];
+	if(valid) {
+		for(TFPGCode *code in codes) {
+			[self.printer sendGCode:code responseHandler:nil];
+		}
+		
 		self.inputField.stringValue = @"";
 	} else {
 		NSBeep();

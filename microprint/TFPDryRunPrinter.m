@@ -7,7 +7,7 @@
 
 #import "TFPDryRunPrinter.h"
 #import "TFPExtras.h"
-
+#import "TFP3DVector.h"
 
 static double speedMultiplier = 10;
 

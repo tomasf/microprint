@@ -9,6 +9,8 @@
 #import "TFPGCode.h"
 #import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
+#import "TFP3DVector.h"
+
 
 
 @implementation TFPBasicPreparationPreprocessor

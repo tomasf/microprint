@@ -10,33 +10,47 @@
 #import "TFStringScanner.h"
 
 
+enum {
+	offsetN, offsetM, offsetG,
+	offsetX, offsetY, offsetZ, offsetE, offsetF,
+	offsetS, offsetP,
+} TFPGCodeFieldOffsets;
+
+
+
 @interface TFPGCode ()
+@property (nonatomic, readwrite) int16_t N;
+
+@property (nonatomic, readwrite) uint16_t M;
+@property (nonatomic, readwrite) uint16_t G;
+
+@property (nonatomic, readwrite) float X;
+@property (nonatomic, readwrite) float Y;
+@property (nonatomic, readwrite) float Z;
+@property (nonatomic, readwrite) float E;
+@property (nonatomic, readwrite) float F;
+
+@property (nonatomic, readwrite) uint32_t S;
+@property (nonatomic, readwrite) uint32_t P;
+
+@property (nonatomic, readwrite) uint16 fieldsSetMask;
+
 @property (readwrite, copy) NSString *comment;
-@property (copy) NSDictionary *fields;
 @end
+
 
 
 @implementation TFPGCode
 
 
-- (instancetype)initWithFields:(NSDictionary*)fields comment:(NSString*)comment {
+- (instancetype)initWithComment:(NSString*)comment {
 	if(!(self = [super init])) return nil;
 	
 	self.comment = comment;
-	self.fields = fields;
-	
-	for(NSNumber *key in fields) {
-		double value = [fields[key] doubleValue];
-		NSAssert(!isnan(value) && !isinf(value), @"G-code values can't be NaN or infinite");
-	}
 	
 	return self;
 }
 
-
-- (instancetype)init {
-	return [self initWithFields:@{} comment:nil];
-}
 
 
 + (instancetype)codeWithString:(NSString*)string {
@@ -45,24 +59,69 @@
 
 
 + (instancetype)codeWithComment:(NSString*)string {
-	return [[self alloc] initWithFields:@{} comment:string];
+	return [[self alloc] initWithComment:string];
 }
 
 
 + (instancetype)codeWithField:(char)field value:(double)value {
-	return [[self new] codeBySettingField:field toValue:value];
+	TFPGCode *code = [self new];
+	[code setValue:value forField:field];
+	return code;
+}
+
+
+- (int8_t)maskOffsetForField:(char)field {
+	switch(field) {
+		case 'N': return offsetN;
+		case 'G': return offsetG;
+		case 'M': return offsetM;
+		case 'X': return offsetX;
+		case 'Y': return offsetY;
+		case 'Z': return offsetZ;
+		case 'E': return offsetE;
+		case 'F': return offsetF;
+		case 'S': return offsetS;
+		case 'P': return offsetP;
+	}
+	return -1;
+}
+
+
+- (BOOL)setValue:(double)value forField:(char)field {
+	NSAssert(!isnan(value) && !isinf(value), @"G-code values can't be NaN or infinite");
+
+	int8_t offset = [self maskOffsetForField:field];
+	if (offset >= 0) {
+		self.fieldsSetMask |= (1<<offset);
+	} else {
+		return NO;
+	}
+	
+	switch(field) {
+		case 'N': self.N = value; break;
+		case 'G': self.G = value; break;
+		case 'M': self.M = value; break;
+		case 'X': self.X = value; break;
+		case 'Y': self.Y = value; break;
+		case 'Z': self.Z = value; break;
+		case 'E': self.E = value; break;
+		case 'F': self.F = value; break;
+		case 'S': self.S = value; break;
+		case 'P': self.P = value; break;
+	}
+	return YES;
 }
 
 
 - (BOOL)hasFields {
-	return self.fields.count > 0;
+	return self.fieldsSetMask != 0;
 }
 
 
 - (instancetype)initWithString:(NSString*)string {
+	if(!(self = [super init])) return nil;
+	
 	TFStringScanner *scanner = [TFStringScanner scannerWithString:string];
-	NSString *comment;
-	NSMutableDictionary *fields = [NSMutableDictionary dictionaryWithCapacity:3];
 	
 	static NSCharacterSet *valueCharacterSet;
 	if(!valueCharacterSet) {
@@ -74,12 +133,8 @@
 	while(!scanner.atEnd) {
 		unichar type = [scanner scanCharacter];
 		if(type == ';') {
-			comment = [scanner scanToEnd];
+			self.comment = [scanner scanToEnd];
 			break;
-		}
-		
-		if(type < 'A' || type > 'Z') {
-			return nil; // Parse error; invalid field type
 		}
 		
 		NSString *valueString = [scanner scanStringFromCharacterSet:valueCharacterSet];
@@ -94,23 +149,46 @@
 			return nil; // Parse error; invalid value or garbage after value
 		}
 		
-		fields[@(type)] = @(valueString.doubleValue);
+		[self setValue:valueString.doubleValue forField:type];
 	}
 	
-	return [self initWithFields:fields comment:comment];
+	return self;
+}
+
+
+- (TFPGCode*)createCopy {
+	TFPGCode *copy = [self.class new];
+	
+	copy.comment = self.comment;
+	copy.fieldsSetMask = self.fieldsSetMask;
+	copy.N = self.N;
+	copy.M = self.M;
+	copy.G = self.G;
+	
+	copy.X = self.X;
+	copy.Y = self.Y;
+	copy.Z = self.Z;
+	copy.E = self.E;
+	copy.F = self.F;
+	
+	copy.S = self.S;
+	copy.P = self.P;
+	
+	return copy;
 }
 
 
 - (TFPGCode*)codeBySettingField:(char)field toValue:(double)value {
-	NSMutableDictionary *fields = [self.fields mutableCopy];
-	fields[@(field)] = @(value);
-	
-	return [[self.class alloc] initWithFields:fields comment:self.comment];
+	TFPGCode *copy = [self createCopy];
+	[copy setValue:value forField:field];
+	return copy;
 }
 
 
 - (TFPGCode*)codeBySettingComment:(NSString*)comment {
-	return [[self.class alloc] initWithFields:self.fields comment:comment];
+	TFPGCode *copy = [self createCopy];
+	copy.comment = comment;
+	return copy;
 }
 
 
@@ -125,7 +203,19 @@
 
 
 - (double)valueForField:(char)field {
-	return [self.fields[@(field)] doubleValue];
+	switch(field) {
+		case 'N': return self.N;
+		case 'G': return self.G;
+		case 'M': return self.M;
+		case 'X': return self.X;
+		case 'Y': return self.Y;
+		case 'Z': return self.Z;
+		case 'E': return self.E;
+		case 'F': return self.F;
+		case 'S': return self.S;
+		case 'P': return self.P;
+	}
+	return 0;
 }
 
 
@@ -138,18 +228,28 @@
 }
 
 
+- (NSNumber*)numberForField:(char)field {
+	return [self hasField:field] ? @([self valueForField:field]) : nil;
+}
+
+
 - (BOOL)hasField:(char)field {
-	return self.fields[@(field)] != nil;
+	int8_t offset = [self maskOffsetForField:field];
+	if (offset < 0) {
+		return NO;
+	} else {
+		return !!(self.fieldsSetMask & (1 << offset));
+	}
 }
 
 
 - (NSNumber*)objectAtIndexedSubscript:(NSUInteger)index {
-	return self.fields[@(index)];
+	return [self hasField:index] ? @([self valueForField:index]) : nil;
 }
 
 
 - (void)enumerateFieldsWithBlock:(void(^)(char field, double value, BOOL *stopFlag))block {
-	const char *canonicalFieldOrder = "NMGXYZE FTSP    IJRD";
+	const char *canonicalFieldOrder = "NMGXYZEFSP";
 	
 	for(NSUInteger i=0; i<strlen(canonicalFieldOrder); i++) {
 		char field = canonicalFieldOrder[i];
@@ -198,8 +298,8 @@
 	TFDataBuilder *valueDataBuilder = [TFDataBuilder new];
 	valueDataBuilder.byteOrder = TFDataBuilderByteOrderLittleEndian;
 	
-	NSString *fieldBits = @"NMGXYZE FTSP    IJRD";
-	char *fieldTypes = "sssffff fbii    ffff";
+	NSString *fieldBits = @"NMGXYZE FTSP";
+	char *fieldTypes = "sssffff fbii";
 	
 	[self enumerateFieldsWithBlock:^(char field, double value, BOOL *stopFlag) {
 		NSUInteger index = [fieldBits rangeOfString:[NSString stringWithFormat:@"%c", field]].location;

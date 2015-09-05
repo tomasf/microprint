@@ -9,6 +9,7 @@
 #import "TFPExtrusionOperation.h"
 #import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
+#import "TFP3DVector.h"
 
 #import "TFAsyncOperationCoalescer.h"
 #import "MAKVONotificationCenter.h"
@@ -95,7 +96,7 @@ static const double minimumZLevelForOperation = 25;
 	self.stage = TFPOperationStageEnding;
 	
 	TFPGCodeProgram *end = [TFPGCodeProgram programWithLines:steps];
-	[self.printer runGCodeProgram:end completionHandler:^(BOOL success, NSArray *valueDictionaries) {
+	[self.context runGCodeProgram:end completionHandler:^(BOOL success, NSArray *valueDictionaries) {
 		if(weakSelf.extrusionStoppedBlock) {
 			weakSelf.extrusionStoppedBlock();
 		}

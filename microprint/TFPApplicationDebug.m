@@ -12,6 +12,7 @@
 #import "TFPExtras.h"
 #import "TFPDryRunPrinter.h"
 #import "TFPBedLevelCompensator.h"
+#import "TFP3DVector.h"
 
 
 @interface TFPApplicationDelegate ()
