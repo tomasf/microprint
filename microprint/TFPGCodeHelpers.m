@@ -462,7 +462,7 @@ TFPCuboid TFPCuboidM3DMicroPrintVolumeUpper = {.x = 12.5, .y = 11, .z = 74,  .xS
 	__block NSString *comment;
 	[self.lines enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(TFPGCode *code, NSUInteger idx, BOOL * _Nonnull stop) {
 		if([code.comment hasPrefix:@"CURA_PROFILE_STRING:"]) {
-			comment = code.comment;
+			comment = [code.comment substringFromIndex:20];
 			*stop = YES;
 		}
 	}];
