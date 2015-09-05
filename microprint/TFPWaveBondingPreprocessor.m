@@ -53,14 +53,12 @@
 	bool isRelative = true;
 	bool firstLayer = true;
 	bool movesInXorY = false;
-	double num3 = 0;
 	
 	double relativeX = 0;
 	double relativeY = 0;
 	double relativeZ = 0;
 	double relativeE = 0;
 	
-	double num4 = num3;
 	TFPGCode *previousCode = nil;
 	TFPGCode *lastTackPoint = nil;
 	int num6 = 0;
@@ -155,7 +153,7 @@
 							newCode = [newCode codeBySettingField:'Z' toValue:relativeZ - deltaZ + (num28 - previousZ)];
 						}
 						
-						newCode = [newCode codeBySettingField:'E' toValue:relativeE - deltaE + (num29 - previousE) + num4];
+						newCode = [newCode codeBySettingField:'E' toValue:relativeE - deltaE + (num29 - previousE)];
 						[output addObject:newCode];
 						
 					} else {
@@ -166,7 +164,6 @@
 								code = [code codeBySettingField:'Z' toValue:previousZ + deltaZ + self.currentAdjustmentZ];
 							}
 						}
-						code = [code codeByAdjustingField:'Z' offset:num4];
 					}
 				}
 			}
