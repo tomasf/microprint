@@ -219,7 +219,7 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 
 
 - (NSArray*)profileKeysToDisplay {
-	return @[@"layer_height", @"wall_thickness", @"fill_density", @"platform_adhesion", @"support"];
+	return @[@"layer_height", @"wall_thickness", @"fill_density", @"platform_adhesion", @"support", @"print_speed"];
 }
 
 
@@ -231,6 +231,8 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 			 
 			 @"platform_adhesion": @"Bed Adhesion",
 			 @"support": @"Support",
+			 
+			 @"print_speed": @"Print Speed",
 			 }[key];
 }
 
@@ -243,11 +245,18 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 	mmFormatter.positiveSuffix = @" mm";
 	mmFormatter.negativeSuffix = @" mm";
 	
+	NSNumberFormatter *mmpsFormatter = [mmFormatter copy];
+	mmpsFormatter.positiveSuffix = @" mm/s";
+	mmpsFormatter.negativeSuffix = @" mm/s";
+	
 	double doubleValue = value.doubleValue;
 	
 	if([key isEqual:@"layer_height"] || [key isEqual:@"wall_thickness"]) {
 		return [mmFormatter stringFromNumber:@(doubleValue)];
-
+		
+	}else if([key isEqual:@"print_speed"]) {
+		return [mmpsFormatter stringFromNumber:@(doubleValue)];
+		
 	}else if([key isEqual:@"fill_density"]) {
 		return [value stringByAppendingString:@"%"];
 	
