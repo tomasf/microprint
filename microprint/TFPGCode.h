@@ -24,7 +24,21 @@
 - (BOOL)hasField:(char)field;
 - (double)valueForField:(char)field;
 - (double)valueForField:(char)field fallback:(double)fallbackValue;
-- (NSNumber*)objectAtIndexedSubscript:(NSUInteger)index;
+- (NSNumber*)numberForField:(char)field;
+
+@property (nonatomic, readonly) int16_t N;
+
+@property (nonatomic, readonly) uint16_t M;
+@property (nonatomic, readonly) uint16_t G;
+
+@property (nonatomic, readonly) float X;
+@property (nonatomic, readonly) float Y;
+@property (nonatomic, readonly) float Z;
+@property (nonatomic, readonly) float E;
+@property (nonatomic, readonly) float F;
+
+@property (nonatomic, readonly) uint32_t S;
+@property (nonatomic, readonly) uint32_t P;
 
 @property (readonly) NSData *repetierV2Representation;
 @property (readonly) NSString *ASCIIRepresentation;

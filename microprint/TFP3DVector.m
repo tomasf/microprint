@@ -64,6 +64,13 @@
 }
 
 
++ (instancetype)vectorWithPosition:(TFPAbsolutePosition)position {
+	return [[self alloc] initWithX:isnan(position.x) ? nil : @(position.x)
+								 Y:isnan(position.y) ? nil : @(position.y)
+								 Z:isnan(position.z) ? nil : @(position.z)];
+}
+
+
 - (NSString *)description {
 	return [NSString stringWithFormat:@"[%@  %@  %@]", self.x ?: @"nil", self.y ?: @"nil", self.z ?: @"nil"];
 }

@@ -69,7 +69,7 @@
 - (void)reloadWarnings {
 	TFPPrinter *printer = self.representedObject;
 	
-	BOOL invalidZ = printer && !printer.hasValidZLevel;
+	BOOL invalidZ = printer && (!printer.hasValidZLevel || printer.position.z > 130);
 	BOOL untestedFirmware = printer && printer.firmwareVersionComparedToTestedRange != NSOrderedSame;
 	BOOL allZeroBedLevelOffsets = printer && printer.hasAllZeroBedLevelOffsets;
 	

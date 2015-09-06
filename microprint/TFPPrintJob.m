@@ -11,6 +11,7 @@
 #import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
 #import "TFPStopwatch.h"
+#import "TFP3DVector.h"
 
 @import IOKit.pwr_mgt;
 #import "MAKVONotificationCenter.h"

@@ -76,6 +76,7 @@
 		C96776E11B565BC600D2D6CB /* TFTimer.m in Sources */ = {isa = PBXBuildFile; fileRef = C96776DF1B565BC600D2D6CB /* TFTimer.m */; };
 		C96776E21B565BC600D2D6CB /* TFTimer.m in Sources */ = {isa = PBXBuildFile; fileRef = C96776DF1B565BC600D2D6CB /* TFTimer.m */; };
 		C96776E31B5662D900D2D6CB /* TFPPrintStatusController.m in Sources */ = {isa = PBXBuildFile; fileRef = C96776DD1B565A2B00D2D6CB /* TFPPrintStatusController.m */; };
+		C9901DCD1B9475CE00724F1A /* TFPApplicationDebug.m in Sources */ = {isa = PBXBuildFile; fileRef = C9901DCC1B9475CE00724F1A /* TFPApplicationDebug.m */; };
 		C991C31D1B4DA676005846B9 /* TFPGCodeConsoleOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = C991C31C1B4DA676005846B9 /* TFPGCodeConsoleOperation.m */; };
 		C99942C91B8B565500627E99 /* TFPDryRunPrinterConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = C99942C81B8B565500627E99 /* TFPDryRunPrinterConnection.m */; };
 		C99942CA1B8B565500627E99 /* TFPDryRunPrinterConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = C99942C81B8B565500627E99 /* TFPDryRunPrinterConnection.m */; };
@@ -206,6 +207,8 @@
 		C96776DD1B565A2B00D2D6CB /* TFPPrintStatusController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPPrintStatusController.m; sourceTree = "<group>"; };
 		C96776DF1B565BC600D2D6CB /* TFTimer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFTimer.m; sourceTree = "<group>"; };
 		C96776E01B565BC600D2D6CB /* TFTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFTimer.h; sourceTree = "<group>"; };
+		C9901DCB1B9475CE00724F1A /* TFPApplicationDebug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPApplicationDebug.h; sourceTree = "<group>"; };
+		C9901DCC1B9475CE00724F1A /* TFPApplicationDebug.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPApplicationDebug.m; sourceTree = "<group>"; };
 		C991C31B1B4DA676005846B9 /* TFPGCodeConsoleOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPGCodeConsoleOperation.h; sourceTree = "<group>"; };
 		C991C31C1B4DA676005846B9 /* TFPGCodeConsoleOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TFPGCodeConsoleOperation.m; sourceTree = "<group>"; };
 		C99942C71B8B565500627E99 /* TFPDryRunPrinterConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TFPDryRunPrinterConnection.h; sourceTree = "<group>"; };
@@ -427,6 +430,8 @@
 				C9E59B761B316F0D00343D58 /* TFPExtras.m */,
 				C94469AE1B79382F008820F4 /* TFPStopwatch.h */,
 				C94469AF1B79382F008820F4 /* TFPStopwatch.m */,
+				C9901DCB1B9475CE00724F1A /* TFPApplicationDebug.h */,
+				C9901DCC1B9475CE00724F1A /* TFPApplicationDebug.m */,
 			);
 			name = Other;
 			path = microprint;
@@ -667,6 +672,7 @@
 				C9C871BB1B5AD2070063FACB /* TFPBedLevelCalibrationViewController.m in Sources */,
 				C95F10CD1B53EBEF00F396B6 /* TFPGCode.m in Sources */,
 				C96776E31B5662D900D2D6CB /* TFPPrintStatusController.m in Sources */,
+				C9901DCD1B9475CE00724F1A /* TFPApplicationDebug.m in Sources */,
 				C9C871AB1B58298E0063FACB /* TFPBedLevelSettingsViewController.m in Sources */,
 				0F974CCA1B6995FC00376C8B /* TFPZeroBedOperation.m in Sources */,
 				C95F10CC1B53EBEF00F396B6 /* TFPGCodeProgram.m in Sources */,

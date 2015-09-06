@@ -8,9 +8,11 @@
 
 #import "TFPPrinterHelpers.h"
 #import "TFPPrinter+VirtualEEPROM.h"
+#import "TFP3DVector.h"
 
 #import "TFTimer.h"
 #import "MAKVONotificationCenter.h"
+
 
 
 @implementation TFPPrinter (CommandHelpers)
@@ -41,7 +43,6 @@
 		}
 	}];
 }
-
 
 
 - (void)fetchBedBaseLevelsWithCompletionHandler:(void(^)(BOOL success, TFPBedLevelOffsets offsets))completionHandler {
@@ -129,7 +130,6 @@
 }
 
 
-
 - (void)fetchPositionWithCompletionHandler:(void(^)(BOOL success, TFP3DVector *position, NSNumber *E))completionHandler {
 	[self sendGCode:[TFPGCode codeForGettingPosition] responseHandler:^(BOOL success, NSDictionary *params) {
 		if(success) {
@@ -148,44 +148,7 @@
 }
 
 
-/*
-- (void)fillInOffsetAndBacklashValuesInPrintParameters:(TFPPrintParameters*)params completionHandler:(void(^)(BOOL success))completionHandler {
-	[self fetchBedOffsetsWithCompletionHandler:^(BOOL success, TFPBedLevelOffsets offsets) {
-		if(!success) {
-			completionHandler(NO);
-			return;
-		}
-		
-		[self fetchBedBaseLevelsWithCompletionHandler:^(BOOL success, TFPBedLevelOffsets baseLevel) {
-			if(!success) {
-				completionHandler(NO);
-				return;
-			}
-			
-			TFPBedLevelOffsets completeLevel = offsets;
-			completeLevel.backLeft += baseLevel.backLeft;
-			completeLevel.backRight += baseLevel.backRight;
-			completeLevel.frontLeft += baseLevel.frontLeft;
-			completeLevel.frontRight += baseLevel.frontRight;
-			
-			params.bedLevelOffsets = completeLevel;
-			
-			[self fetchBacklashValuesWithCompletionHandler:^(BOOL success, TFPBacklashValues values) {
-				if(!success) {
-					completionHandler(NO);
-					return;
-				}
-				params.backlashValues = values;
-				completionHandler(YES);
-			}];
-		}];
-	}];
-}
-*/
-
-
 @end
-
 
 
 

@@ -71,7 +71,7 @@
 	NSString *valueString = [[values.allKeys tf_mapWithBlock:^id(NSString *key) {
 		return [NSString stringWithFormat:@"%@:%@", key, values[key]];
 	}] componentsJoinedByString:@" "] ?: @"";
-	NSString *lineNumber = [code hasField:'N'] ? [NSString stringWithFormat:@"%d", code['N'].intValue] : @"";
+	NSString *lineNumber = [code hasField:'N'] ? [NSString stringWithFormat:@"%hd", code.N] : @"";
 	NSString *response = [NSString stringWithFormat:@"ok %@ %@", lineNumber, valueString];
 	
 	[self processIncomingString:response];

@@ -5,6 +5,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "TFPGCodeHelpers.h"
 
 @interface TFP3DVector : NSObject
 + (instancetype)vectorWithX:(NSNumber*)x Y:(NSNumber*)Y Z:(NSNumber*)Z;
@@ -16,6 +17,8 @@
 
 + (instancetype)zeroVector;
 + (instancetype)emptyVector;
+
++ (instancetype)vectorWithPosition:(TFPAbsolutePosition)position;
 
 @property (readonly) NSNumber *x;
 @property (readonly) NSNumber *y;

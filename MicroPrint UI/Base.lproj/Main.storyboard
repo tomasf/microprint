@@ -672,6 +672,12 @@
                                                 <action selector="levelTest:" target="Voe-Tx-rLC" id="2b3-UK-iXW"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem title="Benchmark" id="369-V4-ElG">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="speedTest:" target="Voe-Tx-rLC" id="wIF-bs-tRj"/>
+                                            </connections>
+                                        </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>
@@ -903,7 +909,7 @@
                                     <binding destination="bpn-zK-R5E" name="value" keyPath="representedObject.printerImage" id="G2T-iw-Xfr"/>
                                 </connections>
                             </imageView>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="eed-Wx-7lZ">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="eed-Wx-7lZ">
                                 <rect key="frame" x="82" y="51" width="165" height="17"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="GR-15-04-30-01-050-049" id="iQE-eO-7gf">
                                     <font key="font" metaFont="systemBold"/>
@@ -2071,7 +2077,7 @@ DQ
                                     <binding destination="loo-rf-9XD" name="value" keyPath="printStatusController.printProgress" id="aqM-Jd-yiq"/>
                                 </connections>
                             </progressIndicator>
-                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="OKE-bC-0aN">
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="OKE-bC-0aN">
                                 <rect key="frame" x="210" y="484" width="69" height="17"/>
                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Printing…" id="aeq-d9-bW2">
                                     <font key="font" metaFont="systemBold"/>
@@ -2355,7 +2361,7 @@ Gw
                                                         <action selector="cancel:" target="meg-yd-2SE" id="UxQ-W0-UhL"/>
                                                     </connections>
                                                 </button>
-                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Rri-KT-pDB">
+                                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Rri-KT-pDB">
                                                     <rect key="frame" x="151" y="90" width="111" height="17"/>
                                                     <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Back-left corner" id="PKg-SY-F1G">
                                                         <font key="font" metaFont="systemBold"/>

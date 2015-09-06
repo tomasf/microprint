@@ -9,6 +9,7 @@
 #import "TFPRaiseHeadOperation.h"
 #import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
+#import "TFP3DVector.h"
 
 
 @interface TFPRaiseHeadOperation ()
