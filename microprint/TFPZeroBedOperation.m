@@ -9,6 +9,7 @@
 #import "TFPZeroBedOperation.h"
 #import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
+#import "TFP3DVector.h"
 
 
 @interface TFPZeroBedOperation ()
@@ -28,28 +29,21 @@
 	}
 
     const double temperature = 150; // Warm it up a bit
-
     const double moveFeedRate = 2900;
 
     TFP3DVector *parkingLocation = [TFP3DVector vectorWithX:nil Y:@90 Z:@10];
 
-    __weak TFPPrinter *printer = self.printer;
-    __weak __typeof__(self) weakSelf = self;
 
     TFPGCodeProgram *prep = [TFPGCodeProgram programWithLines:@[
 																[TFPGCode codeForHeaterTemperature:temperature waitUntilDone:YES],
 																[TFPGCode codeForTurningOffHeater],
 																[TFPGCode turnOffFanCode],
-                                ]];
-
-    TFPGCodeProgram *zero = [TFPGCodeProgram programWithLines:@[
-																[TFPGCode codeWithField:'G' value:30],
-                                ]];
+																]];
 
     TFPGCodeProgram *park = [TFPGCodeProgram programWithLines:@[
 																[TFPGCode absoluteModeCode],
 																[TFPGCode moveWithPosition:parkingLocation feedRate:moveFeedRate],
-																[TFPGCode waitCodeWithDuration:0],
+																[TFPGCode waitForCompletionCode],
 																]];
 
     if(self.progressFeedback) {
@@ -58,28 +52,28 @@
 	
 	self.stage = TFPOperationStagePreparation;
 
-    [printer runGCodeProgram:prep completionHandler:^(BOOL success, NSArray *valueDictionaries) {
-        if (weakSelf.stopped) {
-			[weakSelf doStopCompleted:NO];
+    [self.context runGCodeProgram:prep completionHandler:^(BOOL success, NSArray *valueDictionaries) {
+        if (self.stopped) {
+			[self doStopCompleted:NO];
+			
         }else{
-
-            if(weakSelf.progressFeedback) {
-                weakSelf.progressFeedback(@"Finding Bed Location…");
+            if(self.progressFeedback) {
+                self.progressFeedback(@"Finding Bed Location…");
             }
 
 			self.stage = TFPOperationStageRunning;
-            [printer runGCodeProgram:zero completionHandler:^(BOOL success, NSArray *valueDictionaries) {
+            [self.context sendGCode:[TFPGCode findZeroCode] responseHandler:^(BOOL success, TFPGCodeResponseDictionary value) {
 				self.stage = TFPOperationStageEnding;
-                if (weakSelf.stopped) {
-                    [weakSelf doStopCompleted:NO];
+                if (self.stopped) {
+                    [self doStopCompleted:NO];
+					
                 }else{
-                    
-                    if(weakSelf.progressFeedback) {
-                        weakSelf.progressFeedback(@"Parking Print Head…");
+                    if(self.progressFeedback) {
+                        self.progressFeedback(@"Parking Print Head…");
                     }
 
-                    [printer runGCodeProgram:park completionHandler:^(BOOL success, NSArray *valueDictionaries) {
-						[weakSelf doStopCompleted:YES];
+                    [self.context runGCodeProgram:park completionHandler:^(BOOL success, NSArray *valueDictionaries) {
+						[self doStopCompleted:YES];
                     }];
                 }
             }];

@@ -10,6 +10,7 @@
 #import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
 #import "TFPBedLevelCompensator.h"
+#import "TFP3DVector.h"
 
 
 const double moveFeedRate = 2900;

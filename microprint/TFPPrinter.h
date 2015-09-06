@@ -82,7 +82,6 @@ typedef NSDictionary<NSString *, NSString*>* TFPGCodeResponseDictionary;
 // If success is NO, value dictionary contains an NSNumber-wrapped TFPPrinterResponseErrorCode in TFPPrinterResponseErrorCodeKey
 
 - (void)sendGCode:(TFPGCode*)code responseHandler:(void(^)(BOOL success, TFPGCodeResponseDictionary value))block;
-- (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success, NSArray<TFPGCodeResponseDictionary> *values))completionHandler;
 
 - (TFPPrinterContext*)acquireContextWithOptions:(TFPPrinterContextOptions)options queue:(dispatch_queue_t)queue;
 
@@ -95,7 +94,7 @@ typedef NSDictionary<NSString *, NSString*>* TFPGCodeResponseDictionary;
 @property (readonly, copy) NSString *firmwareVersion;
 @property (readonly) NSComparisonResult firmwareVersionComparedToTestedRange;
 
-@property (readonly) double feedrate;
+@property (nonatomic) double feedrate;
 @property (readonly) double heaterTargetTemperature;
 @property (readonly) double heaterTemperature;
 @property (readonly) BOOL hasValidZLevel;

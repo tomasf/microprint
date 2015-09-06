@@ -29,8 +29,9 @@ const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 
 @interface TFPPrinter (HelpersPrivate)
 - (void)fetchBedOffsetsWithCompletionHandler:(void(^)(BOOL success, TFPBedLevelOffsets offsets))completionHandler;
-- (void)setBedOffsets:(TFPBedLevelOffsets)offsets completionHandler:(void(^)(BOOL success))completionHandler;
 - (void)fetchBedBaseLevelsWithCompletionHandler:(void(^)(BOOL success, TFPBedLevelOffsets offsets))completionHandler;
+- (void)fetchBacklashValuesWithCompletionHandler:(void(^)(BOOL success, TFPBacklashValues values))completionHandler;;
+- (void)setBedOffsets:(TFPBedLevelOffsets)offsets completionHandler:(void(^)(BOOL success))completionHandler;
 @end
 
 @interface TFPPrinterContext (Private)
@@ -50,7 +51,7 @@ typedef NS_OPTIONS(NSUInteger, TFPGCodeOptions) {
 
 @interface TFPPrinterGCodeEntry : NSObject
 @property TFPGCode *code;
-@property NSInteger lineNumber;
+@property TFPGCode *finalCode;
 @property TFPGCodeOptions options;
 
 @property dispatch_queue_t responseQueue;
@@ -61,11 +62,10 @@ typedef NS_OPTIONS(NSUInteger, TFPGCodeOptions) {
 @implementation TFPPrinterGCodeEntry
 
 
-- (instancetype)initWithCode:(TFPGCode*)code lineNumber:(NSInteger)line options:(TFPGCodeOptions)options responseBlock:(void(^)(BOOL, TFPGCodeResponseDictionary))block queue:(dispatch_queue_t)blockQueue {
+- (instancetype)initWithCode:(TFPGCode*)code options:(TFPGCodeOptions)options responseBlock:(void(^)(BOOL, TFPGCodeResponseDictionary))block queue:(dispatch_queue_t)blockQueue {
 	if(!(self = [super init])) return nil;
 	
 	self.code = code;
-	self.lineNumber = line;
 	self.responseBlock = block;
 	self.responseQueue = blockQueue;
 	self.options = options;
@@ -75,7 +75,7 @@ typedef NS_OPTIONS(NSUInteger, TFPGCodeOptions) {
 
 
 + (instancetype)lineNumberResetEntry {
-	return [[self alloc] initWithCode:[TFPGCode codeForSettingLineNumber:0] lineNumber:0 options:0 responseBlock:nil queue:nil];
+	return [[self alloc] initWithCode:[TFPGCode codeForSettingLineNumber:0] options:0 responseBlock:nil queue:nil];
 }
 
 
@@ -123,7 +123,6 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 @property (readwrite, copy) NSString *serialNumber;
 @property (readwrite, copy) NSString *firmwareVersion;
 
-@property (readwrite) double feedrate;
 @property (readwrite) double heaterTemperature;
 @property (readwrite) double heaterTargetTemperature;
 @property (readwrite) BOOL hasValidZLevel;
@@ -339,7 +338,7 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 	TFLog(@"Got resend request for line %@", code);
 	
 	if(code) {
-		TFPPrinterGCodeEntry *entry = [[TFPPrinterGCodeEntry alloc] initWithCode:code lineNumber:lineNumber options:0 responseBlock:nil queue:nil];
+		TFPPrinterGCodeEntry *entry = [[TFPPrinterGCodeEntry alloc] initWithCode:code options:0 responseBlock:nil queue:nil];
 		[self.queuedCodeEntries insertObject:entry atIndex:0];
 		[self dequeueCode];
 	} else {
@@ -369,9 +368,10 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 		
 		if(supplement) {
 			[self.queuedCodeEntries insertObject:entry atIndex:0];
-			entry = [[TFPPrinterGCodeEntry alloc] initWithCode:code lineNumber:-1 options:entry.options responseBlock:nil queue:nil];
+			entry = [[TFPPrinterGCodeEntry alloc] initWithCode:code options:entry.options responseBlock:nil queue:nil];
 		}
 		code = [self adjustLineBeforeSending:code];
+		entry.finalCode = code;
 		self.pendingCodeEntry = entry;
 		
 		[self.connection sendGCode:code];
@@ -410,9 +410,14 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 	NSInteger G = [code valueForField:'G' fallback:-1];
 	
 	if(G > -1 && [code hasField:'F']) {
-		double feedRate = code.feedRate;
-		feedRate = [self convertToM3DSpecificFeedRate:feedRate];
-		code = [code codeBySettingField:'F' toValue:feedRate];
+		code = [code codeBySettingField:'F' toValue:[self convertToM3DSpecificFeedRate:code.F]];
+	}
+	
+	NSInteger lineNumber = -1;
+	if([self codeNeedsLineNumber:code]) {
+		lineNumber = [self consumeLineNumber];
+		code = [code codeBySettingLineNumber:lineNumber];
+		self.codeRegistry[@(lineNumber)] = code;
 	}
 	
 	return code;
@@ -530,9 +535,7 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 				
 				if([code hasField:'F']) {
 					self.currentFeedRate = [code valueForField:'F'];
-					TFMainThread(^{
-						self.feedrate = [code valueForField:'F'];
-					});
+					[self setFeedrateWithoutWrite:[code valueForField:'F']];
 				}
 				
 				self.positionX = X;
@@ -545,9 +548,7 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 			
 		} else if([code hasField:'F']) {
 			self.currentFeedRate = [code valueForField:'F'];
-			TFMainThread(^{
-				self.feedrate = [code valueForField:'F'];
-			});
+			[self setFeedrateWithoutWrite:[code valueForField:'F']];
 		}
 		
 	} else if(G == 28) {
@@ -602,7 +603,11 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 // This is so bad. Firmware is a huge piece of crap.
 
 - (BOOL)codeNeedsLineNumber:(TFPGCode*)code {
-	NSUInteger M = [code valueForField:'M' fallback:-1];
+	if([code hasField:'N']) {
+		return NO;
+	}
+	
+	NSInteger M = [code valueForField:'M' fallback:-1];
 	if(M == 0 || M == 117 || M == 618 || M == 115) {
 		return NO;
 	}
@@ -611,23 +616,15 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 }
 
 
-- (void)sendGCode:(TFPGCode*)inputCode options:(TFPGCodeOptions)options responseHandler:(void(^)(BOOL success, NSDictionary<NSString *, NSString*> *value))block responseQueue:(dispatch_queue_t)queue {
-	if([self sendReplacementsForGCodeIfNeeded:inputCode responseHandler:block responseQueue:queue]) {
+- (void)sendGCode:(TFPGCode*)code options:(TFPGCodeOptions)options responseHandler:(void(^)(BOOL success, NSDictionary<NSString *, NSString*> *value))block responseQueue:(dispatch_queue_t)queue {
+	if([self sendReplacementsForGCodeIfNeeded:code responseHandler:block responseQueue:queue]) {
 		return;
 	}
 	
 	BOOL prio = options & TFPGCodeOptionPrioritized;
+	TFPPrinterGCodeEntry *entry = [[TFPPrinterGCodeEntry alloc] initWithCode:code options:options responseBlock:block queue:queue];
 	
 	dispatch_async(self.communicationQueue, ^{
-		TFPGCode *code = inputCode;
-		NSInteger lineNumber = -1;
-		if([self codeNeedsLineNumber:code] && !prio) {
-			lineNumber = [self consumeLineNumber];
-			code = [inputCode codeBySettingLineNumber:lineNumber];
-			self.codeRegistry[@(lineNumber)] = code;
-		}
-		
-		TFPPrinterGCodeEntry *entry = [[TFPPrinterGCodeEntry alloc] initWithCode:code lineNumber:lineNumber options:options responseBlock:block queue:queue];
 		if(prio) {
 			[self.queuedCodeEntries insertObject:entry atIndex:0];
 		}else{
@@ -643,30 +640,7 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 }
 
 
-- (void)runGCodeProgram:(TFPGCodeProgram *)program options:(TFPGCodeOptions)options previousValues:(NSArray*)previousValues completionHandler:(void (^)(BOOL success, NSArray *valueDictionaries))completionHandler responseQueue:(dispatch_queue_t)queue {
-	if(previousValues.count < program.lines.count) {
-		TFPGCode *code = program.lines[previousValues.count];
-		[self sendGCode:code options:options responseHandler:^(BOOL success, NSDictionary *value) {
-			if(success) {
-				NSMutableArray *newValues = [previousValues mutableCopy];
-				[newValues addObject:value];
-				[self runGCodeProgram:program options:options previousValues:newValues completionHandler:completionHandler responseQueue:queue];
-			}else{
-				if(completionHandler) {
-					dispatch_async(queue ?: dispatch_get_main_queue(), ^{
-						completionHandler(NO, previousValues);
-					});
-				}
-			}
-		} responseQueue:queue];
-	}else{
-		if(completionHandler) {
-			dispatch_async(queue ?: dispatch_get_main_queue(), ^{
-				completionHandler(YES, previousValues);
-			});
-		}
-	}
-}
+
 
 
 - (TFPPrinterContext*)acquireContextWithOptions:(TFPPrinterContextOptions)options queue:(dispatch_queue_t)queue {
@@ -686,16 +660,6 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 	if(self.primaryContext == context) {
 		self.primaryContext = nil;
 	}
-}
-
-
-- (void)runGCodeProgram:(TFPGCodeProgram*)program options:(TFPGCodeOptions)options completionHandler:(void(^)(BOOL success, NSArray<TFPGCodeResponseDictionary> *values))completionHandler responseQueue:(dispatch_queue_t)queue {
-	[self runGCodeProgram:program options:options previousValues:@[] completionHandler:completionHandler responseQueue:queue];
-}
-
-
-- (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success, NSArray<TFPGCodeResponseDictionary> *values))completionHandler {
-	[self runGCodeProgram:program options:0 completionHandler:completionHandler responseQueue:dispatch_get_main_queue()];
 }
 
 
@@ -777,9 +741,24 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 }
 
 
+- (void)setFeedrateWithoutWrite:(double)feedrate {
+	TFMainThread(^{
+		[self willChangeValueForKey:@"feedrate"];
+		_feedrate = feedrate;
+		[self didChangeValueForKey:@"feedrate"];
+	});
+}
+
+
+- (void)setFeedrate:(double)feedrate {
+	_feedrate = feedrate;
+	[self sendGCode:[TFPGCode codeForSettingFeedRate:feedrate] responseHandler:nil];
+}
+
+
 - (void)setPosition:(TFPAbsolutePosition)position {
 	_position = position;
-	[self sendGCode:[TFPGCode moveWithPosition:[TFP3DVector vectorWithX:@(position.x) Y:@(position.y) Z:@(position.z)] feedRate:-1] responseHandler:nil];
+	[self sendGCode:[TFPGCode moveWithPosition:[TFP3DVector vectorWithPosition:position] feedRate:-1] responseHandler:nil];
 }
 
 
@@ -937,8 +916,10 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 			
 			[self dequeueCode];
 			
-			if(entry.lineNumber != -1 && entry.lineNumber != lineNumber) {
-				[self sendNotice:@"Line number mismatch for pending code entry and response. Response was %d, expected %d (%@)", (int)lineNumber, (int)entry.lineNumber, entry.code];
+			NSInteger entryLineNumber = [entry.finalCode valueForField:'N' fallback:-1];
+			
+			if(entryLineNumber != -1 && entryLineNumber != lineNumber) {
+				[self sendNotice:@"Line number mismatch for pending code entry and response. Response was %d, expected %d (%@)", (int)lineNumber, (int)entryLineNumber, entry.code];
 			}
 			
 			[entry deliverConfirmationResponseWithValues:value];
@@ -1003,10 +984,6 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 
 
 - (BOOL)printerShouldBeInvalidatedWithRemovedSerialPorts:(NSArray*)ports {
-	NSLog(@"ports %@", ports);
-	NSLog(@"my port %@", self.connection.serialPort);
-	NSLog(@"my state %d", (int)self.connection.state);
-	
 	return self.connection.state != TFPPrinterConnectionStatePending && self.connection.serialPort && [ports containsObject:self.connection.serialPort];
 }
 
@@ -1065,7 +1042,31 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 
 
 - (void)runGCodeProgram:(TFPGCodeProgram*)program completionHandler:(void(^)(BOOL success, NSArray<TFPGCodeResponseDictionary> *values))completionHandler {
-	[self.printer runGCodeProgram:program options:self.codeOptions completionHandler:completionHandler responseQueue:self.queue];
+	[self runGCodeProgram:program previousValues:@[] completionHandler:completionHandler];
+}
+
+
+- (void)runGCodeProgram:(TFPGCodeProgram *)program previousValues:(NSArray*)previousValues completionHandler:(void (^)(BOOL success, NSArray *valueDictionaries))completionHandler {
+	if(previousValues.count < program.lines.count) {
+		TFPGCode *code = program.lines[previousValues.count];
+		[self.printer sendGCode:code options:self.codeOptions responseHandler:^(BOOL success, NSDictionary *value) {
+			if(success) {
+				NSMutableArray *newValues = [previousValues mutableCopy];
+				[newValues addObject:value];
+				[self runGCodeProgram:program previousValues:newValues completionHandler:completionHandler];
+			}else{
+				if(completionHandler) {
+					completionHandler(NO, previousValues);
+				}
+			}
+		} responseQueue:self.queue];
+	}else{
+		if(completionHandler) {
+			dispatch_async(self.queue ?: dispatch_get_main_queue(), ^{
+				completionHandler(YES, previousValues);
+			});
+		}
+	}
 }
 
 

@@ -8,13 +8,15 @@
 
 #import "TFPGCode.h"
 #import "TFPGCodeProgram.h"
-#import "TFP3DVector.h"
+
+@class TFP3DVector;
 
 
 @interface TFPGCode (TFPHelpers)
 + (instancetype)stopCode;
 + (instancetype)waitCodeWithDuration:(NSTimeInterval)seconds;
 + (instancetype)waitForCompletionCode;
++ (instancetype)findZeroCode;
 
 // Line numbering
 + (instancetype)codeForSettingLineNumber:(uint16_t)lineNumber;
@@ -59,12 +61,6 @@
 @property (readonly) NSInteger layerIndexFromComment;
 
 @property (readonly) TFP3DVector *movementVector;
-
-@property (readonly) BOOL hasExtrusion;
-@property (readonly) double extrusion;
-
-@property (readonly) double feedRate;
-@property (readonly) BOOL hasFeedRate;
 @end
 
 

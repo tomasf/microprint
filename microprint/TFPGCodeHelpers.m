@@ -8,6 +8,7 @@
 
 #import "TFPGCodeHelpers.h"
 #import "TFPExtras.h"
+#import "TFP3DVector.h"
 
 
 @implementation TFPGCode (TFPHelpers)
@@ -174,6 +175,11 @@
 }
 
 
++ (instancetype)findZeroCode {
+	return [TFPGCode codeWithField:'G' value:30];
+}
+
+
 
 - (NSInteger)layerIndexFromComment {
 	if ([self.comment hasPrefix:@"LAYER:"]) {
@@ -195,27 +201,7 @@
 
 
 - (TFP3DVector*)movementVector {
-	return [TFP3DVector vectorWithX:self['X'] Y:self['Y'] Z:self['Z']];
-}
-
-
-- (BOOL)hasExtrusion {
-	return [self hasField:'E'];
-}
-
-
-- (double)extrusion {
-	return [self valueForField:'E'];
-}
-
-
-- (double)feedRate {
-	return [self valueForField:'F'];
-}
-
-
-- (BOOL)hasFeedRate {
-	return [self hasField:'F'];
+	return [TFP3DVector vectorWithX:[self numberForField:'X'] Y:[self numberForField:'Y'] Z:[self numberForField:'Z']];
 }
 
 
@@ -284,6 +270,7 @@ TFPCuboid TFPCuboidInfinite = {.x = -10000, .xSize = 20000, .y = -10000, .ySize 
 
 TFPCuboid TFPCuboidM3DMicroPrintVolumeLower = {.x = 0, .y = 0, .z = -1000,  .xSize = 109, .ySize = 113, .zSize = 74 + 1000};
 TFPCuboid TFPCuboidM3DMicroPrintVolumeUpper = {.x = 12.5, .y = 11, .z = 74,  .xSize = 91, .ySize = 84, .zSize = 42};
+
 
 
 @implementation TFPGCodeProgram (TFPHelpers)
@@ -459,12 +446,14 @@ TFPCuboid TFPCuboidM3DMicroPrintVolumeUpper = {.x = 12.5, .y = 11, .z = 74,  .xS
 
 
 - (NSString*)curaProfileComment {
-	for(TFPGCode *code in self.lines) {
+	__block NSString *comment;
+	[self.lines enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(TFPGCode *code, NSUInteger idx, BOOL * _Nonnull stop) {
 		if([code.comment hasPrefix:@"CURA_PROFILE_STRING:"]) {
-			return [code.comment substringFromIndex:20];
+			comment = [code.comment substringFromIndex:20];
+			*stop = YES;
 		}
-	}
-	return nil;
+	}];
+	return comment;
 }
 
 
