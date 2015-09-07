@@ -81,13 +81,13 @@ static NSString *const savedSettingsKey = @"SavedDocumentSettings";
 		});
 	};
 	
-	TFPGCodeProgram *program = [[TFPGCodeProgram alloc] initWithFileURL:absoluteURL error:outError];
-	if(!program) {		
+	self.program = [[TFPGCodeProgram alloc] initWithFileURL:absoluteURL error:outError];
+	if(!self.program) {
 		stopLoading();
 		return NO;
 	}
 	
-	if(![program validateForM3D:outError]) {
+	if(![self.program validateForM3D:outError]) {
 		stopLoading();
 		return NO;
 	}
@@ -95,13 +95,13 @@ static NSString *const savedSettingsKey = @"SavedDocumentSettings";
 	stopLoading();
 	
 	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-		TFPCuboid boundingBox = [program measureBoundingBox];
+		TFPCuboid boundingBox = [self.program measureBoundingBox];
 		dispatch_async(dispatch_get_main_queue(), ^{
 			self.boundingBox = boundingBox;
 			self.hasBoundingBox = YES;
 		});
 		
-		NSDictionary *profile = [program curaProfileValues];
+		NSDictionary *profile = [self.program curaProfileValues];
 		dispatch_async(dispatch_get_main_queue(), ^{
 			self.curaProfile = profile;
 		});

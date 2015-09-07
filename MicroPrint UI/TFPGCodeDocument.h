@@ -14,6 +14,8 @@
 
 
 @interface TFPGCodeDocument : NSDocument
+@property TFPGCodeProgram *program;
+
 @property (readonly) BOOL hasBoundingBox;
 @property (readonly) TFPCuboid boundingBox;
 @property (readonly) NSDictionary *curaProfile;

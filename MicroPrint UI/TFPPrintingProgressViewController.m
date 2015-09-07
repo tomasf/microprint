@@ -204,8 +204,7 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 	self.state = TFPPrintingProgressViewControllerStatePreprocessing;
 	
 	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-		TFPGCodeProgram *program = [[TFPGCodeProgram alloc] initWithFileURL:self.GCodeFileURL error:nil];
-		program = [TFPPreprocessing programByPreprocessingProgram:program usingParameters:params];
+		TFPGCodeProgram *program = [TFPPreprocessing programByPreprocessingProgram:self.program usingParameters:params];
 		
 		BOOL withinBounds = [program withinM3DMicroPrintableVolume];
 		

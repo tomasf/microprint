@@ -152,7 +152,7 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 	TFPPrintingProgressViewController *viewController = [self.storyboard instantiateControllerWithIdentifier:@"PrintingProgressViewController"];
 	viewController.printer = self.document.selectedPrinter;
 	viewController.printParameters = [self printParameters];
-	viewController.GCodeFileURL = self.document.fileURL;
+	viewController.program = self.document.program;
 	
 	self.printingProgressViewController = viewController;
 	[self presentViewControllerAsSheet:viewController];
