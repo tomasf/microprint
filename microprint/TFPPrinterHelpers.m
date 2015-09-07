@@ -220,7 +220,7 @@
 	} copy];
 	
 	[self.printer addObserver:timer keyPath:@"heaterTemperature" options:0 block:^(MAKVONotification *notification) {
-		if(fabs(weakSelf.printer.heaterTemperature - targetTemperature) < 3) {
+		if(weakSelf.printer.heaterTemperature >= targetTemperature-3) {
 			[weakTimer invalidate];
 			completionBlock();
 		}else{
@@ -261,24 +261,23 @@
 	
 	[self setRelativeMode:NO completionHandler:nil];
 	
-	[self.printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *originPosition, NSNumber *E) {
-		TFP3DVector *delta = [targetPosition vectorBySubtracting:originPosition];
-		
-		TFP3DVector *stepVector = [[delta vectorByDividingBy:[TFP3DVector vectorWithX:@2 Y:@2 Z:@0.1]] absoluteVector];
-		NSUInteger numSteps = ceil(MAX(MAX(stepVector.x.integerValue, stepVector.y.integerValue), stepVector.z.integerValue));
-		
-		if(numSteps > 0) {
-			[self moveStepFromPosition:originPosition toPosition:targetPosition steps:numSteps currentStep:0 feedRate:feedRate cancelBlock:^BOOL{
-				return cancelFlag;
-			} progressBlock:progressBlock completionBlock:^{
-				completionBlock();
-			}];
-		}else{
-			dispatch_async(dispatch_get_main_queue(), ^{
-				completionBlock();
-			});
-		}
-	}];
+	TFP3DVector *originPosition = [TFP3DVector vectorWithPosition:self.printer.position];
+	TFP3DVector *delta = [targetPosition vectorBySubtracting:originPosition];
+	
+	TFP3DVector *stepVector = [[delta vectorByDividingBy:[TFP3DVector vectorWithX:@2 Y:@2 Z:@0.1]] absoluteVector];
+	NSUInteger numSteps = ceil(MAX(MAX(stepVector.x.integerValue, stepVector.y.integerValue), stepVector.z.integerValue));
+	
+	if(numSteps > 0) {
+		[self moveStepFromPosition:originPosition toPosition:targetPosition steps:numSteps currentStep:0 feedRate:feedRate cancelBlock:^BOOL{
+			return cancelFlag;
+		} progressBlock:progressBlock completionBlock:^{
+			completionBlock();
+		}];
+	}else{
+		dispatch_async(dispatch_get_main_queue(), ^{
+			completionBlock();
+		});
+	}
 	
 	return ^{
 		cancelFlag = YES;

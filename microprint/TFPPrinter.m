@@ -358,6 +358,10 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 		return;
 	}
 	
+	if([self sendLineNumberResetIfNeeded]) {
+		return;
+	}
+	
 	TFPPrinterGCodeEntry *entry = self.queuedCodeEntries.firstObject;
 	if(entry) {
 		[self.queuedCodeEntries removeObjectAtIndex:0];
@@ -385,14 +389,17 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 }
 
 
-- (NSUInteger)consumeLineNumber {
+- (BOOL)sendLineNumberResetIfNeeded {
 	if(self.lineNumberCounter > maxLineNumber) {
-		// Fast-track a line number reset
-		[self.queuedCodeEntries addObject:[TFPPrinterGCodeEntry lineNumberResetEntry]];
-		[self dequeueCode];
+		[self sendGCode:[TFPGCode resetExtrusionCode] options:TFPGCodeOptionPrioritized responseHandler:nil responseQueue:nil];
 		self.lineNumberCounter = 1;
+		return YES;
 	}
+	return NO;
+}
 
+
+- (NSUInteger)consumeLineNumber {
 	NSUInteger line = self.lineNumberCounter;
 	self.lineNumberCounter++;
 	return line;
@@ -640,9 +647,6 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 }
 
 
-
-
-
 - (TFPPrinterContext*)acquireContextWithOptions:(TFPPrinterContextOptions)options queue:(dispatch_queue_t)queue {
 	if(self.primaryContext && !(options & TFPPrinterContextOptionConcurrent)) {
 		return nil;
@@ -730,12 +734,10 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 - (void)processTemperatureUpdate:(double)temperature {
 	// On communication queue here
 	TFMainThread(^{
-		if(temperature != self.heaterTemperature) {
-			if(temperature < 0) {
-				self.heaterTemperature = self.heaterTargetTemperature;
-			}else{
-				self.heaterTemperature = temperature;
-			}
+		if(temperature < 0) {
+			self.heaterTemperature = self.heaterTargetTemperature;
+		}else{
+			self.heaterTemperature = temperature;
 		}
 	});
 }
@@ -977,18 +979,13 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 }
 
 
-
-- (double)speedMultiplier {
-	return 1;
-}
-
-
 - (BOOL)printerShouldBeInvalidatedWithRemovedSerialPorts:(NSArray*)ports {
 	return self.connection.state != TFPPrinterConnectionStatePending && self.connection.serialPort && [ports containsObject:self.connection.serialPort];
 }
 
 
 @end
+
 
 
 
