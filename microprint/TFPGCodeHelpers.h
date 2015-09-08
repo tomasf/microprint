@@ -66,10 +66,9 @@
 
 typedef NS_ENUM(NSUInteger, TFPPrintPhase) {
 	TFPPrintPhaseInvalid,
-	TFPPrintPhasePreamble,
+	TFPPrintPhaseSkirt,
 	TFPPrintPhaseAdhesion,
 	TFPPrintPhaseModel,
-	TFPPrintPhasePostamble,
 };
 
 

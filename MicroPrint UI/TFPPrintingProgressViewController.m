@@ -24,12 +24,6 @@ static const CGFloat drawContainerExpandedHeight = 300;
 static const CGFloat drawContainerExpandedBottomMargin = 20;
 
 
-typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
-	TFPPrintingProgressViewControllerStateRunningJob,
-	TFPPrintingProgressViewControllerStateCancelling,
-};
-
-
 @interface TFPPrintingProgressViewController ()
 @property IBOutlet NSTextField *statusLabel;
 @property IBOutlet NSTextField *elapsedTimeLabel;
@@ -49,7 +43,6 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 @property NSNumberFormatter *percentFormatter;
 @property NSNumberFormatter *longPercentFormatter;
 
-@property TFPPrintingProgressViewControllerState state;
 @property TFPPrintJob *printJob;
 @property TFPPrintStatusController *printStatusController;
 @property BOOL aborted;
@@ -199,7 +192,6 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 	
 	self.progressIndicator.indeterminate = YES;
 	[self.progressIndicator startAnimation:nil];
-	self.state = TFPPrintingProgressViewControllerStateRunningJob;
 	
 	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
 		TFPGCodeProgram *program = self.program;
@@ -209,7 +201,6 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 			if(weakSelf.aborted) {
 				return;
 			}
-			weakSelf.state = TFPPrintingProgressViewControllerStateRunningJob;
 			weakSelf.printJob = [[TFPPrintJob alloc] initWithProgram:program printer:weakSelf.printer printParameters:params];
 			
 			if(withinBounds) {
@@ -248,7 +239,6 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 	
 	[alert beginSheetModalForWindow:self.view.window completionHandler:^(NSModalResponse returnCode) {
 		if(returnCode == NSAlertSecondButtonReturn) {
-			self.state = TFPPrintingProgressViewControllerStateCancelling;
 			[self.printJob abort];
 		}
 	}];
@@ -349,65 +339,52 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 
 
 - (NSString*)statusString {
-	switch(self.state) {
-		case TFPPrintingProgressViewControllerStateRunningJob: {
+	switch(self.printJob.state) {
+		case TFPPrintJobStatePreparing:
+			return @"Starting…";
 			
-			switch(self.printJob.state) {
-				case TFPPrintJobStatePreparing:
-					return @"Preparing…";
-
-				case TFPPrintJobStatePrinting: {
-					NSString *progress = [self.longPercentFormatter stringFromNumber:@(self.printStatusController.phaseProgress)];
-					NSString *phase;
-					BOOL printProgress = YES;
+		case TFPPrintJobStatePrinting: {
+			NSString *progress = [self.longPercentFormatter stringFromNumber:@(self.printStatusController.phaseProgress)];
+			NSString *phase;
+			BOOL printProgress = YES;
+			
+			switch(self.printStatusController.currentPhase) {
+				case TFPPrintPhaseSkirt:
+					phase = @"Printing Skirt";
+					printProgress = NO;
+					break;
+				case TFPPrintPhaseAdhesion:
+					phase = @"Printing Bed Adhesion";
+					break;
+				case TFPPrintPhaseModel:
+					phase = @"Printing Model";
+					break;
 					
-					switch(self.printStatusController.currentPhase) {
-						case TFPPrintPhasePreamble:
-							phase = @"Starting Print";
-							printProgress = NO;
-							break;
-						case TFPPrintPhaseAdhesion:
-							phase = @"Printing Bed Adhesion";
-							break;
-						case TFPPrintPhaseModel:
-							phase = @"Printing Model";
-							break;
-						case TFPPrintPhasePostamble:
-							phase = @"Finishing";
-							printProgress = NO;
-							break;
-							
-						case TFPPrintPhaseInvalid:
-							return @"";
-					}
-					
-					if(printProgress) {
-						return [NSString stringWithFormat:@"%@: %@", phase, progress];
-					} else {
-						return phase;
-					}
-				}
-					
-				case TFPPrintJobStatePaused:
-					return @"Paused";
-					
-				case TFPPrintJobStatePausing:
-					return @"Pausing…";
-					
-				case TFPPrintJobStateResuming:
-					return @"Resuming…";
-					
-				case TFPPrintJobStateAborting:
-					return @"Stopping…";
-					
-				case TFPPrintJobStateFinishing:
-					return @"Finishing…";
+				case TFPPrintPhaseInvalid:
+					return @"";
 			}
 			
+			if(printProgress) {
+				return [NSString stringWithFormat:@"%@: %@", phase, progress];
+			} else {
+				return phase;
+			}
 		}
 			
-		case TFPPrintingProgressViewControllerStateCancelling:
+		case TFPPrintJobStatePaused:
+			return @"Paused";
+			
+		case TFPPrintJobStatePausing:
+			return @"Pausing…";
+			
+		case TFPPrintJobStateResuming:
+			return @"Resuming…";
+			
+		case TFPPrintJobStateAborting:
 			return @"Stopping…";
+			
+		case TFPPrintJobStateFinishing:
+			return @"Finishing…";
 	}
 }
 
