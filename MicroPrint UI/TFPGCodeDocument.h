@@ -18,11 +18,11 @@
 
 @property (readonly) BOOL hasBoundingBox;
 @property (readonly) TFPCuboid boundingBox;
-@property (readonly) NSDictionary *curaProfile;
+@property (readonly) NSDictionary <NSString*, NSString*> *curaProfile;
 
 @property TFPFilamentType filamentType;
 @property NSNumber *temperature;
-@property BOOL useWaveBonding;
+@property BOOL useThermalBonding;
 
 @property TFPPrinter *selectedPrinter;
 @property NSURL *completionScriptURL;

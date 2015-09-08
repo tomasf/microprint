@@ -457,7 +457,7 @@ TFPCuboid TFPCuboidM3DMicroPrintVolumeUpper = {.x = 12.5, .y = 11, .z = 74,  .xS
 }
 
 
-- (NSDictionary*)curaProfileValues {
+- (NSDictionary <NSString*, NSString*> *)curaProfileValues {
 	NSString *base64 = [self curaProfileComment];
 	if(!base64) {
 		return nil;
@@ -490,7 +490,7 @@ TFPCuboid TFPCuboidM3DMicroPrintVolumeUpper = {.x = 12.5, .y = 11, .z = 74,  .xS
 
 
 
-- (NSDictionary*)determinePhaseRanges {
+- (NSDictionary <NSNumber*, NSValue*> *)determinePhaseRanges {
 	__block TFPPrintPhase phase = TFPPrintPhasePreamble;
 	__block NSUInteger startLine = 0;
 	NSMutableDictionary *phaseRanges = [NSMutableDictionary new];
@@ -531,7 +531,7 @@ TFPCuboid TFPCuboidM3DMicroPrintVolumeUpper = {.x = 12.5, .y = 11, .z = 74,  .xS
 }
 
 
-- (NSArray*)determineLayers {
+- (NSArray <TFPPrintLayer*> *)determineLayers {
 	NSMutableArray *layers = [NSMutableArray new];
 	__block TFPPrintLayer *currentLayer;
 	
@@ -574,5 +574,3 @@ TFPCuboid TFPCuboidM3DMicroPrintVolumeUpper = {.x = 12.5, .y = 11, .z = 74,  .xS
 
 
 @end
-
-

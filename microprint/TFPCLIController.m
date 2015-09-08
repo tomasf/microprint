@@ -74,7 +74,7 @@
 	[factoryDefaults setFloat:0.3 forKey:@"target"];
 	[factoryDefaults setInteger:1 forKey:@"buffer"];
 	
-	[factoryDefaults setBool:YES forKey:@"wavebonding"];
+	[factoryDefaults setBool:YES forKey:@"thermalbonding"];
 
 	[factoryDefaults setBool:NO forKey:@"dryrun"];
 	[factoryDefaults setBool:NO forKey:@"help"];
@@ -95,7 +95,7 @@
 	[parser registerOption:@"help" shortcut:0 requirement:GBValueNone];
 	[parser registerOption:@"verbose" shortcut:0 requirement:GBValueNone];
 	
-	[parser registerOption:@"wavebonding" shortcut:0 requirement:GBValueNone];
+	[parser registerOption:@"thermalbonding" shortcut:0 requirement:GBValueNone];
 
 	[parser registerSettings:settings];
 	if(![parser parseOptionsWithArguments:argv count:argc]) {
@@ -155,7 +155,7 @@
 	TFLog(@"");
 	
 	TFLog(@"Commands:");
-	TFLog(@"  print <gcode-path> [--temperature 215] [--filament PLA] [--wavebonding]");
+	TFLog(@"  print <gcode-path> [--temperature 215] [--filament PLA] [--thermalbonding]");
 	TFLog(@"    Prints a G-code file.");
 
 	TFLog(@"  console");
@@ -184,7 +184,7 @@
 	TFLog(@"  --dryrun: Don't connect to an actual printer; instead simulate a mock printer that echos sent G-codes.");
 	TFLog(@"  --temperature <number>: Heater temperature in degrees Celsius. Default is 215 for extrusion/retraction and varies depending on filament type for printing.");
 	TFLog(@"  --filament <string>: Filament type. Valid options are PLA, ABS, HIPS and Other. Affects behavior in some preprocessors. Also sets default temperature.");
-	TFLog(@"  --wavebonding: Use wave bonding. On by default. Turn off with --wavebonding=0");
+	TFLog(@"  --thermalbonding: Use thermal bonding (+10°C for first layer). On by default. Turn off with --thermalbonding=0");
 	TFLog(@"  --rawFeedRates: For the console command, this turns off conversion of feed rates to M3D-style inverted feed rates.");
 }
 
@@ -193,7 +193,7 @@
 - (TFPPrintParameters*)printParametersForSettings:(GBSettings*)settings {
 	TFPPrintParameters *params = [TFPPrintParameters new];
 	params.verbose = [settings boolForKey:@"verbose"];
-	params.useWaveBonding = [settings boolForKey:@"wavebonding"];
+	params.useThermalBonding = [settings boolForKey:@"thermalbonding"];
 	
 	params.filament = [TFPFilament filamentForType:[TFPFilament typeForString:[settings objectForKey:@"filament"]]];
 	if(!params.filament) {
@@ -202,7 +202,7 @@
 	}
 	
 	double temperature = [settings floatForKey:@"temperature"];
-	params.idealTemperature = temperature;
+	params.temperature = temperature;
 
 	return params;
 }

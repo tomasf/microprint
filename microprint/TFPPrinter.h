@@ -74,6 +74,7 @@ typedef NSDictionary<NSString *, NSString*>* TFPGCodeResponseDictionary;
 @property (copy) void(^incomingCodeBlock)(NSString *string);
 @property (copy) void(^noticeBlock)(NSString *string);
 
+- (void)sendNotice:(NSString*)noticeFormat, ...;
 
 // Sending of G-code. Response queue is main.
 // If success is YES, value dictionary contains parameters from OK response

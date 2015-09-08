@@ -135,10 +135,11 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 	
 	parameters.filament = [TFPFilament filamentForType:self.document.filamentType];
 	if(self.document.temperature) {
-		parameters.idealTemperature = self.document.temperature.doubleValue;
+		parameters.temperature = self.document.temperature.doubleValue;
 	}
 	
-	parameters.useWaveBonding = self.document.useWaveBonding;
+	parameters.useThermalBonding = self.document.useThermalBonding;
+	
 	return parameters;
 }
 

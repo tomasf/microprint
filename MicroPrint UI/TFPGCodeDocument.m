@@ -22,7 +22,7 @@ static NSString *const savedSettingsKey = @"SavedDocumentSettings";
 @interface TFPGCodeDocument ()
 @property (readwrite) TFPCuboid boundingBox;
 @property (readwrite) BOOL hasBoundingBox;
-@property (readwrite) NSDictionary *curaProfile;
+@property (readwrite) NSDictionary <NSString*, NSString*> *curaProfile;
 
 @property NSWindowController *loadingWindowController;
 @end
@@ -36,16 +36,10 @@ static NSString *const savedSettingsKey = @"SavedDocumentSettings";
 	
 	self.selectedPrinter = [TFPPrinterManager sharedManager].printers.firstObject;
 	self.filamentType = TFPFilamentTypePLA;
-	self.useWaveBonding = YES;
+	self.useThermalBonding = YES;
 	
 	NSData *savedSettings = [[NSUserDefaults standardUserDefaults] dataForKey:savedSettingsKey];
 	[self useEncodedSettings:savedSettings];
-	
-	/*
-	[self addObserver:self keyPath:@[@"filamentType", @"useWaveBonding", @"temperature", @"completionScriptURL"] options:0 block:^(MAKVONotification *notification) {
-		[weakSelf saveSettings];
-	}];
-	*/
 	
 	return self;
 }
@@ -137,7 +131,7 @@ static NSString *const savedSettingsKey = @"SavedDocumentSettings";
 
 
 - (NSData*)encodedSettings {
-	NSMutableDictionary *values = [[self dictionaryWithValuesForKeys:@[@"filamentType", @"temperature", @"useWaveBonding", @"completionScriptBookmark"]] mutableCopy];
+	NSMutableDictionary *values = [[self dictionaryWithValuesForKeys:@[@"filamentType", @"temperature", @"useThermalBonding", @"completionScriptBookmark"]] mutableCopy];
 	values[@"formatVersion"] = @1;
 	return [NSKeyedArchiver archivedDataWithRootObject:values];
 }
@@ -145,12 +139,12 @@ static NSString *const savedSettingsKey = @"SavedDocumentSettings";
 
 - (void)useEncodedSettings:(NSData*)data {
 	NSDictionary *values = data ? [NSKeyedUnarchiver unarchiveObjectWithData:data] : nil;
-	values = [values dictionaryWithValuesForKeys:@[@"filamentType", @"temperature", @"useWaveBonding", @"completionScriptBookmark"]];
+	values = [values dictionaryWithValuesForKeys:@[@"filamentType", @"temperature", @"useThermalBonding", @"completionScriptBookmark"]];
 	
 	for(NSString *key in values) {
 		id value = values[key];
 		if(value == [NSNull null]) {
-			value = nil;
+			continue;
 		}
 		[self setValue:value forKey:key];
 	}

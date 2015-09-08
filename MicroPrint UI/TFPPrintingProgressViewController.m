@@ -25,7 +25,6 @@ static const CGFloat drawContainerExpandedBottomMargin = 20;
 
 
 typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
-	TFPPrintingProgressViewControllerStatePreprocessing,
 	TFPPrintingProgressViewControllerStateRunningJob,
 	TFPPrintingProgressViewControllerStateCancelling,
 };
@@ -200,7 +199,7 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 	
 	self.progressIndicator.indeterminate = YES;
 	[self.progressIndicator startAnimation:nil];
-	self.state = TFPPrintingProgressViewControllerStatePreprocessing;
+	self.state = TFPPrintingProgressViewControllerStateRunningJob;
 	
 	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
 		TFPGCodeProgram *program = self.program;
@@ -351,8 +350,6 @@ typedef NS_ENUM(NSUInteger, TFPPrintingProgressViewControllerState) {
 
 - (NSString*)statusString {
 	switch(self.state) {
-		case TFPPrintingProgressViewControllerStatePreprocessing:
-			return @"Pre-processing…";
 		case TFPPrintingProgressViewControllerStateRunningJob: {
 			
 			switch(self.printJob.state) {

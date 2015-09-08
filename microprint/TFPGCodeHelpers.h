@@ -119,11 +119,10 @@ extern TFPCuboid TFPCuboidM3DMicroPrintVolumeUpper;
 - (void)enumerateMovesWithBlock:(void(^)(TFPAbsolutePosition from, TFPAbsolutePosition to, double feedRate, TFPGCode *code, NSUInteger index))block;
 
 - (BOOL)validateForM3D:(NSError**)error;
-- (NSDictionary*)curaProfileValues;
+- (NSDictionary <NSString*, NSString*> *)curaProfileValues;
 
-// Keys are NSNumber-wrapped TFPPrintPhases
-// Values are NSValue-wrapped NSRanges
-- (NSDictionary*)determinePhaseRanges;
+// Keys are TFPPrintPhases; values are NSRanges
+- (NSDictionary <NSNumber*, NSValue*> *)determinePhaseRanges;
 
-- (NSArray*)determineLayers;
+- (NSArray <TFPPrintLayer*> *)determineLayers;
 @end

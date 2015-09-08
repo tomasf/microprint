@@ -31,12 +31,14 @@
 @property BOOL aborted;
 @property (copy) void(^heatingCancelBlock)();
 
-@property NSUInteger pendingRequestCount;
+@property BOOL pendingRequest;
 @property (readwrite) NSUInteger completedRequests;
 
 @property (readwrite) TFPOperationStage stage;
 @property TFPStopwatch *stopwatch;
 
+@property (copy, readwrite) NSArray<TFPPrintLayer*> *layers;
+@property NSUInteger previousLayerIndex;
 
 @property BOOL paused;
 @property TFPAbsolutePosition pausePosition;
@@ -58,6 +60,7 @@
 	self.parameters = params;
 	
 	self.stopwatch = [TFPStopwatch new];
+	self.layers = [program determineLayers];
 	
 	return self;
 }
@@ -108,7 +111,7 @@
 
 // Called on print queue
 - (void)sendCode:(TFPGCode*)code completionHandler:(void(^)())completionHandler {
-	if(!code.hasFields || [self shouldSkipCode:code]) {
+	if([self shouldSkipCode:code]) {
 		completionHandler();
 		
 	} else {
@@ -124,10 +127,11 @@
 	__weak __typeof__(self) weakSelf = self;
 	
 	uint64_t sendTime = TFNanosecondTime();
-	self.pendingRequestCount++;
+	self.pendingRequest = YES;
 	
 	[self sendCode:code completionHandler:^{
-		weakSelf.pendingRequestCount--;
+		weakSelf.pendingRequest = NO;
+		
 		dispatch_async(dispatch_get_main_queue(), ^{
 			weakSelf.completedRequests++;
 		});
@@ -148,12 +152,16 @@
 
 
 // Called on print queue
-- (TFPGCode*)popNextLine {	
-	while(self.codeOffset < self.program.lines.count && ![self.program.lines[self.codeOffset] hasFields]) {
+- (TFPGCode*)popNextLine {
+	while(self.codeOffset < self.program.lines.count && !self.program.lines[self.codeOffset].hasFields) {
 		self.codeOffset++;
 		dispatch_async(dispatch_get_main_queue(), ^{
 			self.completedRequests++;
 		});
+		TFPGCode *code = self.program.lines[self.codeOffset];
+		if(!code.hasFields && code.comment.length) {
+			[self.printer sendNotice:@"Comment: %@", code.comment];
+		}
 	}
 	
 	if(self.codeOffset >= self.program.lines.count) {
@@ -167,18 +175,56 @@
 }
 
 
+- (NSUInteger)layerIndexAtCodeOffset:(NSUInteger)offset {
+	return [self.layers indexesOfObjectsPassingTest:^BOOL(TFPPrintLayer *layer, NSUInteger index, BOOL *stop) {
+		return NSLocationInRange(offset, layer.lineRange);
+	}].firstIndex;
+}
+
+
+- (BOOL)adjustTemperatureIfNeeded {
+	if (!self.parameters.useThermalBonding) {
+		return NO;
+	}
+	
+	NSUInteger layerIndex = [self layerIndexAtCodeOffset:self.codeOffset];
+	if(layerIndex != self.previousLayerIndex) {
+		self.previousLayerIndex = layerIndex;
+		
+		if(layerIndex == 0 || layerIndex == 1) {
+			double temperature = self.parameters.temperature;
+			if(layerIndex == 0) {
+				temperature += 10;
+			}
+			
+			//NSLog(@"Heating to %.0f for layer %ld", temperature, (long)layerIndex);
+			
+			[self.context sendGCode:[TFPGCode codeForHeaterTemperature:temperature waitUntilDone:YES] responseHandler:^(BOOL success, TFPGCodeResponseDictionary value) {
+				[self sendMoreIfNeeded];
+			}];
+			
+			return YES;
+		}
+	}
+	return NO;
+}
+
+
 // Called on print queue
 - (void)sendMoreIfNeeded {
 	if(self.aborted || self.paused) {
 		return;
 	}
 	
-	while(self.pendingRequestCount < 1) {
+	if([self adjustTemperatureIfNeeded]) {
+		return;
+	}
+	
+	if(!self.pendingRequest) {
 		TFPGCode *code = [self popNextLine];
-		if(!code) {
-			break;
+		if(code) {
+			[self sendGCode:code];
 		}
-		[self sendGCode:code];
 	}
 	
 	dispatch_async(dispatch_get_main_queue(), ^{
@@ -210,7 +256,7 @@
 	TFPPrintParameters *parameters = self.parameters;
 	
 	NSArray *part1 = @[[TFPGCode codeForSettingFanSpeed:parameters.filament.fanSpeed],
-					   [TFPGCode codeForHeaterTemperature:parameters.idealTemperature waitUntilDone:NO],
+					   [TFPGCode codeForHeaterTemperature:parameters.temperature waitUntilDone:NO],
 					   [TFPGCode absoluteModeCode],
 					   [TFPGCode moveWithPosition:[TFP3DVector zVector:5] feedRate:2900],
 					   [TFPGCode moveHomeCode]];
@@ -227,7 +273,7 @@
 		}
 		
 		TFMainThread(^{
-			self.heatingCancelBlock = [self.context setHeaterTemperatureAsynchronously:parameters.idealTemperature progressBlock:^(double currentTemperature) {
+			self.heatingCancelBlock = [self.context setHeaterTemperatureAsynchronously:parameters.temperature progressBlock:^(double currentTemperature) {
 				
 			} completionBlock:^{
 				[self.context runGCodeProgram:[TFPGCodeProgram programWithLines:part2] completionHandler:^(BOOL success, NSArray<TFPGCodeResponseDictionary> *values) {
@@ -270,7 +316,7 @@
 	__weak __typeof__(self) weakSelf = self;
 	
 	self.codeOffset = 0;
-	self.pendingRequestCount = 0;
+	self.pendingRequest = NO;
 	self.completedRequests = 0;
 
 	[self.stopwatch start];
@@ -325,6 +371,10 @@
 	
 	dispatch_async(self.printQueue, ^{
 		self.aborted = YES;
+		if(self.heatingCancelBlock) {
+			self.heatingCancelBlock();
+			self.heatingCancelBlock = nil;
+		}
 		
 		[self sendAbortSequenceWithCompletionHandler:^{
 			dispatch_async(dispatch_get_main_queue(), ^{
