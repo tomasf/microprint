@@ -71,6 +71,7 @@ static double speedMultiplier = 10;
 		
 	} else if(G == 91) {
 		self.relativeMode = YES;
+		
     } else if(G == 30 || G == 28) {
         TFP3DVector *movement = [TFP3DVector vectorWithX:@50 Y:@50 Z:(G == 30 ? @0 : self.simulatedPosition.z)];
         self.feedRate = [code valueForField:'F' fallback:self.feedRate];

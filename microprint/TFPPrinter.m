@@ -358,6 +358,10 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 		return;
 	}
 	
+	if([self sendLineNumberResetIfNeeded]) {
+		return;
+	}
+	
 	TFPPrinterGCodeEntry *entry = self.queuedCodeEntries.firstObject;
 	if(entry) {
 		[self.queuedCodeEntries removeObjectAtIndex:0];
@@ -385,14 +389,17 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 }
 
 
-- (NSUInteger)consumeLineNumber {
+- (BOOL)sendLineNumberResetIfNeeded {
 	if(self.lineNumberCounter > maxLineNumber) {
-		// Fast-track a line number reset
-		[self.queuedCodeEntries addObject:[TFPPrinterGCodeEntry lineNumberResetEntry]];
-		[self dequeueCode];
+		[self sendGCode:[TFPGCode codeForSettingLineNumber:0] options:TFPGCodeOptionPrioritized responseHandler:nil responseQueue:nil];
 		self.lineNumberCounter = 1;
+		return YES;
 	}
+	return NO;
+}
 
+
+- (NSUInteger)consumeLineNumber {
 	NSUInteger line = self.lineNumberCounter;
 	self.lineNumberCounter++;
 	return line;
@@ -563,9 +570,9 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 		
 	} else if(G == 91) {
 		self.relativeMode = YES;
-	}
 	
-	if(M == 109 || M == 104) {
+	
+	} else if(M == 109 || M == 104) {
 		double temperature = [code valueForField:'S' fallback:0];
 		TFMainThread(^{
 			self.heaterTargetTemperature = temperature;
@@ -638,9 +645,6 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 - (void)sendGCode:(TFPGCode*)inputCode responseHandler:(void(^)(BOOL success, NSDictionary<NSString *, NSString*> *value))block responseQueue:(dispatch_queue_t)queue {
 	[self sendGCode:inputCode options:0 responseHandler:block responseQueue:queue];
 }
-
-
-
 
 
 - (TFPPrinterContext*)acquireContextWithOptions:(TFPPrinterContextOptions)options queue:(dispatch_queue_t)queue {
@@ -730,12 +734,10 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 - (void)processTemperatureUpdate:(double)temperature {
 	// On communication queue here
 	TFMainThread(^{
-		if(temperature != self.heaterTemperature) {
-			if(temperature < 0) {
-				self.heaterTemperature = self.heaterTargetTemperature;
-			}else{
-				self.heaterTemperature = temperature;
-			}
+		if(temperature < 0) {
+			self.heaterTemperature = self.heaterTargetTemperature;
+		}else{
+			self.heaterTemperature = temperature;
 		}
 	});
 }
@@ -977,18 +979,13 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 }
 
 
-
-- (double)speedMultiplier {
-	return 1;
-}
-
-
 - (BOOL)printerShouldBeInvalidatedWithRemovedSerialPorts:(NSArray*)ports {
 	return self.connection.state != TFPPrinterConnectionStatePending && self.connection.serialPort && [ports containsObject:self.connection.serialPort];
 }
 
 
 @end
+
 
 
 

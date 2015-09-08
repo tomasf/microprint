@@ -22,7 +22,6 @@ static const NSInteger minimumPrintCodeOffsetForEstimation = 100;
 
 @property TFTimer *timer;
 @property NSDictionary *phaseRanges;
-@property NSArray *layers;
 @property uint64_t printContentStartTime;
 
 @property (readwrite) NSTimeInterval elapsedTime;
@@ -54,9 +53,8 @@ static const NSInteger minimumPrintCodeOffsetForEstimation = 100;
 	
 	self.printJob = printJob;
 	self.phaseRanges = [self.printJob.program determinePhaseRanges];
-	self.layers = [self.printJob.program determineLayers];
 	
-	self.layerCount = [[self.layers valueForKeyPath:@"@max.layerIndex"] integerValue]+1;
+	self.layerCount = [[self.printJob.layers valueForKeyPath:@"@max.layerIndex"] integerValue]+1;
 	
 	self.timer = [TFTimer timerWithInterval:1 repeating:YES block:^{
 		[weakSelf periodicalUpdate];
@@ -159,7 +157,7 @@ static const NSInteger minimumPrintCodeOffsetForEstimation = 100;
 
 
 - (TFPPrintLayer*)printLayerForOffset:(NSUInteger)offset {
-	for(TFPPrintLayer *layer in self.layers) {
+	for(TFPPrintLayer *layer in self.printJob.layers) {
 		if(NSLocationInRange(offset, layer.lineRange)) {
 			return layer;
 		}

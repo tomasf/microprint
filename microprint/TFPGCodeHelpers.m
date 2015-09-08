@@ -190,16 +190,6 @@
 }
 
 
-- (BOOL)isStartOfPostamble {
-	return [self.comment isEqual:@"POSTAMBLE"];
-}
-
-
-- (BOOL)isEndLine {
-	return [self.comment isEqual:@"END"];
-}
-
-
 - (TFP3DVector*)movementVector {
 	return [TFP3DVector vectorWithX:[self numberForField:'X'] Y:[self numberForField:'Y'] Z:[self numberForField:'Z']];
 }
@@ -457,7 +447,7 @@ TFPCuboid TFPCuboidM3DMicroPrintVolumeUpper = {.x = 12.5, .y = 11, .z = 74,  .xS
 }
 
 
-- (NSDictionary*)curaProfileValues {
+- (NSDictionary <NSString*, NSString*> *)curaProfileValues {
 	NSString *base64 = [self curaProfileComment];
 	if(!base64) {
 		return nil;
@@ -490,22 +480,20 @@ TFPCuboid TFPCuboidM3DMicroPrintVolumeUpper = {.x = 12.5, .y = 11, .z = 74,  .xS
 
 
 
-- (NSDictionary*)determinePhaseRanges {
-	__block TFPPrintPhase phase = TFPPrintPhasePreamble;
+- (NSDictionary <NSNumber*, NSValue*> *)determinePhaseRanges {
+	__block TFPPrintPhase phase = TFPPrintPhaseInvalid;
 	__block NSUInteger startLine = 0;
-	NSMutableDictionary *phaseRanges = [NSMutableDictionary new];
+	NSMutableDictionary <NSNumber*, NSValue*> *phaseRanges = [NSMutableDictionary new];
 	
 	[self.lines enumerateObjectsUsingBlock:^(TFPGCode *code, NSUInteger index, BOOL *stop) {
 		if(!code.comment) {
 			return;
 		}
-		NSRange range = NSMakeRange(startLine, index-startLine);
+		NSRange thisRange = NSMakeRange(startLine, index-startLine);
 		NSInteger layerIndex = code.layerIndexFromComment;
 		
 		if(layerIndex != NSNotFound) {
-			if(phase == TFPPrintPhasePreamble) {
-				phaseRanges[@(TFPPrintPhasePreamble)] = [NSValue valueWithRange:range];
-				
+			if(phase == TFPPrintPhaseInvalid) {
 				if(layerIndex < 0) {
 					phase = TFPPrintPhaseAdhesion;
 				}else{
@@ -514,24 +502,23 @@ TFPCuboid TFPCuboidM3DMicroPrintVolumeUpper = {.x = 12.5, .y = 11, .z = 74,  .xS
 				startLine = index;
 				
 			}else if(phase == TFPPrintPhaseAdhesion && layerIndex >= 0) {
-				phaseRanges[@(TFPPrintPhaseAdhesion)] = [NSValue valueWithRange:range];
+				phaseRanges[@(TFPPrintPhaseAdhesion)] = [NSValue valueWithRange:thisRange];
 				phase = TFPPrintPhaseModel;
 				startLine = index;
 			}
-		}else if([code isStartOfPostamble]) {
-			phaseRanges[@(TFPPrintPhaseModel)] = [NSValue valueWithRange:range];
-			phase = TFPPrintPhasePostamble;
-			startLine = index;
-		}else if([code isEndLine]) {
-			phaseRanges[@(TFPPrintPhasePostamble)] = [NSValue valueWithRange:range];
 		}
 	}];
+	
+	if(phase == TFPPrintPhaseModel) {
+		phaseRanges[@(TFPPrintPhaseModel)] = [NSValue valueWithRange:NSMakeRange(startLine, self.lines.count - 1 - startLine)];
+		phase = TFPPrintPhaseInvalid;
+	}
 	
 	return phaseRanges;
 }
 
 
-- (NSArray*)determineLayers {
+- (NSArray <TFPPrintLayer*> *)determineLayers {
 	NSMutableArray *layers = [NSMutableArray new];
 	__block TFPPrintLayer *currentLayer;
 	
@@ -551,7 +538,7 @@ TFPCuboid TFPCuboidM3DMicroPrintVolumeUpper = {.x = 12.5, .y = 11, .z = 74,  .xS
 			[layers addObject:currentLayer];
 		}
 		
-		if(currentLayer && ([code isStartOfPostamble] || [code isEndLine])) {
+		if(currentLayer && index == self.lines.count-1) {
 			NSUInteger start = currentLayer.lineRange.location;
 			currentLayer.lineRange = NSMakeRange(start, index - start);
 			currentLayer = nil;
@@ -574,5 +561,3 @@ TFPCuboid TFPCuboidM3DMicroPrintVolumeUpper = {.x = 12.5, .y = 11, .z = 74,  .xS
 
 
 @end
-
-

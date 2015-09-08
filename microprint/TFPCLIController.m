@@ -18,7 +18,6 @@
 #import "TFPExtrusionOperation.h"
 #import "TFPRaiseHeadOperation.h"
 #import "TFPGCodeConsoleOperation.h"
-#import "TFPPreprocessing.h"
 #import "TFPBedLevelCalibration.h"
 #import "TFPGCodeHelpers.h"
 #import "TFPGCodeHelpers.h"
@@ -75,7 +74,7 @@
 	[factoryDefaults setFloat:0.3 forKey:@"target"];
 	[factoryDefaults setInteger:1 forKey:@"buffer"];
 	
-	[factoryDefaults setBool:YES forKey:@"wavebonding"];
+	[factoryDefaults setBool:YES forKey:@"thermalbonding"];
 
 	[factoryDefaults setBool:NO forKey:@"dryrun"];
 	[factoryDefaults setBool:NO forKey:@"help"];
@@ -96,7 +95,7 @@
 	[parser registerOption:@"help" shortcut:0 requirement:GBValueNone];
 	[parser registerOption:@"verbose" shortcut:0 requirement:GBValueNone];
 	
-	[parser registerOption:@"wavebonding" shortcut:0 requirement:GBValueNone];
+	[parser registerOption:@"thermalbonding" shortcut:0 requirement:GBValueNone];
 
 	[parser registerSettings:settings];
 	if(![parser parseOptionsWithArguments:argv count:argc]) {
@@ -156,11 +155,8 @@
 	TFLog(@"");
 	
 	TFLog(@"Commands:");
-	TFLog(@"  print <gcode-path> [--temperature 215] [--filament PLA] [--wavebonding]");
+	TFLog(@"  print <gcode-path> [--temperature 215] [--filament PLA] [--thermalbonding]");
 	TFLog(@"    Prints a G-code file.");
-	
-	TFLog(@"  preprocess <gcode-path> [--output path]");
-	TFLog(@"    Applies pre-processing to a G-code file and writes it to a file or stdout. Also accepts same options as 'print'.");
 
 	TFLog(@"  console");
 	TFLog(@"    Starts an interactive console where you can send arbitrary G-codes to the printer.");
@@ -188,7 +184,7 @@
 	TFLog(@"  --dryrun: Don't connect to an actual printer; instead simulate a mock printer that echos sent G-codes.");
 	TFLog(@"  --temperature <number>: Heater temperature in degrees Celsius. Default is 215 for extrusion/retraction and varies depending on filament type for printing.");
 	TFLog(@"  --filament <string>: Filament type. Valid options are PLA, ABS, HIPS and Other. Affects behavior in some preprocessors. Also sets default temperature.");
-	TFLog(@"  --wavebonding: Use wave bonding. On by default. Turn off with --wavebonding=0");
+	TFLog(@"  --thermalbonding: Use thermal bonding (+10°C for first layer). On by default. Turn off with --thermalbonding=0");
 	TFLog(@"  --rawFeedRates: For the console command, this turns off conversion of feed rates to M3D-style inverted feed rates.");
 }
 
@@ -197,7 +193,7 @@
 - (TFPPrintParameters*)printParametersForSettings:(GBSettings*)settings {
 	TFPPrintParameters *params = [TFPPrintParameters new];
 	params.verbose = [settings boolForKey:@"verbose"];
-	params.useWaveBonding = [settings boolForKey:@"wavebonding"];
+	params.useThermalBonding = [settings boolForKey:@"thermalbonding"];
 	
 	params.filament = [TFPFilament filamentForType:[TFPFilament typeForString:[settings objectForKey:@"filament"]]];
 	if(!params.filament) {
@@ -206,7 +202,7 @@
 	}
 	
 	double temperature = [settings floatForKey:@"temperature"];
-	params.idealTemperature = temperature;
+	params.temperature = temperature;
 
 	return params;
 }
@@ -274,9 +270,6 @@
 		
 	}else if([command isEqual:@"print"]) {
 		[self printPath:value usingParameters:[self printParametersForSettings:settings]];
-		
-	}else if([command isEqual:@"preprocess"]) {
-		[self preprocessGCodePath:value outputPath:[settings objectForKey:@"output"] usingParameters:[self printParametersForSettings:settings]];
 		
 	}else if([command isEqualTo:@"off"]) {
 		[self turnOff];
@@ -382,19 +375,6 @@
 }
 
 
-- (TFPGCodeProgram*)preprocessProgramAndLogInfo:(TFPGCodeProgram*)program usingPrintParameters:(TFPPrintParameters*)params {
-	TFLog(@"Pre-processing");
-	
-	uint64_t start = TFNanosecondTime();
-	program = [TFPPreprocessing programByPreprocessingProgram:program usingParameters:params];
-	
-	NSTimeInterval duration = (double)(TFNanosecondTime()-start) / NSEC_PER_SEC;
-	TFLog(@"Pre-processed in %@, resulting in a total of %d G-code lines.", [self.durationFormatter stringFromTimeInterval:duration], (int)program.lines.count);
-	
-	return program;
-}
-
-
 - (void)printPath:(NSString *)path usingParameters:(TFPPrintParameters *)params {
 	__weak TFPPrinter *printer = self.printer;
 	__weak __typeof__(self) weakSelf = self;
@@ -403,8 +383,6 @@
 	if(!program) {
 		exit(EXIT_FAILURE);
 	}
-	
-	program = [weakSelf preprocessProgramAndLogInfo:program usingPrintParameters:params];
 	
 	TFPPrintJob *printJob = [[TFPPrintJob alloc] initWithProgram:program printer:printer printParameters:params];
 	__weak TFPPrintJob *weakPrintJob = printJob;
@@ -451,32 +429,6 @@
 	
 	[printJob start];
 	weakSelf.operation = printJob;
-}
-
-
-- (void)preprocessGCodePath:(NSString *)sourcePath outputPath:(NSString *)destinationPath usingParameters:(TFPPrintParameters *)params {
-	__weak __typeof__(self) weakSelf = self;
-	
-	__block TFPGCodeProgram *program = [self readProgramAtPathAndLogInfo:sourcePath usingPrintParameters:params];
-	if(!program) {
-		exit(EXIT_FAILURE);
-	}
-	
-	program = [weakSelf preprocessProgramAndLogInfo:program usingPrintParameters:params];
-	
-	if(destinationPath) {
-		NSURL *destinationURL = [NSURL fileURLWithPath:destinationPath];
-		NSError *error;
-		if (![program writeToFileURL:destinationURL error:&error]) {
-			TFLog(@"Writing to file failed: %@", error);
-			exit(EXIT_FAILURE);
-		}
-	}else{
-		for(TFPGCode *code in program.lines) {
-			TFLog(@"%@", code.ASCIIRepresentation);
-		}
-	}
-	exit(EXIT_SUCCESS);
 }
 
 

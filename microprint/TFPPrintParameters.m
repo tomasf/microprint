@@ -15,17 +15,17 @@
 	if(!(self = [super init])) return nil;
 	
 	self.filament = [TFPFilament defaultFilament];
-	self.useWaveBonding = YES;
+	self.useThermalBonding = YES;
 	
 	return self;
 }
 
 
-- (double)idealTemperature {
-	if(_idealTemperature < DBL_EPSILON) {
+- (double)temperature {
+	if(_temperature < DBL_EPSILON) {
 		return self.filament.defaultTemperature;
 	}else{
-		return _idealTemperature;
+		return _temperature;
 	}
 }
 
