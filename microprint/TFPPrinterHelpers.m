@@ -207,6 +207,7 @@
 
 - (void(^)())setHeaterTemperatureAsynchronously:(double)targetTemperature progressBlock:(void(^)(double currentTemperature))progressBlock completionBlock:(void(^)())completionBlock {
 	__weak __typeof__(self) weakSelf = self;
+	__block BOOL done = NO;
 	
 	[self sendGCode:[TFPGCode codeForHeaterTemperature:targetTemperature waitUntilDone:NO] responseHandler:nil];
 	
@@ -221,8 +222,13 @@
 	} copy];
 	
 	[self.printer addObserver:timer keyPath:@"heaterTemperature" options:0 block:^(MAKVONotification *notification) {
+		if(done) {
+			return;
+		}
+		
 		if(weakSelf.printer.heaterTemperature >= targetTemperature-3) {
 			[weakTimer invalidate];
+			done = YES;
 			completionBlock();
 		}else{
 			progressBlock(weakSelf.printer.heaterTemperature);

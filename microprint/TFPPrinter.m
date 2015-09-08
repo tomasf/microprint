@@ -736,6 +736,7 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 	TFMainThread(^{
 		if(temperature < 0) {
 			self.heaterTemperature = self.heaterTargetTemperature;
+			self.heaterTargetTemperature = -1;
 		}else{
 			self.heaterTemperature = temperature;
 		}
