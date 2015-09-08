@@ -11,7 +11,6 @@
 #import "TFPPrinter.h"
 #import "MAKVONotificationCenter.h"
 #import "TFPPrintJob.h"
-#import "TFPPreprocessing.h"
 #import "TFPGCodeDocument.h"
 #import "TFPPrintingProgressViewController.h"
 #import "TFPGCodeHelpers.h"
@@ -136,10 +135,11 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 	
 	parameters.filament = [TFPFilament filamentForType:self.document.filamentType];
 	if(self.document.temperature) {
-		parameters.idealTemperature = self.document.temperature.doubleValue;
+		parameters.temperature = self.document.temperature.doubleValue;
 	}
 	
-	parameters.useWaveBonding = self.document.useWaveBonding;
+	parameters.useThermalBonding = self.document.useThermalBonding;
+	
 	return parameters;
 }
 
@@ -152,7 +152,7 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 	TFPPrintingProgressViewController *viewController = [self.storyboard instantiateControllerWithIdentifier:@"PrintingProgressViewController"];
 	viewController.printer = self.document.selectedPrinter;
 	viewController.printParameters = [self printParameters];
-	viewController.GCodeFileURL = self.document.fileURL;
+	viewController.program = self.document.program;
 	
 	self.printingProgressViewController = viewController;
 	[self presentViewControllerAsSheet:viewController];

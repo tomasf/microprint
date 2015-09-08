@@ -59,9 +59,15 @@
 			values = @{@"DT": [NSString stringWithFormat:@"%d", [TFPPrinter encodeVirtualEEPROMIntegerValueForFloat:value]]};
 			break;
 		}
+			
+		case 105:
+			dispatch_after(dispatch_time(0, 0.1 * NSEC_PER_SEC), self.serialPortQueue, ^{
+				[self processIncomingString:@"T:300"];
+			});
+			break;
 	}
 	
-	dispatch_after(dispatch_time(0, 0.001 * NSEC_PER_SEC), self.serialPortQueue, ^{
+	dispatch_after(dispatch_time(0, 0.01 * NSEC_PER_SEC), self.serialPortQueue, ^{
 		[self respondOKWithValues:values toCode:code];
 	});
 }

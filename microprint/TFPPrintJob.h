@@ -32,6 +32,7 @@ typedef NS_ENUM(NSUInteger, TFPPrintJobState) {
 @property (readonly) NSTimeInterval elapsedTime;
 
 @property (readonly) TFPPrintJobState state;
+@property (copy, readonly) NSArray<TFPPrintLayer*> *layers;
 
 @property (copy) void(^progressBlock)(void);
 @property (copy) void(^completionBlock)(void);

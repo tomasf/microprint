@@ -9,8 +9,9 @@
 #import "TFPConsoleViewController.h"
 #import "TFPExtras.h"
 
-#define consoleMax 100000
-#define consoleTrim consoleMax / 10
+static const NSUInteger consoleMax = 100000;
+static const NSUInteger consoleTrim = consoleMax / 10;
+
 
 @interface TFPConsoleViewController ()
 @property IBOutlet NSTextView *textView;
@@ -21,11 +22,6 @@
 
 
 @implementation TFPConsoleViewController
-
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-}
 
 
 - (void)appendLine:(NSString*)line attributes:(NSDictionary*)attrs {
@@ -49,10 +45,12 @@
 	__weak __typeof__(self) weakSelf = self;
 
     self.consoleLength = 0;
+
+	NSColor *noticeColor = [NSColor colorWithCalibratedRed:0.625 green:0.000 blue:0.026 alpha:1.000];
 	
 	NSDictionary *incomingAttributes = @{NSFontAttributeName: [NSFont fontWithName:@"Menlo" size:13]};
 	NSDictionary *outgoingAttributes = @{NSFontAttributeName: [NSFont fontWithName:@"Menlo-Bold" size:13]};
-	NSDictionary *noticeAttributes = @{NSFontAttributeName: [NSFont fontWithName:@"Menlo-Italic" size:13], NSForegroundColorAttributeName: [NSColor colorWithCalibratedRed:0.625 green:0.000 blue:0.026 alpha:1.000]};
+	NSDictionary *noticeAttributes = @{NSFontAttributeName: [NSFont fontWithName:@"Menlo-Italic" size:13], NSForegroundColorAttributeName: noticeColor};
 	
 	self.printer.incomingCodeBlock = ^(NSString *line) {
 		[weakSelf appendLine:line attributes:incomingAttributes];
@@ -91,7 +89,6 @@
 		for(TFPGCode *code in codes) {
 			[self.printer sendGCode:code responseHandler:nil];
 		}
-		
 		self.inputField.stringValue = @"";
 	} else {
 		NSBeep();
