@@ -29,19 +29,19 @@
 
 @property (readwrite) TFPPrintJobState state;
 @property BOOL aborted;
+@property (copy) void(^heatingCancelBlock)();
+
+@property NSUInteger pendingRequestCount;
+@property (readwrite) NSUInteger completedRequests;
+
+@property (readwrite) TFPOperationStage stage;
+@property TFPStopwatch *stopwatch;
+
 
 @property BOOL paused;
 @property TFPAbsolutePosition pausePosition;
 @property double pauseTemperature;
 @property double pauseFeedRate;
-
-@property double targetTemperature;
-@property NSUInteger pendingRequestCount;
-@property (readwrite) NSUInteger completedRequests;
-
-@property (readwrite) TFPOperationStage stage;
-
-@property TFPStopwatch *stopwatch;
 @end
 
 
@@ -100,14 +100,21 @@
 }
 
 
+- (BOOL)shouldSkipCode:(TFPGCode*)code {
+	NSInteger M = [code valueForField:'M' fallback:-1];
+	return (M == 104 || M == 106 || M == 107 || M == 109);
+}
+
+
 // Called on print queue
 - (void)sendCode:(TFPGCode*)code completionHandler:(void(^)())completionHandler {
-	if(code.hasFields) {
+	if(!code.hasFields || [self shouldSkipCode:code]) {
+		completionHandler();
+		
+	} else {
 		[self.context sendGCode:code responseHandler:^(BOOL success, NSDictionary *value) {
 			completionHandler();
 		}];
-	}else{
-		completionHandler();
 	}
 }
 
@@ -115,10 +122,6 @@
 // Called on print queue
 - (void)sendGCode:(TFPGCode*)code {
 	__weak __typeof__(self) weakSelf = self;
-	
-	if(self.parameters.verbose) {
-		TFLog(@"Sending %@", code);
-	}
 	
 	uint64_t sendTime = TFNanosecondTime();
 	self.pendingRequestCount++;
@@ -141,13 +144,6 @@
 			});
 		}
 	}];
-	
-	NSInteger M = [code valueForField:'M' fallback:-1];
-	if(M == 104 || M == 109) {
-		dispatch_async(dispatch_get_main_queue(), ^{
-			self.targetTemperature = [code valueForField:'S'];
-		});
-	}
 }
 
 
@@ -187,9 +183,83 @@
 	
 	dispatch_async(dispatch_get_main_queue(), ^{
 		if(self.completedRequests >= self.program.lines.count) {
-			[self jobDidComplete];
+			[self runPostamble];
 		}		
 	});
+}
+
+
+- (void)startMainProgram {
+	if(self.aborted) {
+		return;
+	}
+	
+	self.stage = TFPOperationStageRunning;
+	[self setStateOnMainQueue:TFPPrintJobStatePrinting];
+	
+	dispatch_async(self.printQueue, ^{
+		[self sendMoreIfNeeded];
+	});
+}
+
+
+- (void)runPreamble {
+	self.stage = TFPOperationStagePreparation;
+	[self setStateOnMainQueue:TFPPrintJobStatePreparing];
+
+	TFPPrintParameters *parameters = self.parameters;
+	
+	NSArray *part1 = @[[TFPGCode codeForSettingFanSpeed:parameters.filament.fanSpeed],
+					   [TFPGCode codeForHeaterTemperature:parameters.idealTemperature waitUntilDone:NO],
+					   [TFPGCode absoluteModeCode],
+					   [TFPGCode moveWithPosition:[TFP3DVector zVector:5] feedRate:2900],
+					   [TFPGCode moveHomeCode]];
+	
+	NSArray *part2 = @[[TFPGCode relativeModeCode],
+					   [TFPGCode codeForExtrusion:2 feedRate:2000],
+					   [TFPGCode resetExtrusionCode],
+					   [TFPGCode absoluteModeCode],
+					   [TFPGCode codeForSettingFeedRate:2400]];
+	
+	[self.context runGCodeProgram:[TFPGCodeProgram programWithLines:part1] completionHandler:^(BOOL success, NSArray<TFPGCodeResponseDictionary> *values) {
+		if(self.aborted) {
+			return;
+		}
+		
+		TFMainThread(^{
+			self.heatingCancelBlock = [self.context setHeaterTemperatureAsynchronously:parameters.idealTemperature progressBlock:^(double currentTemperature) {
+				
+			} completionBlock:^{
+				[self.context runGCodeProgram:[TFPGCodeProgram programWithLines:part2] completionHandler:^(BOOL success, NSArray<TFPGCodeResponseDictionary> *values) {
+					[self startMainProgram];
+				}];
+			 
+			}];
+		});
+	}];
+}
+
+
+- (void)runPostamble {
+	self.stage = TFPOperationStageEnding;
+	[self setStateOnMainQueue:TFPPrintJobStateFinishing];
+
+	double Z = MAX(self.printer.position.z, MIN(self.printer.position.z + 25, 110));
+
+	TFP3DVector *backPosition = (Z > 60) ? [TFP3DVector xyVectorWithX:90 y:84] : [TFP3DVector xyVectorWithX:95 y:95];
+	backPosition = [backPosition vectorBySettingZ:Z];
+	
+	NSArray *postamble = @[
+						   [TFPGCode codeForTurningOffHeater],
+						   [TFPGCode moveWithPosition:backPosition feedRate:-1],
+						   [TFPGCode turnOffFanCode],
+						   [TFPGCode turnOffMotorsCode],
+						   ];
+	[self.context runGCodeProgram:[TFPGCodeProgram programWithLines:postamble] completionHandler:^(BOOL success, NSArray<TFPGCodeResponseDictionary> *values) {
+		TFMainThread(^{
+			[self jobDidComplete];
+		});
+	}];
 }
 
 
@@ -204,29 +274,12 @@
 	self.completedRequests = 0;
 
 	[self.stopwatch start];
-	
-	self.stage = TFPOperationStageRunning;
-	[self setStateOnMainQueue:TFPPrintJobStatePrinting];
-	
-	if(self.parameters.verbose) {
-		self.printer.incomingCodeBlock = ^(NSString *line){
-			TFLog(@"< %@", line);
-		};
-		self.printer.outgoingCodeBlock = ^(NSString *line){
-			TFLog(@"> %@", line);
-		};
-	}
-	
-	dispatch_async(self.printQueue, ^{
-		[self sendMoreIfNeeded];
-	});
+	[self runPreamble];
 	
 	[self.printer addObserver:self keyPath:@"heaterTemperature" options:0 block:^(MAKVONotification *notification) {
 		double temp = weakSelf.printer.heaterTemperature;
-		if(temp < 0) {
-			weakSelf.targetTemperature = 0;
-		}else if(weakSelf.targetTemperature > 0 && weakSelf.heatingProgressBlock){
-			weakSelf.heatingProgressBlock(weakSelf.targetTemperature, temp);
+		if(weakSelf.printer.heaterTargetTemperature > 0 && weakSelf.heatingProgressBlock){
+			weakSelf.heatingProgressBlock(weakSelf.printer.heaterTargetTemperature, temp);
 		}
 	}];
 	

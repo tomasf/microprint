@@ -9,6 +9,7 @@
 #import "TFPPrinterHelpers.h"
 #import "TFPPrinter+VirtualEEPROM.h"
 #import "TFP3DVector.h"
+#import "TFPExtras.h"
 
 #import "TFTimer.h"
 #import "MAKVONotificationCenter.h"

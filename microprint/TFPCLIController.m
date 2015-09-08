@@ -18,7 +18,6 @@
 #import "TFPExtrusionOperation.h"
 #import "TFPRaiseHeadOperation.h"
 #import "TFPGCodeConsoleOperation.h"
-#import "TFPPreprocessing.h"
 #import "TFPBedLevelCalibration.h"
 #import "TFPGCodeHelpers.h"
 #import "TFPGCodeHelpers.h"
@@ -158,9 +157,6 @@
 	TFLog(@"Commands:");
 	TFLog(@"  print <gcode-path> [--temperature 215] [--filament PLA] [--wavebonding]");
 	TFLog(@"    Prints a G-code file.");
-	
-	TFLog(@"  preprocess <gcode-path> [--output path]");
-	TFLog(@"    Applies pre-processing to a G-code file and writes it to a file or stdout. Also accepts same options as 'print'.");
 
 	TFLog(@"  console");
 	TFLog(@"    Starts an interactive console where you can send arbitrary G-codes to the printer.");
@@ -275,9 +271,6 @@
 	}else if([command isEqual:@"print"]) {
 		[self printPath:value usingParameters:[self printParametersForSettings:settings]];
 		
-	}else if([command isEqual:@"preprocess"]) {
-		[self preprocessGCodePath:value outputPath:[settings objectForKey:@"output"] usingParameters:[self printParametersForSettings:settings]];
-		
 	}else if([command isEqualTo:@"off"]) {
 		[self turnOff];
 		
@@ -382,19 +375,6 @@
 }
 
 
-- (TFPGCodeProgram*)preprocessProgramAndLogInfo:(TFPGCodeProgram*)program usingPrintParameters:(TFPPrintParameters*)params {
-	TFLog(@"Pre-processing");
-	
-	uint64_t start = TFNanosecondTime();
-	program = [TFPPreprocessing programByPreprocessingProgram:program usingParameters:params];
-	
-	NSTimeInterval duration = (double)(TFNanosecondTime()-start) / NSEC_PER_SEC;
-	TFLog(@"Pre-processed in %@, resulting in a total of %d G-code lines.", [self.durationFormatter stringFromTimeInterval:duration], (int)program.lines.count);
-	
-	return program;
-}
-
-
 - (void)printPath:(NSString *)path usingParameters:(TFPPrintParameters *)params {
 	__weak TFPPrinter *printer = self.printer;
 	__weak __typeof__(self) weakSelf = self;
@@ -403,8 +383,6 @@
 	if(!program) {
 		exit(EXIT_FAILURE);
 	}
-	
-	program = [weakSelf preprocessProgramAndLogInfo:program usingPrintParameters:params];
 	
 	TFPPrintJob *printJob = [[TFPPrintJob alloc] initWithProgram:program printer:printer printParameters:params];
 	__weak TFPPrintJob *weakPrintJob = printJob;
@@ -451,32 +429,6 @@
 	
 	[printJob start];
 	weakSelf.operation = printJob;
-}
-
-
-- (void)preprocessGCodePath:(NSString *)sourcePath outputPath:(NSString *)destinationPath usingParameters:(TFPPrintParameters *)params {
-	__weak __typeof__(self) weakSelf = self;
-	
-	__block TFPGCodeProgram *program = [self readProgramAtPathAndLogInfo:sourcePath usingPrintParameters:params];
-	if(!program) {
-		exit(EXIT_FAILURE);
-	}
-	
-	program = [weakSelf preprocessProgramAndLogInfo:program usingPrintParameters:params];
-	
-	if(destinationPath) {
-		NSURL *destinationURL = [NSURL fileURLWithPath:destinationPath];
-		NSError *error;
-		if (![program writeToFileURL:destinationURL error:&error]) {
-			TFLog(@"Writing to file failed: %@", error);
-			exit(EXIT_FAILURE);
-		}
-	}else{
-		for(TFPGCode *code in program.lines) {
-			TFLog(@"%@", code.ASCIIRepresentation);
-		}
-	}
-	exit(EXIT_SUCCESS);
 }
 
 

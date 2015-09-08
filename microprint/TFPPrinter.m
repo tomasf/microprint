@@ -391,7 +391,7 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 
 - (BOOL)sendLineNumberResetIfNeeded {
 	if(self.lineNumberCounter > maxLineNumber) {
-		[self sendGCode:[TFPGCode resetExtrusionCode] options:TFPGCodeOptionPrioritized responseHandler:nil responseQueue:nil];
+		[self sendGCode:[TFPGCode codeForSettingLineNumber:0] options:TFPGCodeOptionPrioritized responseHandler:nil responseQueue:nil];
 		self.lineNumberCounter = 1;
 		return YES;
 	}
@@ -570,9 +570,9 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 		
 	} else if(G == 91) {
 		self.relativeMode = YES;
-	}
 	
-	if(M == 109 || M == 104) {
+	
+	} else if(M == 109 || M == 104) {
 		double temperature = [code valueForField:'S' fallback:0];
 		TFMainThread(^{
 			self.heaterTargetTemperature = temperature;
