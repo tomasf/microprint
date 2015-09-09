@@ -31,4 +31,5 @@ typedef NS_ENUM(NSUInteger, TFPFilamentType) {
 @property (readonly) double defaultTemperature;
 
 @property (readonly) NSUInteger fanSpeed;
+@property (readonly) double temperatureIncreaseForFirstLayer;
 @end

@@ -9,14 +9,14 @@
 #import "TFPExtras.h"
 
 @interface TFPGCodeProgram ()
-@property (copy, readwrite) NSArray *lines;
+@property (copy, readwrite) NSArray<TFPGCode *> *lines;
 @end
 
 
 @implementation TFPGCodeProgram
 
 
-- (instancetype)initWithLines:(NSArray*)lines {
+- (instancetype)initWithLines:(NSArray<TFPGCode*> *)lines {
 	if(!(self = [super init])) return nil;
 	
 	self.lines = lines;
@@ -25,7 +25,7 @@
 }
 
 
-+ (instancetype)programWithLines:(NSArray*)lines {
++ (instancetype)programWithLines:(NSArray<TFPGCode*> *)lines {
 	return [[self alloc] initWithLines:lines];
 }
 

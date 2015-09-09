@@ -3,6 +3,7 @@
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="8173.3"/>
         <capability name="Alignment constraints with different attributes" minToolsVersion="5.1"/>
+        <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
     </dependencies>
     <scenes>
         <!--Application-->
@@ -678,6 +679,12 @@
                                                 <action selector="speedTest:" target="Voe-Tx-rLC" id="wIF-bs-tRj"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem title="Path test" id="kkx-Tm-jii">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="pathPrintTest:" target="Voe-Tx-rLC" id="wfl-p2-3ax"/>
+                                            </connections>
+                                        </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>
@@ -731,7 +738,7 @@
                     <window key="window" title="Printers" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" showsToolbarButton="NO" visibleAtLaunch="NO" frameAutosaveName="PrinterList" animationBehavior="default" id="IQv-IB-iLA">
                         <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
                         <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
-                        <rect key="contentRect" x="196" y="240" width="480" height="270"/>
+                        <rect key="contentRect" x="196" y="240" width="500" height="270"/>
                         <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
                         <value key="minSize" type="size" width="500" height="200"/>
                         <value key="maxSize" type="size" width="500" height="1000"/>
@@ -817,32 +824,6 @@
                         <rect key="frame" x="0.0" y="0.0" width="500" height="270"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <subviews>
-                            <scrollView autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HdE-UT-Agt">
-                                <rect key="frame" x="0.0" y="61" width="500" height="209"/>
-                                <clipView key="contentView" id="kMY-RO-p78">
-                                    <rect key="frame" x="1" y="1" width="248" height="158"/>
-                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                    <subviews>
-                                        <collectionView selectable="YES" maxNumberOfColumns="1" id="D2R-gA-4Hh" customClass="TFPPrinterListCollectionView">
-                                            <rect key="frame" x="0.0" y="0.0" width="248" height="158"/>
-                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                            <color key="primaryBackgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                            <connections>
-                                                <binding destination="XfG-lQ-9wD" name="content" keyPath="printerManager.printers" id="h7g-Iy-tiX"/>
-                                            </connections>
-                                        </collectionView>
-                                    </subviews>
-                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </clipView>
-                                <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="RoR-1K-3O7">
-                                    <rect key="frame" x="1" y="144" width="233" height="15"/>
-                                    <autoresizingMask key="autoresizingMask"/>
-                                </scroller>
-                                <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="RXD-Xt-U12">
-                                    <rect key="frame" x="234" y="1" width="15" height="143"/>
-                                    <autoresizingMask key="autoresizingMask"/>
-                                </scroller>
-                            </scrollView>
                             <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="cE5-gt-90Q">
                                 <rect key="frame" x="14" y="13" width="108" height="32"/>
                                 <buttonCell key="cell" type="push" title="Print File…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="1zk-aD-cME">
@@ -873,6 +854,32 @@
                                     </menu>
                                 </popUpButtonCell>
                             </popUpButton>
+                            <scrollView autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" translatesAutoresizingMaskIntoConstraints="NO" id="HdE-UT-Agt">
+                                <rect key="frame" x="0.0" y="61" width="500" height="209"/>
+                                <clipView key="contentView" id="kMY-RO-p78">
+                                    <rect key="frame" x="1" y="1" width="248" height="158"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <subviews>
+                                        <collectionView selectable="YES" maxNumberOfColumns="1" id="D2R-gA-4Hh" customClass="TFPPrinterListCollectionView">
+                                            <rect key="frame" x="0.0" y="0.0" width="248" height="158"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                            <color key="primaryBackgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            <connections>
+                                                <binding destination="XfG-lQ-9wD" name="content" keyPath="printerManager.printers" id="h7g-Iy-tiX"/>
+                                            </connections>
+                                        </collectionView>
+                                    </subviews>
+                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </clipView>
+                                <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="RoR-1K-3O7">
+                                    <rect key="frame" x="1" y="144" width="233" height="15"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </scroller>
+                                <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" horizontal="NO" id="RXD-Xt-U12">
+                                    <rect key="frame" x="234" y="1" width="15" height="143"/>
+                                    <autoresizingMask key="autoresizingMask"/>
+                                </scroller>
+                            </scrollView>
                         </subviews>
                         <constraints>
                             <constraint firstItem="HdE-UT-Agt" firstAttribute="top" secondItem="m2S-Jp-Qdl" secondAttribute="top" id="1Mm-0x-uTD"/>
@@ -1181,14 +1188,14 @@ DQ
                             <customView verticalCompressionResistancePriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="5jM-QB-5I7">
                                 <rect key="frame" x="0.0" y="61" width="440" height="95"/>
                                 <subviews>
-                                    <button verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="fBg-K6-PCT">
-                                        <rect key="frame" x="188" y="27" width="140" height="18"/>
-                                        <buttonCell key="cell" type="check" title="Use Wave Bonding" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="8Vi-W5-aDw">
+                                    <button toolTip="Thermal bonding raises the first layer temperature by 10°C to improve adhesion." verticalHuggingPriority="1000" translatesAutoresizingMaskIntoConstraints="NO" id="fBg-K6-PCT">
+                                        <rect key="frame" x="188" y="27" width="155" height="18"/>
+                                        <buttonCell key="cell" type="check" title="Use Thermal Bonding" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="8Vi-W5-aDw">
                                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                             <font key="font" metaFont="system"/>
                                         </buttonCell>
                                         <connections>
-                                            <binding destination="QEg-b8-EU3" name="value" keyPath="document.useWaveBonding" id="E90-bE-LK0"/>
+                                            <binding destination="QEg-b8-EU3" name="value" keyPath="document.useThermalBonding" id="3Rc-fb-Cad"/>
                                         </connections>
                                     </button>
                                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="8yd-xN-Ebw">
@@ -1446,6 +1453,150 @@ DQ
                 <customObject id="iqY-Ip-uWe" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="677" y="1276"/>
+        </scene>
+        <!--Printer Info-->
+        <scene sceneID="wHe-qt-lAb">
+            <objects>
+                <viewController title="Printer Info" id="HSe-bZ-b4L" sceneMemberID="viewController">
+                    <view key="view" id="B2i-sf-Ypz">
+                        <rect key="frame" x="0.0" y="0.0" width="326" height="228"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="nb5-f7-sl2">
+                                <rect key="frame" x="61" y="191" width="96" height="17"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Serial Number:" id="Kcn-T8-xsf">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" red="0.19169981777667999" green="0.19169409573078156" blue="0.19169734418392181" alpha="0.84999999999999998" colorSpace="calibratedRGB"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <textField horizontalHuggingPriority="1000" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="EIO-zg-7Ht">
+                                <rect key="frame" x="165" y="191" width="143" height="17"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="12-34-12-12-12-12-12" id="YlF-Mj-Y5Q">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="tDE-xm-flm">
+                                <rect key="frame" x="165" y="166" width="81" height="17"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="2015080601" id="SPS-kv-YS0">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="lcl-Qt-b8r">
+                                <rect key="frame" x="165" y="70" width="85" height="17"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="2 234,34 mm" id="DAx-ib-G1t">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="shU-Zw-1ki">
+                                <rect key="frame" x="165" y="45" width="108" height="17"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="2900 mm/minute" id="65N-41-mfS">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="CoL-7L-9bq">
+                                <rect key="frame" x="165" y="95" width="82" height="51"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" id="wcf-qL-izq">
+                                    <font key="font" metaFont="system"/>
+                                    <string key="title">X: 35,23 mm
+Y: 35,23 mm
+Z: 35,23 mm</string>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="5M6-lt-7mv">
+                                <rect key="frame" x="43" y="166" width="114" height="17"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Firmware Version:" id="Z31-4J-udO">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" red="0.19169981777667999" green="0.19169409573078156" blue="0.19169734418392181" alpha="0.84999999999999998" colorSpace="calibratedRGB"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="BSc-an-hi7">
+                                <rect key="frame" x="53" y="129" width="104" height="17"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Nozzle Position:" id="Etv-hU-Lc7">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" red="0.19169981777667999" green="0.19169409573078156" blue="0.19169734418392181" alpha="0.84999999999999998" colorSpace="calibratedRGB"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="7iE-Kv-D6z">
+                                <rect key="frame" x="91" y="70" width="66" height="17"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Extrusion:" id="R7N-eg-EdG">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" red="0.19169981777667999" green="0.19169409573078156" blue="0.19169734418392181" alpha="0.84999999999999998" colorSpace="calibratedRGB"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="8cO-Z2-KrV">
+                                <rect key="frame" x="86" y="45" width="71" height="17"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Feed Rate:" id="dsv-7R-ETO">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" red="0.19169981777667999" green="0.19169409573078156" blue="0.19169734418392181" alpha="0.84999999999999998" colorSpace="calibratedRGB"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="7qf-w8-Jlv">
+                                <rect key="frame" x="72" y="20" width="85" height="17"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="Temperature:" id="X4l-vK-Faa">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" red="0.19169981777667999" green="0.19169409573078156" blue="0.19169734418392181" alpha="0.84999999999999998" colorSpace="calibratedRGB"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="L2J-zk-8eO">
+                                <rect key="frame" x="165" y="20" width="136" height="17"/>
+                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="192°C (target: 215°C)" id="wH1-YH-cmc">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                            </textField>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="CoL-7L-9bq" firstAttribute="baseline" secondItem="BSc-an-hi7" secondAttribute="baseline" id="1qw-Xc-ICm"/>
+                            <constraint firstItem="7iE-Kv-D6z" firstAttribute="trailing" secondItem="5M6-lt-7mv" secondAttribute="trailing" id="3uQ-eo-bNX"/>
+                            <constraint firstItem="CoL-7L-9bq" firstAttribute="leading" secondItem="tDE-xm-flm" secondAttribute="leading" id="4Ow-1j-f08"/>
+                            <constraint firstItem="7iE-Kv-D6z" firstAttribute="top" secondItem="CoL-7L-9bq" secondAttribute="bottom" constant="8" id="7mX-1m-CZe"/>
+                            <constraint firstItem="nb5-f7-sl2" firstAttribute="top" secondItem="B2i-sf-Ypz" secondAttribute="top" constant="20" id="97r-DW-Urp"/>
+                            <constraint firstItem="BSc-an-hi7" firstAttribute="top" secondItem="5M6-lt-7mv" secondAttribute="bottom" constant="20" id="B8K-ay-ikF"/>
+                            <constraint firstItem="EIO-zg-7Ht" firstAttribute="leading" secondItem="nb5-f7-sl2" secondAttribute="trailing" constant="12" id="Cgm-nj-saI"/>
+                            <constraint firstAttribute="trailing" secondItem="EIO-zg-7Ht" secondAttribute="trailing" constant="20" id="F1z-zm-WGK"/>
+                            <constraint firstItem="shU-Zw-1ki" firstAttribute="leading" secondItem="lcl-Qt-b8r" secondAttribute="leading" id="HbM-T2-eAA"/>
+                            <constraint firstItem="L2J-zk-8eO" firstAttribute="baseline" secondItem="7qf-w8-Jlv" secondAttribute="baseline" id="IXw-kS-i4p"/>
+                            <constraint firstItem="BSc-an-hi7" firstAttribute="trailing" secondItem="5M6-lt-7mv" secondAttribute="trailing" id="Lj4-6M-fJt"/>
+                            <constraint firstItem="tDE-xm-flm" firstAttribute="baseline" secondItem="5M6-lt-7mv" secondAttribute="baseline" id="Lki-ck-kBW"/>
+                            <constraint firstItem="tDE-xm-flm" firstAttribute="leading" secondItem="EIO-zg-7Ht" secondAttribute="leading" id="Syx-Ox-1qe"/>
+                            <constraint firstItem="L2J-zk-8eO" firstAttribute="leading" secondItem="shU-Zw-1ki" secondAttribute="leading" id="ZAZ-Mj-aTE"/>
+                            <constraint firstItem="8cO-Z2-KrV" firstAttribute="top" secondItem="7iE-Kv-D6z" secondAttribute="bottom" constant="8" id="bID-aX-psp"/>
+                            <constraint firstItem="EIO-zg-7Ht" firstAttribute="baseline" secondItem="nb5-f7-sl2" secondAttribute="baseline" id="cFB-YN-HAq"/>
+                            <constraint firstItem="shU-Zw-1ki" firstAttribute="top" secondItem="lcl-Qt-b8r" secondAttribute="bottom" constant="8" id="cGa-qv-4OV"/>
+                            <constraint firstItem="7qf-w8-Jlv" firstAttribute="trailing" secondItem="5M6-lt-7mv" secondAttribute="trailing" id="eag-aD-JT8"/>
+                            <constraint firstItem="8cO-Z2-KrV" firstAttribute="trailing" secondItem="5M6-lt-7mv" secondAttribute="trailing" id="eb2-sg-hWb"/>
+                            <constraint firstItem="7qf-w8-Jlv" firstAttribute="top" secondItem="8cO-Z2-KrV" secondAttribute="bottom" constant="8" id="glZ-AT-n4y"/>
+                            <constraint firstItem="lcl-Qt-b8r" firstAttribute="baseline" secondItem="7iE-Kv-D6z" secondAttribute="baseline" id="lE5-ZM-smi"/>
+                            <constraint firstItem="5M6-lt-7mv" firstAttribute="top" secondItem="nb5-f7-sl2" secondAttribute="bottom" constant="8" id="o80-4E-cv0"/>
+                            <constraint firstAttribute="bottom" secondItem="L2J-zk-8eO" secondAttribute="bottom" constant="20" id="rEu-du-dX1"/>
+                            <constraint firstItem="nb5-f7-sl2" firstAttribute="trailing" secondItem="5M6-lt-7mv" secondAttribute="trailing" id="u34-lq-zNc"/>
+                            <constraint firstItem="lcl-Qt-b8r" firstAttribute="leading" secondItem="CoL-7L-9bq" secondAttribute="leading" id="uFJ-82-UmP"/>
+                            <constraint firstItem="L2J-zk-8eO" firstAttribute="top" secondItem="shU-Zw-1ki" secondAttribute="bottom" constant="8" id="vw5-O6-qwq"/>
+                            <constraint firstItem="shU-Zw-1ki" firstAttribute="baseline" secondItem="8cO-Z2-KrV" secondAttribute="baseline" id="woT-L1-Y6S"/>
+                            <constraint firstItem="nb5-f7-sl2" firstAttribute="trailing" secondItem="B2i-sf-Ypz" secondAttribute="centerX" multiplier="0.95" id="yOG-Yr-DBZ"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <customObject id="wKS-Sm-uUK" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="519" y="1748"/>
         </scene>
         <!--View Controller-->
         <scene sceneID="Ina-vi-ZDF">

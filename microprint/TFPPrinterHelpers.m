@@ -9,6 +9,7 @@
 #import "TFPPrinterHelpers.h"
 #import "TFPPrinter+VirtualEEPROM.h"
 #import "TFP3DVector.h"
+#import "TFPExtras.h"
 
 #import "TFTimer.h"
 #import "MAKVONotificationCenter.h"
@@ -206,6 +207,7 @@
 
 - (void(^)())setHeaterTemperatureAsynchronously:(double)targetTemperature progressBlock:(void(^)(double currentTemperature))progressBlock completionBlock:(void(^)())completionBlock {
 	__weak __typeof__(self) weakSelf = self;
+	__block BOOL done = NO;
 	
 	[self sendGCode:[TFPGCode codeForHeaterTemperature:targetTemperature waitUntilDone:NO] responseHandler:nil];
 	
@@ -220,8 +222,13 @@
 	} copy];
 	
 	[self.printer addObserver:timer keyPath:@"heaterTemperature" options:0 block:^(MAKVONotification *notification) {
-		if(fabs(weakSelf.printer.heaterTemperature - targetTemperature) < 3) {
+		if(done) {
+			return;
+		}
+		
+		if(weakSelf.printer.heaterTemperature >= targetTemperature-3) {
 			[weakTimer invalidate];
+			done = YES;
 			completionBlock();
 		}else{
 			progressBlock(weakSelf.printer.heaterTemperature);
@@ -261,24 +268,23 @@
 	
 	[self setRelativeMode:NO completionHandler:nil];
 	
-	[self.printer fetchPositionWithCompletionHandler:^(BOOL success, TFP3DVector *originPosition, NSNumber *E) {
-		TFP3DVector *delta = [targetPosition vectorBySubtracting:originPosition];
-		
-		TFP3DVector *stepVector = [[delta vectorByDividingBy:[TFP3DVector vectorWithX:@2 Y:@2 Z:@0.1]] absoluteVector];
-		NSUInteger numSteps = ceil(MAX(MAX(stepVector.x.integerValue, stepVector.y.integerValue), stepVector.z.integerValue));
-		
-		if(numSteps > 0) {
-			[self moveStepFromPosition:originPosition toPosition:targetPosition steps:numSteps currentStep:0 feedRate:feedRate cancelBlock:^BOOL{
-				return cancelFlag;
-			} progressBlock:progressBlock completionBlock:^{
-				completionBlock();
-			}];
-		}else{
-			dispatch_async(dispatch_get_main_queue(), ^{
-				completionBlock();
-			});
-		}
-	}];
+	TFP3DVector *originPosition = [TFP3DVector vectorWithPosition:self.printer.position];
+	TFP3DVector *delta = [targetPosition vectorBySubtracting:originPosition];
+	
+	TFP3DVector *stepVector = [[delta vectorByDividingBy:[TFP3DVector vectorWithX:@2 Y:@2 Z:@0.1]] absoluteVector];
+	NSUInteger numSteps = ceil(MAX(MAX(stepVector.x.integerValue, stepVector.y.integerValue), stepVector.z.integerValue));
+	
+	if(numSteps > 0) {
+		[self moveStepFromPosition:originPosition toPosition:targetPosition steps:numSteps currentStep:0 feedRate:feedRate cancelBlock:^BOOL{
+			return cancelFlag;
+		} progressBlock:progressBlock completionBlock:^{
+			completionBlock();
+		}];
+	}else{
+		dispatch_async(dispatch_get_main_queue(), ^{
+			completionBlock();
+		});
+	}
 	
 	return ^{
 		cancelFlag = YES;
