@@ -14,6 +14,7 @@
 
 typedef NS_ENUM(NSUInteger, TFPPrintJobState) {
 	TFPPrintJobStatePreparing,
+	TFPPrintJobStateHeating,
 	TFPPrintJobStatePrinting,
 	TFPPrintJobStateAborting,
 	TFPPrintJobStatePausing,
@@ -37,7 +38,6 @@ typedef NS_ENUM(NSUInteger, TFPPrintJobState) {
 @property (copy) void(^progressBlock)(void);
 @property (copy) void(^completionBlock)(void);
 @property (copy) void(^abortionBlock)(void);
-@property (copy) void(^heatingProgressBlock)(double targetTemperature, double currentTemperature);
 
 - (void)abort;
 - (void)pause;

@@ -89,4 +89,9 @@
 }
 
 
+- (double)temperatureIncreaseForFirstLayer {
+	return (self.type == TFPFilamentTypePLA) ? 10 : 15;
+}
+
+
 @end

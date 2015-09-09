@@ -174,4 +174,74 @@
 }
 
 
+- (IBAction)pathPrintTest:(id)sender {
+	TFPPrinter *printer = [TFPPrinterManager sharedManager].printers.firstObject;
+
+	double Z = 0.2;
+	double ePerMM = 0.1;
+	
+	
+	[printer sendGCode:[TFPGCode codeForHeaterTemperature:220 waitUntilDone:NO] responseHandler:nil];
+	[printer sendGCode:[TFPGCode moveHomeCode] responseHandler:nil];
+	[printer sendGCode:[TFPGCode codeForHeaterTemperature:220 waitUntilDone:YES] responseHandler:nil];
+	
+	[printer sendGCode:[TFPGCode resetExtrusionCode] responseHandler:nil];
+	[printer sendGCode:[TFPGCode moveWithPosition:[TFP3DVector zVector:Z] feedRate:2900] responseHandler:nil];
+	double EPosition = 0;
+	
+	EPosition = 5;
+	
+	
+	
+	
+	NSBezierPath *path = [NSBezierPath bezierPath];
+	NSFont *font = [NSFont fontWithName:@"Helvetica" size:30];
+	
+	NSTextStorage *storage = [[NSTextStorage alloc] initWithString:@"Hello"];
+	NSLayoutManager *manager = [[NSLayoutManager alloc] init];
+	NSTextContainer *container = [[NSTextContainer alloc] init];
+	[storage addLayoutManager:manager];
+	[manager addTextContainer:container];
+	
+	NSGlyph glyphs[manager.numberOfGlyphs];
+	[manager getGlyphs:glyphs range:NSMakeRange(0, manager.numberOfGlyphs)];
+	
+	[path moveToPoint:CGPointMake(0, 0)];
+	[path appendBezierPathWithGlyphs:glyphs count:manager.numberOfGlyphs inFont:font];
+	
+	NSAffineTransform *transform = [NSAffineTransform transform];
+	[transform translateXBy:10 yBy:10];
+	[path transformUsingAffineTransform:transform];
+
+	path = [path bezierPathByFlatteningPath];
+	
+	CGPoint previousPoint;
+	[path elementAtIndex:0 associatedPoints:&previousPoint];
+	[printer sendGCode:[TFPGCode moveWithPosition:[TFP3DVector xyVectorWithX:previousPoint.x y:previousPoint.y] feedRate:2900] responseHandler:nil];
+	[printer sendGCode:[TFPGCode codeForExtrusion:5 feedRate:-1] responseHandler:nil];
+
+	
+	for(NSUInteger i=0; i<path.elementCount; i++) {
+		NSPoint p;
+		NSBezierPathElement element = [path elementAtIndex:i associatedPoints:&p];
+		
+		if(element == NSClosePathBezierPathElement) {
+			continue;
+		}
+		
+		NSNumber *E = nil;
+		if(element == NSLineToBezierPathElement) {
+			double length = sqrt(pow(p.x - previousPoint.x, 2) + pow(p.y - previousPoint.y, 2));
+			E = @(EPosition + length*ePerMM);
+			EPosition = E.doubleValue;
+		}
+		
+		[printer sendGCode:[TFPGCode moveWithPosition:[TFP3DVector xyVectorWithX:p.x y:p.y] extrusion:E feedRate:2000] responseHandler:nil];
+		previousPoint = p;
+	}
+	
+	[printer sendGCode:[TFPGCode moveWithPosition:[TFP3DVector zVector:20] feedRate:2900] responseHandler:nil];
+}
+
+
 @end

@@ -183,11 +183,9 @@
 	TFLog(@"Options:");
 	TFLog(@"  --dryrun: Don't connect to an actual printer; instead simulate a mock printer that echos sent G-codes.");
 	TFLog(@"  --temperature <number>: Heater temperature in degrees Celsius. Default is 215 for extrusion/retraction and varies depending on filament type for printing.");
-	TFLog(@"  --filament <string>: Filament type. Valid options are PLA, ABS, HIPS and Other. Affects behavior in some preprocessors. Also sets default temperature.");
+	TFLog(@"  --filament <string>: Filament type. Valid options are PLA, ABS, HIPS and Other. Also sets default temperature.");
 	TFLog(@"  --thermalbonding: Use thermal bonding (+10°C for first layer). On by default. Turn off with --thermalbonding=0");
-	TFLog(@"  --rawFeedRates: For the console command, this turns off conversion of feed rates to M3D-style inverted feed rates.");
 }
-
 
 
 - (TFPPrintParameters*)printParametersForSettings:(GBSettings*)settings {
@@ -396,11 +394,6 @@
 			TFLog(@"Printing: %@", progressString);
 			lastProgressString = progressString;
 		}
-	};
-	
-	printJob.heatingProgressBlock = ^(double targetTemperature, double currentTemperature) {
-		TFPEraseLastLine();
-		TFLog(@"Heating to %.0f°C: %@", targetTemperature, [weakSelf.shortPercentFormatter stringFromNumber:@(currentTemperature/targetTemperature)]);
 	};
 	
 	printJob.abortionBlock = ^ {
