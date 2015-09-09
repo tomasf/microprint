@@ -679,6 +679,12 @@
                                                 <action selector="speedTest:" target="Voe-Tx-rLC" id="wIF-bs-tRj"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem title="Path test" id="kkx-Tm-jii">
+                                            <modifierMask key="keyEquivalentModifierMask"/>
+                                            <connections>
+                                                <action selector="pathPrintTest:" target="Voe-Tx-rLC" id="wfl-p2-3ax"/>
+                                            </connections>
+                                        </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>
