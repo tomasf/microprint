@@ -127,11 +127,6 @@ static const CGFloat drawContainerExpandedBottomMargin = 20;
 	self.printJob.progressBlock = ^(){
 	};
 	
-	self.printJob.heatingProgressBlock = ^(double targetTemperature, double currentTemperature) {
-		TFAssertMainThread();
-		weakSelf.statusLabel.stringValue = [NSString stringWithFormat:@"Heating to %.0f: %d%%", targetTemperature, (int)((currentTemperature/targetTemperature)*100)];
-	};
-	
 	self.printJob.abortionBlock = ^{
 		TFAssertMainThread();
 		[weakSelf dismissController:nil];
@@ -339,10 +334,18 @@ static const CGFloat drawContainerExpandedBottomMargin = 20;
 
 
 - (NSString*)statusString {
+	TFAssertMainThread();
+	
 	switch(self.printJob.state) {
 		case TFPPrintJobStatePreparing:
 			return @"Starting…";
 			
+		case TFPPrintJobStateHeating:
+			return [NSString stringWithFormat:@"Heating to %.0f: %.0f%%",
+					self.printer.heaterTargetTemperature,
+					(self.printer.heaterTemperature/self.printer.heaterTargetTemperature)*100
+					];
+		
 		case TFPPrintJobStatePrinting: {
 			NSString *progress = [self.longPercentFormatter stringFromNumber:@(self.printStatusController.phaseProgress)];
 			NSString *phase;
@@ -391,7 +394,7 @@ static const CGFloat drawContainerExpandedBottomMargin = 20;
 
 + (NSSet *)keyPathsForValuesAffectingStatusString {
 	return @[@"state", @"printStatusController.currentPhase", @"printStatusController.phaseProgress",
-			 @"printJob.state"].tf_set;
+			 @"printJob.state", @"printer.heaterTemperature"].tf_set;
 }
 
 

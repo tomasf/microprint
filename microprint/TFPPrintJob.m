@@ -154,14 +154,15 @@
 // Called on print queue
 - (TFPGCode*)popNextLine {
 	while(self.codeOffset < self.program.lines.count && !self.program.lines[self.codeOffset].hasFields) {
+		TFPGCode *code = self.program.lines[self.codeOffset];
+		if(code.comment.length) {
+			[self.printer sendNotice:@"Comment: %@", code.comment];
+		}
+
 		self.codeOffset++;
 		dispatch_async(dispatch_get_main_queue(), ^{
 			self.completedRequests++;
 		});
-		TFPGCode *code = self.program.lines[self.codeOffset];
-		if(!code.hasFields && code.comment.length) {
-			[self.printer sendNotice:@"Comment: %@", code.comment];
-		}
 	}
 	
 	if(self.codeOffset >= self.program.lines.count) {
@@ -194,10 +195,8 @@
 		if(layerIndex == 0 || layerIndex == 1) {
 			double temperature = self.parameters.temperature;
 			if(layerIndex == 0) {
-				temperature += 10;
+				temperature += self.parameters.filament.temperatureIncreaseForFirstLayer;
 			}
-			
-			//NSLog(@"Heating to %.0f for layer %ld", temperature, (long)layerIndex);
 			
 			[self.context sendGCode:[TFPGCode codeForHeaterTemperature:temperature waitUntilDone:YES] responseHandler:^(BOOL success, TFPGCodeResponseDictionary value) {
 				[self sendMoreIfNeeded];
@@ -241,7 +240,6 @@
 	}
 	
 	self.stage = TFPOperationStageRunning;
-	[self setStateOnMainQueue:TFPPrintJobStatePrinting];
 	
 	dispatch_async(self.printQueue, ^{
 		[self sendMoreIfNeeded];
@@ -273,9 +271,12 @@
 		}
 		
 		TFMainThread(^{
+			[self setStateOnMainQueue:TFPPrintJobStateHeating];
 			self.heatingCancelBlock = [self.context setHeaterTemperatureAsynchronously:parameters.temperature progressBlock:^(double currentTemperature) {
 				
 			} completionBlock:^{
+				[self setStateOnMainQueue:TFPPrintJobStatePrinting];
+
 				[self.context runGCodeProgram:[TFPGCodeProgram programWithLines:part2] completionHandler:^(BOOL success, NSArray<TFPGCodeResponseDictionary> *values) {
 					[self startMainProgram];
 				}];
@@ -290,17 +291,22 @@
 	self.stage = TFPOperationStageEnding;
 	[self setStateOnMainQueue:TFPPrintJobStateFinishing];
 
-	double Z = MAX(self.printer.position.z, MIN(self.printer.position.z + 25, 110));
+	double firstZ = MAX(self.printer.position.z, MIN(self.printer.position.z + 1, 110));
+	double finalZ = MAX(self.printer.position.z, MIN(self.printer.position.z + 25, 110));
 
-	TFP3DVector *backPosition = (Z > 60) ? [TFP3DVector xyVectorWithX:90 y:84] : [TFP3DVector xyVectorWithX:95 y:95];
-	backPosition = [backPosition vectorBySettingZ:Z];
+	TFP3DVector *backPosition = (finalZ > 60) ? [TFP3DVector xyVectorWithX:90 y:84] : [TFP3DVector xyVectorWithX:95 y:95];
+	TFP3DVector *firstPosition = [backPosition vectorBySettingZ:firstZ];
+	TFP3DVector *finalPosition = [TFP3DVector zVector:finalZ];
 	
 	NSArray *postamble = @[
 						   [TFPGCode codeForTurningOffHeater],
-						   [TFPGCode moveWithPosition:backPosition feedRate:-1],
+						   [TFPGCode moveWithPosition:firstPosition feedRate:2900],
+						   [TFPGCode waitCodeWithDuration:2],
+						   [TFPGCode moveWithPosition:finalPosition feedRate:-1],
 						   [TFPGCode turnOffFanCode],
 						   [TFPGCode turnOffMotorsCode],
 						   ];
+	
 	[self.context runGCodeProgram:[TFPGCodeProgram programWithLines:postamble] completionHandler:^(BOOL success, NSArray<TFPGCodeResponseDictionary> *values) {
 		TFMainThread(^{
 			[self jobDidComplete];
@@ -313,7 +319,6 @@
 	if(![super start]) {
 		return NO;
 	}
-	__weak __typeof__(self) weakSelf = self;
 	
 	self.codeOffset = 0;
 	self.pendingRequest = NO;
@@ -321,13 +326,6 @@
 
 	[self.stopwatch start];
 	[self runPreamble];
-	
-	[self.printer addObserver:self keyPath:@"heaterTemperature" options:0 block:^(MAKVONotification *notification) {
-		double temp = weakSelf.printer.heaterTemperature;
-		if(weakSelf.printer.heaterTargetTemperature > 0 && weakSelf.heatingProgressBlock){
-			weakSelf.heatingProgressBlock(weakSelf.printer.heaterTargetTemperature, temp);
-		}
-	}];
 	
 	IOReturn asserted = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoIdleSleep, kIOPMAssertionLevelOn, CFSTR("MicroPrint print job"), &(self->_powerAssertionID));
 	if (asserted != kIOReturnSuccess) {
