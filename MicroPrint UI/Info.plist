@@ -35,18 +35,12 @@
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
-	<key>SUFeedURL</key>
-	<string>http://tomasf.se/projects/microprint/appcast.xml</string>
-	<key>SUEnableAutomaticChecks</key>
-	<true/>
-	<key>SUScheduledCheckInterval</key>
-	<integer>86400</integer>
 	<key>CFBundleShortVersionString</key>
 	<string>201509091200</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>201509091200</string>
+	<string>201509091200WW</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSAppleScriptEnabled</key>
@@ -59,5 +53,11 @@
 	<string>NSApplication</string>
 	<key>OSAScriptingDefinition</key>
 	<string>MicroPrint.sdef</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUFeedURL</key>
+	<string>http://tomasf.se/projects/microprint/appcast.xml</string>
+	<key>SUScheduledCheckInterval</key>
+	<integer>86400</integer>
 </dict>
 </plist>

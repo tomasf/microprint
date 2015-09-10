@@ -397,12 +397,12 @@ TFPCuboid TFPCuboidM3DMicroPrintVolumeUpper = {.x = 12.5, .y = 11, .z = 74,  .xS
 
 
 + (NSIndexSet*)validM3DGValues {
-	return [NSIndexSet tf_indexSetWithIndexes:0, 1, 4, 28, 90, 91, 92,  30, 32, 33, -1];
+	return [NSIndexSet tf_indexSetWithIndexes:0, 1, 4, 21, 28, 90, 91, 92,  30, 32, 33, -1];
 }
 
 
 + (NSIndexSet*)validM3DMValues {
-	return [NSIndexSet tf_indexSetWithIndexes:0, 1, 17, 18, 104, 105, 106, 107, 108, 109, 110, 114, 115, 117, -1];
+	return [NSIndexSet tf_indexSetWithIndexes:0, 1, 17, 18, 82, 104, 105, 106, 107, 108, 109, 110, 114, 115, 117, -1];
 }
 
 

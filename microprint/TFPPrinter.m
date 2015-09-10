@@ -150,12 +150,13 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 @property NSMutableDictionary<NSNumber*, TFPGCode*> *codeRegistry;
 
 @property (unsafe_unretained) TFPPrinterContext *primaryContext;
+@property NSIndexSet *blockGCodes;
+@property NSIndexSet *blockMCodes;
 @end
 
 
 
 @implementation TFPPrinter
-
 
 - (instancetype)initWithConnection:(TFPPrinterConnection*)connection {
 	if(!(self = [super init])) return nil;
@@ -184,6 +185,8 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 	self.pendingConnection = YES;
 	self.hasValidZLevel = YES; // Assume valid Z for now
 	self.firmwareVersionComparedToTestedRange = NSOrderedSame; // Assume OK firmware for now
+    self.blockGCodes = [NSIndexSet indexSet];
+    self.blockMCodes = self.blockGCodes;
 	
 	[self.connection openWithCompletionHandler:^(NSError *error) {
 		self.pendingConnection = NO;
@@ -269,6 +272,12 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 }
 
 
++ (NSArray<NSArray<NSNumber *> *> *)firmwareBlockCodes:(NSString *)firmwareVersion {
+    // Currently there is no variation in firmware but there will probably be at some point
+    return @[/*G codes*/@[@21], /*M codes*/@[@82]];
+}
+
+
 - (void)refreshState {
 	[self sendGCode:[TFPGCode codeWithField:'M' value:117] responseHandler:^(BOOL success, NSDictionary *value) {
 		if(success && value[@"ZV"]) {
@@ -283,7 +292,10 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 	} else {
 		self.firmwareVersionComparedToTestedRange = NSOrderedSame;
 	}
-	
+    NSArray<NSArray<NSNumber *> *> *blockCodes = [self.class firmwareBlockCodes:self.firmwareVersion];
+    self.blockGCodes = [NSIndexSet ww_indexSetFromArray:blockCodes[0]];
+    self.blockMCodes = [NSIndexSet ww_indexSetFromArray:blockCodes[1]];
+
 	[self fetchBedOffsetsWithCompletionHandler:nil];
 	[self fetchBacklashValuesWithCompletionHandler:nil];
 	[self fetchBedBaseLevelsWithCompletionHandler:nil];
@@ -354,38 +366,44 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 
 // On communication queue here
 - (void)dequeueCode {
-	if(self.pendingCodeEntry) {
-		return;
-	}
-	
-	if([self sendLineNumberResetIfNeeded]) {
-		return;
-	}
-	
-	TFPPrinterGCodeEntry *entry = self.queuedCodeEntries.firstObject;
-	if(entry) {
-		[self.queuedCodeEntries removeObjectAtIndex:0];
-		
-		TFPGCode *code = entry.code;
-		BOOL supplement = NO;
-		code = [self adjustCodeForCalibrationIfNeeded:code options:entry.options supplement:&supplement];
-		
-		if(supplement) {
-			[self.queuedCodeEntries insertObject:entry atIndex:0];
-			entry = [[TFPPrinterGCodeEntry alloc] initWithCode:code options:entry.options responseBlock:nil queue:nil];
-		}
-		code = [self adjustLineBeforeSending:code];
-		entry.finalCode = code;
-		self.pendingCodeEntry = entry;
-		
-		[self.connection sendGCode:code];
-		
-		TFMainThread(^{
-			if(self.outgoingCodeBlock) {
-				self.outgoingCodeBlock(code.ASCIIRepresentation);
-			}
-		});
-	}
+    if(self.pendingCodeEntry) {
+        return;
+    }
+
+    if([self sendLineNumberResetIfNeeded]) {
+        return;
+    }
+
+    TFPPrinterGCodeEntry *entry = self.queuedCodeEntries.firstObject;
+    if(entry) {
+        [self.queuedCodeEntries removeObjectAtIndex:0];
+
+        TFPGCode *code = entry.code;
+        if([self.blockGCodes containsIndex:[code valueForField:'G' fallback:-1]] ||
+           [self.blockMCodes containsIndex:[code valueForField:'M' fallback:-1]]) {
+            // Turn blocked codes into comments
+            code = [TFPGCode codeWithComment:[NSString stringWithFormat:@" Blocked: %@", code.description]];
+        } else {
+            BOOL supplement = NO;
+            code = [self adjustCodeForCalibrationIfNeeded:code options:entry.options supplement:&supplement];
+
+            if(supplement) {
+                [self.queuedCodeEntries insertObject:entry atIndex:0];
+                entry = [[TFPPrinterGCodeEntry alloc] initWithCode:code options:entry.options responseBlock:nil queue:nil];
+            }
+        }
+        code = [self adjustLineBeforeSending:code];
+        entry.finalCode = code;
+        self.pendingCodeEntry = entry;
+
+        [self.connection sendGCode:code];
+
+        TFMainThread(^{
+            if(self.outgoingCodeBlock) {
+                self.outgoingCodeBlock(code.ASCIIRepresentation);
+            }
+        });
+    }
 }
 
 

@@ -32,6 +32,7 @@
 
 @interface NSIndexSet (TFPExtras)
 + (NSIndexSet*)tf_indexSetWithIndexes:(NSInteger)firstIndex, ...; // Terminate with negative
++ (NSIndexSet*)ww_indexSetFromArray:(NSArray<NSNumber *> *)source; // Terminate with negative
 @end
 
 

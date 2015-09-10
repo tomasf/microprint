@@ -178,6 +178,17 @@ NSString *const TFPErrorGCodeLineKey = @"GCodeLine";
 	return indexes;
 }
 
++ (NSIndexSet*)ww_indexSetFromArray:(NSArray<NSNumber *> *)source {
+
+    NSMutableIndexSet *indexes = [NSMutableIndexSet indexSet];
+
+    for (NSNumber *index in source) {
+        [indexes addIndex:index.intValue];
+    }
+
+    return indexes;
+}
+
 
 @end
 
