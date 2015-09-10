@@ -125,7 +125,10 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 
 @property (readwrite) double heaterTemperature;
 @property (readwrite) double heaterTargetTemperature;
+
 @property (readwrite) BOOL hasValidZLevel;
+@property (readwrite) BOOL hasOutOfBoundsZLevel;
+
 @property (nonatomic, readwrite) TFPBedLevelOffsets bedBaseOffsets;
 @property (readwrite) NSComparisonResult firmwareVersionComparedToTestedRange;
 
@@ -352,6 +355,18 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 }
 
 
+- (BOOL)shouldIgnoreCode:(TFPGCode*)code {
+	NSInteger G = [code valueForField:'G' fallback:-1];
+	if(G == 0 || G == 1) {
+		if([code hasField:'E'] && self.heaterTargetTemperature <= 100) {
+			[self sendNotice:@"Warning: Tried to cold extrude. Skipping to avoid firmware bugs. Code: %@", code];
+			return YES;
+		}
+	}
+	return NO;
+}
+
+
 // On communication queue here
 - (void)dequeueCode {
 	if(self.pendingCodeEntry) {
@@ -365,8 +380,13 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 	TFPPrinterGCodeEntry *entry = self.queuedCodeEntries.firstObject;
 	if(entry) {
 		[self.queuedCodeEntries removeObjectAtIndex:0];
-		
 		TFPGCode *code = entry.code;
+		
+		if([self shouldIgnoreCode:code]) {
+			[self dequeueCode];
+			return;
+		}
+		
 		BOOL supplement = NO;
 		code = [self adjustCodeForCalibrationIfNeeded:code options:entry.options supplement:&supplement];
 		
@@ -574,6 +594,7 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 	
 	} else if(M == 109 || M == 104) {
 		double temperature = [code valueForField:'S' fallback:0];
+		_heaterTargetTemperature = temperature;
 		TFMainThread(^{
 			self.heaterTargetTemperature = temperature;
 		});
@@ -733,13 +754,15 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 
 - (void)processTemperatureUpdate:(double)temperature {
 	// On communication queue here
+	
+	if(temperature < 0) {
+		_heaterTemperature = _heaterTargetTemperature;
+	}else{
+		_heaterTemperature = temperature;
+	}
+	
 	TFMainThread(^{
-		if(temperature < 0) {
-			self.heaterTemperature = self.heaterTargetTemperature;
-			self.heaterTargetTemperature = -1;
-		}else{
-			self.heaterTemperature = temperature;
-		}
+		self.heaterTemperature = _heaterTemperature;
 	});
 }
 
@@ -884,6 +907,9 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 		if(values[@"Z"]) {
 			self.positionZ = values[@"Z"].doubleValue;
 			self.unadjustedPositionZ = self.positionZ - [self.bedLevelCompensator zAdjustmentAtX:self.positionX Y:self.positionY];
+			TFMainThread(^{
+				self.hasOutOfBoundsZLevel = (self.positionZ < -1000 || self.positionZ > 1000);
+			});
 		}
 		if(values[@"E"]) {
 			self.positionE = values[@"E"].doubleValue;
