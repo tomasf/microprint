@@ -381,8 +381,8 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
         TFPGCode *code = entry.code;
         if([self.blockGCodes containsIndex:[code valueForField:'G' fallback:-1]] ||
            [self.blockMCodes containsIndex:[code valueForField:'M' fallback:-1]]) {
-            // Turn blocked codes into comments
-            code = [TFPGCode codeWithComment:[NSString stringWithFormat:@" Blocked: %@", code.description]];
+            // Turn blocked codes into a no-op (G4 P0) with comments
+            code = [[[TFPGCode codeWithComment:[NSString stringWithFormat:@" Blocked: %@", code.description]]codeBySettingField:'G' toValue:4]codeBySettingField:'P' toValue:0];
         } else {
             BOOL supplement = NO;
             code = [self adjustCodeForCalibrationIfNeeded:code options:entry.options supplement:&supplement];
