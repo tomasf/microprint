@@ -275,6 +275,7 @@
 			self.heatingCancelBlock = [self.context setHeaterTemperatureAsynchronously:parameters.temperature progressBlock:^(double currentTemperature) {
 				
 			} completionBlock:^{
+				self.heatingCancelBlock = nil;
 				[self setStateOnMainQueue:TFPPrintJobStatePrinting];
 
 				[self.context runGCodeProgram:[TFPGCodeProgram programWithLines:part2] completionHandler:^(BOOL success, NSArray<TFPGCodeResponseDictionary> *values) {
@@ -337,13 +338,13 @@
 }
 
 
-- (void)sendAbortSequenceWithCompletionHandler:(void(^)())completionHandler {
+- (void)sendAbortSequenceWithRetraction:(BOOL)retract completionHandler:(void(^)())completionHandler {
 	const double retractFeedRate = 1500;
 	const double raiseFeedRate = 870;
 	
 	NSArray *codes = @[
 					   [TFPGCode relativeModeCode],
-					   [TFPGCode codeForExtrusion:-2 feedRate:retractFeedRate],
+					   retract ? [TFPGCode codeForExtrusion:-2 feedRate:retractFeedRate] : [TFPGCode waitForCompletionCode],
 					   [TFPGCode moveWithPosition:[TFP3DVector zVector:5] feedRate:raiseFeedRate],
 					   [TFPGCode absoluteModeCode],
 					   
@@ -360,21 +361,23 @@
 
 
 - (void)abort {
-	if(self.state != TFPPrintJobStatePrinting && self.state != TFPPrintJobStatePaused) {
+	if(self.state != TFPPrintJobStatePrinting && self.state != TFPPrintJobStatePaused && self.state != TFPPrintJobStateHeating) {
 		return;
 	}
 	self.stage = TFPOperationStageEnding;
 	[self setStateOnMainQueue:TFPPrintJobStateAborting];
 	[self.stopwatch stop];
 	
+	BOOL extrude = !self.heatingCancelBlock;
+	if(self.heatingCancelBlock) {
+		self.heatingCancelBlock();
+		self.heatingCancelBlock = nil;
+	}
+	
 	dispatch_async(self.printQueue, ^{
 		self.aborted = YES;
-		if(self.heatingCancelBlock) {
-			self.heatingCancelBlock();
-			self.heatingCancelBlock = nil;
-		}
-		
-		[self sendAbortSequenceWithCompletionHandler:^{
+
+		[self sendAbortSequenceWithRetraction:extrude completionHandler:^{
 			dispatch_async(dispatch_get_main_queue(), ^{
 				[self jobEnded];
 				
@@ -383,6 +386,7 @@
 				}
 			});
 		}];
+		
 	});
 }
 

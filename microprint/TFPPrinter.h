@@ -96,7 +96,9 @@ typedef NSDictionary<NSString *, NSString*>* TFPGCodeResponseDictionary;
 @property (nonatomic) double feedrate;
 @property (readonly) double heaterTargetTemperature;
 @property (readonly) double heaterTemperature;
+
 @property (readonly) BOOL hasValidZLevel;
+@property (readonly) BOOL hasOutOfBoundsZLevel;
 
 @property (nonatomic, readonly) TFPBedLevelOffsets bedBaseOffsets;
 @property (nonatomic) TFPBedLevelOffsets bedLevelOffsets;
