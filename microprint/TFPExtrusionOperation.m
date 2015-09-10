@@ -135,8 +135,9 @@ static const double minimumZLevelForOperation = 25;
 	
 	
 	TFP3DVector *raisedPosition = [TFP3DVector zVector:MAX(self.printer.position.z, minimumZLevelForOperation)];
+	
 	void(^moveProgressBlock)(double progress) = [coalescer addOperation];
-	self.cancelMovingBlock = [self.context moveAsynchronouslyToPosition:raisedPosition feedRate:3000 progressBlock:^(double fraction, TFP3DVector *position) {
+	self.cancelMovingBlock = [self.context moveAsynchronouslyToPosition:raisedPosition feedRate:2900 progressBlock:^(double fraction, TFP3DVector *position) {
 		moveProgressBlock(fraction);
 	} completionBlock:^{
 		moveProgressBlock(1);

@@ -217,6 +217,9 @@
 	__weak TFTimer *weakTimer = timer;
 	
 	void(^cancelBlock)() = [^{
+		if(done) {
+			return;
+		}
 		[timer invalidate];
 		[weakSelf sendGCode:[TFPGCode codeForTurningOffHeater] responseHandler:nil];
 	} copy];
@@ -244,7 +247,7 @@
 	TFP3DVector *deltaPerStep = [fullDelta vectorByDividingByScalar:stepCount];
 	TFP3DVector *currentDelta = [deltaPerStep vectorByMultiplyingByScalar:step];
 	TFP3DVector *absolutePosition = [from vectorByAdding:currentDelta];
-	
+		
 	[self moveToPosition:absolutePosition usingFeedRate:feedRate completionHandler:^(BOOL success) {
 		if(cancelBlock()) {
 			return;
@@ -269,6 +272,7 @@
 	[self setRelativeMode:NO completionHandler:nil];
 	
 	TFP3DVector *originPosition = [TFP3DVector vectorWithPosition:self.printer.position];
+	targetPosition = [targetPosition vectorByDefaultingToValues:originPosition];
 	TFP3DVector *delta = [targetPosition vectorBySubtracting:originPosition];
 	
 	TFP3DVector *stepVector = [[delta vectorByDividingBy:[TFP3DVector vectorWithX:@2 Y:@2 Z:@0.1]] absoluteVector];
