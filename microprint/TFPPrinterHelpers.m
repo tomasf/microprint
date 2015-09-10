@@ -217,6 +217,9 @@
 	__weak TFTimer *weakTimer = timer;
 	
 	void(^cancelBlock)() = [^{
+		if(done) {
+			return;
+		}
 		[timer invalidate];
 		[weakSelf sendGCode:[TFPGCode codeForTurningOffHeater] responseHandler:nil];
 	} copy];
