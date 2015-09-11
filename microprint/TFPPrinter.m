@@ -355,11 +355,12 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 }
 
 
-- (BOOL)shouldIgnoreCode:(TFPGCode*)code {
-	NSInteger G = [code valueForField:'G' fallback:-1];
+- (BOOL)shouldSkipCodeEntry:(TFPPrinterGCodeEntry*)entry {
+	NSInteger G = [entry.code valueForField:'G' fallback:-1];
 	if(G == 0 || G == 1) {
-		if([code hasField:'E'] && self.heaterTargetTemperature <= 100) {
-			[self sendNotice:@"Warning: Tried to cold extrude. Skipping to avoid firmware bugs. Code: %@", code];
+		if([entry.code hasField:'E'] && self.heaterTargetTemperature <= 100) {
+			[self sendNotice:@"Warning: Tried to cold extrude. Skipping to avoid firmware bugs. Code: %@", entry.code];
+			[entry deliverErrorResponseWithErrorCode:TFPPrinterResponseErrorCodeCannotColdExtrude];
 			return YES;
 		}
 	}
@@ -382,7 +383,7 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 		[self.queuedCodeEntries removeObjectAtIndex:0];
 		TFPGCode *code = entry.code;
 		
-		if([self shouldIgnoreCode:code]) {
+		if([self shouldSkipCodeEntry:entry]) {
 			[self dequeueCode];
 			return;
 		}
