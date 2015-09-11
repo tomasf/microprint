@@ -33,7 +33,11 @@
 	[super viewDidLoad];
 	__weak __typeof__(self) weakSelf = self;
 	
-	[self addObserver:self keyPath:@[@"representedObject.hasValidZLevel", @"representedObject.firmwareVersionComparedToTestedRange", @"representedObject.hasAllZeroBedLevelOffsets"] options:0 block:^(MAKVONotification *notification) {
+	[self addObserver:self keyPath:@[@"representedObject.hasValidZLevel",
+									 @"representedObject.hasOutOfBoundsZLevel",
+									 @"representedObject.firmwareVersionComparedToTestedRange",
+									 @"representedObject.hasAllZeroBedLevelOffsets"
+									 ] options:0 block:^(MAKVONotification *notification) {
 		[weakSelf reloadWarnings];
 	}];
 }
@@ -69,12 +73,13 @@
 - (void)reloadWarnings {
 	TFPPrinter *printer = self.representedObject;
 	
-	BOOL invalidZ = printer && (!printer.hasValidZLevel || printer.position.z > 130 || printer.position.z < -20);
+	BOOL invalidZ = printer && !printer.hasValidZLevel;
 	BOOL untestedFirmware = printer && printer.firmwareVersionComparedToTestedRange != NSOrderedSame;
 	BOOL allZeroBedLevelOffsets = printer && printer.hasAllZeroBedLevelOffsets;
+	BOOL outOfBounds = printer && printer.hasOutOfBoundsZLevel;
 	
 	NSMutableArray *warningViews = [NSMutableArray new];
-	if(invalidZ) {
+	if(invalidZ || outOfBounds) {
 		[warningViews addObject:[self makeWarningButtonWithTitle:@"Bed Location Lost!" action:@selector(showZLostInfo:)]];
 	}
 	if(untestedFirmware) {
