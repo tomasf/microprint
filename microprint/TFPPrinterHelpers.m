@@ -243,11 +243,14 @@
 
 
 - (void)moveStepFromPosition:(TFP3DVector*)from toPosition:(TFP3DVector*)to steps:(NSUInteger)stepCount currentStep:(NSUInteger)step feedRate:(double)feedRate cancelBlock:(BOOL(^)())cancelBlock progressBlock:(void(^)(double fraction, TFP3DVector *position))progressBlock completionBlock:(void(^)())completionBlock {
+	
+	from = [from vectorWithFieldsPresentInVector:to];
+	
 	TFP3DVector *fullDelta = [to vectorBySubtracting:from];
 	TFP3DVector *deltaPerStep = [fullDelta vectorByDividingByScalar:stepCount];
 	TFP3DVector *currentDelta = [deltaPerStep vectorByMultiplyingByScalar:step];
 	TFP3DVector *absolutePosition = [from vectorByAdding:currentDelta];
-		
+	
 	[self moveToPosition:absolutePosition usingFeedRate:feedRate completionHandler:^(BOOL success) {
 		if(cancelBlock()) {
 			return;
@@ -271,8 +274,9 @@
 	
 	[self setRelativeMode:NO completionHandler:nil];
 	
+	targetPosition = [TFP3DVector zVector:targetPosition.z.doubleValue];
+	
 	TFP3DVector *originPosition = [TFP3DVector vectorWithPosition:self.printer.position];
-	targetPosition = [targetPosition vectorByDefaultingToValues:originPosition];
 	TFP3DVector *delta = [targetPosition vectorBySubtracting:originPosition];
 	
 	TFP3DVector *stepVector = [[delta vectorByDividingBy:[TFP3DVector vectorWithX:@2 Y:@2 Z:@0.1]] absoluteVector];

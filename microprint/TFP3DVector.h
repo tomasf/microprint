@@ -26,12 +26,13 @@
 
 - (double)distanceToPoint:(TFP3DVector*)point;
 - (TFP3DVector*)vectorByDefaultingToValues:(TFP3DVector*)defaults;
-- (TFP3DVector*)vectorByAdjustingZ:(double)delta;
+- (TFP3DVector*)vectorWithFieldsPresentInVector:(TFP3DVector*)otherVector;
 
 - (TFP3DVector*)vectorBySettingX:(double)x;
 - (TFP3DVector*)vectorBySettingY:(double)y;
 - (TFP3DVector*)vectorBySettingZ:(double)z;
 - (TFP3DVector*)vectorBySettingY:(double)y z:(double)z;
+- (TFP3DVector*)vectorByAdjustingZ:(double)delta;
 
 - (TFP3DVector*)absoluteVector;
 
