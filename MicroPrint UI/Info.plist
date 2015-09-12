@@ -12,7 +12,7 @@
 				<true/>
 			</dict>
 		</dict>
-		<key>NSExceptionAllowsInsecureHTTPLoads</key>
+		<key>NSAllowsArbitraryLoads</key>
 		<false/>
 	</dict>
 	<key>CFBundleDevelopmentRegion</key>
