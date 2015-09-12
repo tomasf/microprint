@@ -915,7 +915,7 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 		if(values[@"E"]) {
 			self.positionE = values[@"E"].doubleValue;
 		}
-		
+		[self updatePosition];
 		[self sendNotice:@"Synced position to (%.02f, %.02f, %.02f [%.02f])", self.positionX, self.positionY, self.unadjustedPositionZ, self.positionZ];
 
 	}else if(M == 619) {

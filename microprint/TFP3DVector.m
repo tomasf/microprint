@@ -93,34 +93,42 @@
 }
 
 
+- (TFP3DVector*)vectorWithFieldsPresentInVector:(TFP3DVector*)otherVector {
+	return [TFP3DVector vectorWithX:(otherVector.x ? self.x : nil)
+								  Y:(otherVector.y ? self.y : nil)
+								  Z:(otherVector.z ? self.z : nil)
+			];
+}
+
+
 - (TFP3DVector*)vectorByAdding:(TFP3DVector*)vector {
-	return [TFP3DVector vectorWithX:(self.x ? @(self.x.doubleValue+vector.x.doubleValue) : nil)
-								  Y:(self.y ? @(self.y.doubleValue+vector.y.doubleValue) : nil)
-								  Z:(self.z ? @(self.z.doubleValue+vector.z.doubleValue) : nil)
+	return [TFP3DVector vectorWithX:(self.x ? @(self.x.doubleValue + vector.x.doubleValue) : nil)
+								  Y:(self.y ? @(self.y.doubleValue + vector.y.doubleValue) : nil)
+								  Z:(self.z ? @(self.z.doubleValue + vector.z.doubleValue) : nil)
 			];
 }
 
 
 - (TFP3DVector*)vectorBySubtracting:(TFP3DVector*)vector {
-	return [TFP3DVector vectorWithX:(self.x ? @(self.x.doubleValue-vector.x.doubleValue) : nil)
-								  Y:(self.y ? @(self.y.doubleValue-vector.y.doubleValue) : nil)
-								  Z:(self.z ? @(self.z.doubleValue-vector.z.doubleValue) : nil)
+	return [TFP3DVector vectorWithX:(self.x ? @(self.x.doubleValue - vector.x.doubleValue) : nil)
+								  Y:(self.y ? @(self.y.doubleValue - vector.y.doubleValue) : nil)
+								  Z:(self.z ? @(self.z.doubleValue - vector.z.doubleValue) : nil)
 			];
 }
 
 
 - (TFP3DVector*)vectorByDividingBy:(TFP3DVector*)vector {
-	return [TFP3DVector vectorWithX:(self.x ? @(self.x.doubleValue/vector.x.doubleValue) : nil)
-								  Y:(self.y ? @(self.y.doubleValue/vector.y.doubleValue) : nil)
-								  Z:(self.z ? @(self.z.doubleValue/vector.z.doubleValue) : nil)
+	return [TFP3DVector vectorWithX:(self.x ? @(self.x.doubleValue / vector.x.doubleValue) : nil)
+								  Y:(self.y ? @(self.y.doubleValue / vector.y.doubleValue) : nil)
+								  Z:(self.z ? @(self.z.doubleValue / vector.z.doubleValue) : nil)
 			];
 }
 
 
 - (TFP3DVector*)vectorByMultiplyingBy:(TFP3DVector*)vector {
-	return [TFP3DVector vectorWithX:(self.x ? @(self.x.doubleValue*vector.x.doubleValue) : nil)
-								  Y:(self.y ? @(self.y.doubleValue*vector.y.doubleValue) : nil)
-								  Z:(self.z ? @(self.z.doubleValue*vector.z.doubleValue) : nil)
+	return [TFP3DVector vectorWithX:(self.x ? @(self.x.doubleValue * vector.x.doubleValue) : nil)
+								  Y:(self.y ? @(self.y.doubleValue * vector.y.doubleValue) : nil)
+								  Z:(self.z ? @(self.z.doubleValue * vector.z.doubleValue) : nil)
 			];
 }
 
