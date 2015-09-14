@@ -109,6 +109,8 @@ extern TFPCuboid TFPCuboidInfinite;
 extern TFPCuboid TFPCuboidM3DMicroPrintVolumeLower;
 extern TFPCuboid TFPCuboidM3DMicroPrintVolumeUpper;
 
+extern double TFPBoundedTemperature(double temperature);
+extern BOOL TFPTemperatureWithinBounds(double temperature);
 
 @interface TFPGCodeProgram (TFPHelpers)
 - (TFPCuboid)measureBoundingBoxWithinBox:(TFPCuboid)limit;
