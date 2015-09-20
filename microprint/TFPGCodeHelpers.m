@@ -435,51 +435,6 @@ TFPCuboid TFPCuboidM3DMicroPrintVolumeUpper = {.x = 12.5, .y = 11, .z = 74,  .xS
 }
 
 
-- (NSString*)curaProfileComment {
-	__block NSString *comment;
-	[self.lines enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(TFPGCode *code, NSUInteger idx, BOOL * _Nonnull stop) {
-		if([code.comment hasPrefix:@"CURA_PROFILE_STRING:"]) {
-			comment = [code.comment substringFromIndex:20];
-			*stop = YES;
-		}
-	}];
-	return comment;
-}
-
-
-- (NSDictionary <NSString*, NSString*> *)curaProfileValues {
-	NSString *base64 = [self curaProfileComment];
-	if(!base64) {
-		return nil;
-	}
-	
-	NSData *deflatedData = [[NSData alloc] initWithBase64EncodedString:base64 options:NSDataBase64DecodingIgnoreUnknownCharacters];
-	NSData *rawData = [deflatedData tf_dataByDecodingDeflate];
-	
-	if(!rawData) {
-		return nil;
-	}
-	
-	NSString *string = [[NSString alloc] initWithData:rawData encoding:NSUTF8StringEncoding];
-	NSArray *pairs = [string componentsSeparatedByString:@"\x08"];
-	NSMutableDictionary *profile = [NSMutableDictionary new];
-	
-	for(NSString *pairString in pairs) {
-		NSUInteger separator = [pairString rangeOfString:@"="].location;
-		if(separator == NSNotFound) {
-			continue;
-		}
-		
-		NSString *key = [pairString substringWithRange:NSMakeRange(0, separator)];
-		NSString *value = [pairString substringWithRange:NSMakeRange(separator+1, pairString.length - separator - 1)];
-		profile[key] = value;
-	}
-	
-	return profile;
-}
-
-
-
 - (NSDictionary <NSNumber*, NSValue*> *)determinePhaseRanges {
 	__block TFPPrintPhase phase = TFPPrintPhaseInvalid;
 	__block NSUInteger startLine = 0;

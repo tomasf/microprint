@@ -1,0 +1,259 @@
+//
+//  TFPSlicerProfile.m
+//  microprint
+//
+//  Created by William Waggoner on 9/13/15.
+//  Copyright © 2015 Tomas Franzén. All rights reserved.
+//
+
+#import "TFPSlicerProfile.h"
+
+typedef NSMutableDictionary<NSString*, NSString*> ProfileDict;
+
+@interface TFPSlicerProfile ()
+@property ProfileDict *values;
+@property enum SlicerProfileType profileType;
+@end
+
+@implementation TFPSlicerProfile
+
+//+ (NSSet *)keyPathsForValuesAffectingLayer_height {
+//    return [NSSet setWithArray:@[@"layer_height"]];
+//}
+//
++ (NSSet *)keyPathsForValuesAffectingWall_thickness {
+    return [NSSet setWithArray:@[@"perimeters", @"external perimeters extrusion width"]];
+}
+
++ (NSSet *)keyPathsForValuesAffectingPrint_speed {
+    return [NSSet setWithArray:@[@"perimeter_speed"]];
+}
+
++ (NSSet *)keyPathsForValuesAffectingSupport {
+    return [NSSet setWithArray:@[@"support_material"]];
+}
+
++ (NSSet *)keyPathsForValuesAffectingPlatform_adhesion {
+    return [NSSet setWithArray:@[@"raft_layers", @"brim_width"]];
+}
+
+
+- (instancetype)init {
+    if(self = [super init]) {
+        self.values = [NSMutableDictionary dictionaryWithCapacity:200];
+        self.profileType = UnknownSlicer;
+    }
+
+    return self;
+}
+
+- (instancetype)initFromLines: (NSArray<TFPGCode *> *)lines {
+    if (self = [self init]) {
+        if([self isCuraProfile: lines]) {
+            self.profileType = CuraProfile;
+            [self loadCuraProfile:lines];
+        } else if ([self isSlic3rProfile: lines]) {
+            self.profileType = Slic3rProfile;
+            [self loadSlic3rProfile:lines];
+        }
+    }
+
+    return self;
+}
+
+// If the key exists in the dictionary, return that; otherwise translate based on profile type
+- (id)valueForUndefinedKey:(NSString *)key {
+    NSString *retVal= [self.values valueForKey:key];
+    if (!retVal) {
+        switch (self.profileType) {
+            case CuraProfile:
+                // We're done ... nothing to see here
+                break;
+            case Slic3rProfile:
+                // Only check for the things we need to translate ...
+                if ([key  isEqual: @"wall_thickness"]) {
+                    NSString *perimeters = self.values[@"perimeters"];
+                    NSString *epew = self.values[@"external perimeters extrusion width"];
+                    if (perimeters && epew) {
+                        double perim = perimeters.doubleValue;
+                        double epewd = epew.doubleValue;
+                        retVal = @(perim * epewd).stringValue;
+                    }
+                } else if ([key  isEqual: @"print_speed"]) {
+                    retVal = self.values[@"perimeter_speed"];
+                } else if ([key  isEqual: @"support"]) {
+                    retVal = [self.values[@"support_material"] isEqualTo:@"1"] ? @"Yes" : @"None";
+                } else if ([key  isEqual: @"platform_adhesion"]) {
+                    NSString *raftLayers = self.values[@"raft_layers"];
+                    NSString *brimWidth = self.values[@"brim_width"];
+                    if (raftLayers && [raftLayers isNotEqualTo:@"0"]) {
+                        retVal = [NSString stringWithFormat:@"RAFT(%@)", raftLayers];
+                    }
+                    if (brimWidth && [brimWidth isNotEqualTo:@"0"]) {
+                        NSString *brimString = [NSString stringWithFormat:@"BRIM(%@)", brimWidth];
+                        if (!retVal) {
+                            retVal = brimString;
+                        } else {
+                            retVal = [retVal stringByAppendingString:[@"/" stringByAppendingString:brimString]];
+                        }
+                    }
+                    if (!retVal) {retVal = @"None";}
+                }
+                break;
+            default:
+                break;
+        }
+    }
+    return retVal;
+}
+
+- (void)setValue:(NSString *)value forUndefinedKey:(NSString *)key {
+    [self willChangeValueForKey:key];
+    [self.values setValue:value forKey:key];
+    [self didChangeValueForKey:key];
+}
+
+//- (NSString *)valueForKey:(NSString *)key {
+//    NSString *retVal = [self.values valueForKey:key];
+//    return retVal ? retVal : [self valueForUndefinedKey:key] ;
+//}
+//
+//- (NSString *)objectForKey:(NSString *)key {
+//    return [self.values objectForKey:key];
+//}
+
+- (void)setObject:(NSString *)object forKeyedSubscript:(NSString *)key {
+    return [self.values setValue:object forKey:key];
+}
+
+- (NSString *)objectForKeyedSubscript:(NSString *)key {
+    return [self.values objectForKey:key];
+}
+
+- (BOOL)isCuraProfile {
+    return self.profileType == CuraProfile;
+}
+
+- (BOOL)isSlic3rProfile {
+    return self.profileType == Slic3rProfile;
+}
+
+- (BOOL)isCuraProfile:(NSArray<TFPGCode *> *)lines {
+    return [self curaProfileComment:lines] != NULL;
+}
+
+- (BOOL)isSlic3rProfile:(NSArray<TFPGCode *> *)lines {
+    return lines.count > 0 && [lines[0].comment hasPrefix:@" generated by Slic3r"];
+}
+
+- (NSString *)curaProfileComment:(NSArray<TFPGCode *> *)lines {
+    __block NSString *comment;
+    [lines enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(TFPGCode *code, NSUInteger idx, BOOL * _Nonnull stop) {
+        if([code.comment hasPrefix:@"CURA_PROFILE_STRING:"]) {
+            comment = [code.comment substringFromIndex:20];
+            *stop = YES;
+        }
+    }];
+    return comment;
+}
+
+- (BOOL)loadCuraProfile:(NSArray<TFPGCode *> *)lines {
+    NSString *base64 = [self curaProfileComment:lines];
+
+    if(base64) {
+
+        NSData *deflatedData = [[NSData alloc] initWithBase64EncodedString:base64 options:NSDataBase64DecodingIgnoreUnknownCharacters];
+        NSData *rawData = [deflatedData tf_dataByDecodingDeflate];
+
+        NSLog(@"Cura profile");
+        if(rawData) {
+            NSArray *pairs = [[[[NSString alloc] initWithData:rawData encoding:NSUTF8StringEncoding] stringByReplacingOccurrencesOfString:@"\x0C" withString:@"\x08"] componentsSeparatedByString:@"\x08"];
+
+            for(NSString *pairString in pairs) {
+                NSUInteger separator = [pairString rangeOfString:@"="].location;
+                if(separator == NSNotFound) {
+                    continue;
+                }
+
+                NSString *key = [pairString substringWithRange:NSMakeRange(0, separator)];
+                NSString *value = [pairString substringWithRange:NSMakeRange(separator+1, pairString.length - separator - 1)];
+                [self.values setValue:value forKey:key];
+            }
+        }
+    }
+    return self.values.count > 0;
+}
+
+- (BOOL)loadSlic3rProfile:(NSArray<TFPGCode *> *)lines {
+    if(lines.count > 0) {
+        TFPGCode *firstLine = lines[0];
+        if(![firstLine hasFields] && firstLine.comment && [firstLine.comment hasPrefix:@" generated by Slic3r"]) {
+            NSError *error = NULL;
+            NSString *profileRegex = @"^\\s+(\\w+[\\w _]*?)\\s*=\\s*(.*)$";
+            NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:profileRegex options:0 error:&error];
+            if(error) {
+                NSLog(@"Regex error: %@:%@", error.localizedFailureReason, error.localizedDescription);
+                abort();
+            }
+
+            for(TFPGCode *line in lines) {
+                if(line.comment){
+                    NSArray<NSTextCheckingResult *> *matches = [regex matchesInString:line.comment options:0 range:NSMakeRange(0, line.comment.length)];
+                    if(matches.count>0) {
+                        NSTextCheckingResult *match = matches[0];
+                        NSRange rk = [match rangeAtIndex:1];
+                        NSRange rv = [match rangeAtIndex:2];
+                        NSString *key = [line.comment substringWithRange:rk];
+                        NSString *val = [line.comment substringWithRange:rv];
+                        [self.values setValue:val forKey:key];
+                    }
+                }
+            }
+        }
+    }
+    return self.values.count > 0;
+}
+
+// Return the formatted value for the attribute key. Keys are translated, when necessary, from the original Cura
+// names to the appropriate slicer names (sometimes with calculations)
+- (NSString *)formattedValueForKey:(NSString *)key {
+    NSNumberFormatter *mmFormatter = [NSNumberFormatter new];
+    mmFormatter.minimumIntegerDigits = 1;
+    mmFormatter.minimumFractionDigits = 2;
+    mmFormatter.maximumFractionDigits = 2;
+    mmFormatter.positiveSuffix = @" mm";
+    mmFormatter.negativeSuffix = @" mm";
+
+    NSNumberFormatter *mmpsFormatter = [mmFormatter copy];
+    mmpsFormatter.positiveSuffix = @" mm/s";
+    mmpsFormatter.negativeSuffix = @" mm/s";
+
+    NSString *value = [self valueForKey:key];
+
+    double doubleValue = value.doubleValue;
+
+    if([key isEqual:@"layer_height"] || [key isEqual:@"wall_thickness"]) {
+        return [mmFormatter stringFromNumber:@(doubleValue)];
+
+    }else if([key isEqual:@"print_speed"]) {
+        return [mmpsFormatter stringFromNumber:@(doubleValue)];
+
+    }else if([key isEqual:@"fill_density"]) {
+        return [NSString stringWithFormat:@"%d%%", value.intValue]; // Handles values like 20 (Cura) or 20% (Slic3r)
+
+    }else if([key isEqual:@"support"]) {
+        if([value isEqual:@"Touching buildplate"]) {
+            return @"Buildplate";
+        } else {
+            return value;
+        }
+        
+    }else if([key isEqual:@"platform_adhesion"]) {
+        return value;
+        
+    }else{
+        return nil;
+    }
+}
+
+@end

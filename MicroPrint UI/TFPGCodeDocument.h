@@ -9,6 +9,7 @@
 #import <Cocoa/Cocoa.h>
 #import "TFPFilament.h"
 #import "TFPGCodeHelpers.h"
+#import "TFPSlicerProfile.h"
 
 @class TFP3DVector, TFPPrinter;
 
@@ -18,7 +19,7 @@
 
 @property (readonly) BOOL hasBoundingBox;
 @property (readonly) TFPCuboid boundingBox;
-@property (readonly) NSDictionary <NSString*, NSString*> *curaProfile;
+@property (readonly) TFPSlicerProfile *slicerProfile;
 
 @property TFPFilamentType filamentType;
 @property NSNumber *temperature;
