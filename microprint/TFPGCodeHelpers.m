@@ -263,6 +263,20 @@ TFPCuboid TFPCuboidM3DMicroPrintVolumeUpper = {.x = 12.5, .y = 11, .z = 74,  .xS
 
 
 
+static const double M3DMicroMinimumHeaterTemperature = 150;
+static const double M3DMicroMaximumHeaterTemperature = 285;
+
+
+BOOL TFPTemperatureWithinBounds(double temperature) {
+	return temperature >= M3DMicroMinimumHeaterTemperature && temperature <= M3DMicroMaximumHeaterTemperature;
+}
+
+double TFPBoundedTemperature(double temperature) {
+	return MIN(MAX(temperature, M3DMicroMinimumHeaterTemperature), M3DMicroMaximumHeaterTemperature);
+}
+
+
+
 @implementation TFPGCodeProgram (TFPHelpers)
 
 

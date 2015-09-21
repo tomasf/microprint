@@ -448,9 +448,16 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 // On communication queue here
 - (TFPGCode*)adjustLineBeforeSending:(TFPGCode*)code {
 	NSInteger G = [code valueForField:'G' fallback:-1];
+	NSInteger M = [code valueForField:'M' fallback:-1];
 	
 	if(G > -1 && [code hasField:'F']) {
 		code = [code codeBySettingField:'F' toValue:[self convertToM3DSpecificFeedRate:code.F]];
+	
+	} else if(M == 104 || M == 109) {
+		if(code.S > 0 && !TFPTemperatureWithinBounds(code.S)) {
+			[self sendNotice:@"Adjusted heater temperature input (%u) to be within valid range", code.S];
+			code = [code codeBySettingField:'S' toValue:TFPBoundedTemperature(code.S)];
+		}
 	}
 	
 	NSInteger lineNumber = -1;
