@@ -195,7 +195,7 @@
 		if(layerIndex == 0 || layerIndex == 1) {
 			double temperature = self.parameters.temperature;
 			if(layerIndex == 0) {
-				temperature += self.parameters.filament.temperatureIncreaseForFirstLayer;
+				temperature = TFPBoundedTemperature(temperature + self.parameters.filament.temperatureIncreaseForFirstLayer);
 			}
 			
 			[self.context sendGCode:[TFPGCode codeForHeaterTemperature:temperature waitUntilDone:YES] responseHandler:^(BOOL success, TFPGCodeResponseDictionary value) {
@@ -254,7 +254,7 @@
 	TFPPrintParameters *parameters = self.parameters;
 	
 	NSArray *part1 = @[[TFPGCode codeForSettingFanSpeed:parameters.filament.fanSpeed],
-					   [TFPGCode codeForHeaterTemperature:parameters.temperature waitUntilDone:NO],
+					   [TFPGCode codeForHeaterTemperature:TFPBoundedTemperature(parameters.temperature) waitUntilDone:NO],
 					   [TFPGCode absoluteModeCode],
 					   [TFPGCode moveWithPosition:[TFP3DVector zVector:5] feedRate:2900],
 					   [TFPGCode moveHomeCode]];

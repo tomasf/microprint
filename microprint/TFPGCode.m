@@ -119,7 +119,7 @@ enum {
 
 
 - (instancetype)initWithString:(NSString*)string {
-	if(!(self = [super init])) return nil;
+	if(!(self = [self initWithComment:nil])) return nil;
 	
 	TFStringScanner *scanner = [TFStringScanner scannerWithString:string];
 	
