@@ -14,14 +14,11 @@
 typedef enum SlicerProfileType {
     CuraProfile,
     Slic3rProfile,
-    UnknownSlicer
 } SlicerProfileType;
 
 @interface TFPSlicerProfile : NSObject
-- (instancetype)init;
 - (instancetype)initFromLines: (NSArray<TFPGCode *> *)lines;
 - (void)setValue:(id)value forUndefinedKey:(NSString *)key;
-//- (id)objectForKey:(id)key;
 - (id)objectForKeyedSubscript:(id)key;
 - (id)valueForUndefinedKey:(NSString *)key;
 - (BOOL)isCuraProfile;

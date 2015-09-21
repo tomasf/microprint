@@ -40,8 +40,6 @@ static NSString *const savedSettingsKey = @"SavedDocumentSettings";
 	
 	NSData *savedSettings = [[NSUserDefaults standardUserDefaults] dataForKey:savedSettingsKey];
 	[self useEncodedSettings:savedSettings];
-    self.slicerProfile = [[TFPSlicerProfile alloc] init];
-	
 	return self;
 }
 
