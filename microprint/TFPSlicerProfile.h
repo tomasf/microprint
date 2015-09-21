@@ -11,18 +11,17 @@
 #import "TFPExtras.h"
 #import "TFPGCodeHelpers.h"
 
-typedef enum SlicerProfileType {
+typedef NS_ENUM (NSInteger, SlicerProfileType) {
     CuraProfile,
     Slic3rProfile,
-} SlicerProfileType;
+};
 
 @interface TFPSlicerProfile : NSObject
+@property SlicerProfileType profileType;
 - (instancetype)initFromLines: (NSArray<TFPGCode *> *)lines;
 - (void)setValue:(id)value forUndefinedKey:(NSString *)key;
 - (id)objectForKeyedSubscript:(id)key;
 - (id)valueForUndefinedKey:(NSString *)key;
-- (BOOL)isCuraProfile;
-- (BOOL)isSlic3rProfile;
 - (BOOL)loadCuraProfile:(NSArray<TFPGCode *> *)lines;
 - (BOOL)loadSlic3rProfile:(NSArray<TFPGCode *> *)lines;
 - (NSString *)formattedValueForKey:(NSString *)key;
