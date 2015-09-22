@@ -214,97 +214,96 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 
 
 
-#pragma mark - Cura Profile
+#pragma mark - Slicer Profile
 
 
 
-- (NSArray*)profileKeysToDisplay {
++ (NSArray*)profileKeysToDisplay {
 	return @[@"layer_height", @"wall_thickness", @"fill_density", @"platform_adhesion", @"support", @"print_speed"];
 }
 
 
-- (NSString*)displayNameForProfileKey:(NSString*)key {
++ (NSString*)displayNameForProfileKey:(NSString*)key {
 	return @{
-			 @"layer_height": @"Layer Height",
-			 @"wall_thickness": @"Wall Thickness",
-			 @"fill_density": @"Fill Density",
-			 
-			 @"platform_adhesion": @"Bed Adhesion",
-			 @"support": @"Support",
-			 
-			 @"print_speed": @"Print Speed",
+			 @"layer_height":       @"Layer Height",
+			 @"wall_thickness":     @"Wall Thickness",
+			 @"fill_density":       @"Fill Density",
+			 @"platform_adhesion":  @"Bed Adhesion",
+			 @"support":            @"Support",
+			 @"print_speed":        @"Print Speed",
 			 }[key];
 }
 
 
-- (NSString*)displayStringForProfileValue:(NSString*)value key:(NSString*)key {
-	NSNumberFormatter *mmFormatter = [NSNumberFormatter new];
-	mmFormatter.minimumIntegerDigits = 1;
-	mmFormatter.minimumFractionDigits = 2;
-	mmFormatter.maximumFractionDigits = 2;
-	mmFormatter.positiveSuffix = @" mm";
-	mmFormatter.negativeSuffix = @" mm";
-	
-	NSNumberFormatter *mmpsFormatter = [mmFormatter copy];
-	mmpsFormatter.positiveSuffix = @" mm/s";
-	mmpsFormatter.negativeSuffix = @" mm/s";
-	
-	double doubleValue = value.doubleValue;
-	
-	if([key isEqual:@"layer_height"] || [key isEqual:@"wall_thickness"]) {
-		return [mmFormatter stringFromNumber:@(doubleValue)];
-		
-	}else if([key isEqual:@"print_speed"]) {
-		return [mmpsFormatter stringFromNumber:@(doubleValue)];
-		
-	}else if([key isEqual:@"fill_density"]) {
-		return [value stringByAppendingString:@"%"];
-	
-	}else if([key isEqual:@"support"]) {
-		if([value isEqual:@"Touching buildplate"]) {
-			return @"Buildplate";
-		} else {
-			return value;
-		}
-	
-	}else if([key isEqual:@"platform_adhesion"]) {
-		return value;
-	
-	}else{
-		return nil;
-	}
-}
-
-
+//- (NSString*)displayStringForProfileValue:(NSString*)value key:(NSString*)key {
+//	NSNumberFormatter *mmFormatter = [NSNumberFormatter new];
+//	mmFormatter.minimumIntegerDigits = 1;
+//	mmFormatter.minimumFractionDigits = 2;
+//	mmFormatter.maximumFractionDigits = 2;
+//	mmFormatter.positiveSuffix = @" mm";
+//	mmFormatter.negativeSuffix = @" mm";
+//	
+//	NSNumberFormatter *mmpsFormatter = [mmFormatter copy];
+//	mmpsFormatter.positiveSuffix = @" mm/s";
+//	mmpsFormatter.negativeSuffix = @" mm/s";
+//	
+//	double doubleValue = value.doubleValue;
+//	
+//	if([key isEqual:@"layer_height"] || [key isEqual:@"wall_thickness"]) {
+//		return [mmFormatter stringFromNumber:@(doubleValue)];
+//		
+//	}else if([key isEqual:@"print_speed"]) {
+//		return [mmpsFormatter stringFromNumber:@(doubleValue)];
+//		
+//	}else if([key isEqual:@"fill_density"]) {
+//		return [value stringByAppendingString:@"%"];
+//	
+//	}else if([key isEqual:@"support"]) {
+//		if([value isEqual:@"Touching buildplate"]) {
+//			return @"Buildplate";
+//		} else {
+//			return value;
+//		}
+//	
+//	}else if([key isEqual:@"platform_adhesion"]) {
+//		return value;
+//	
+//	}else{
+//		return nil;
+//	}
+//}
+//
+//
 + (NSSet *)keyPathsForValuesAffectingProfileKeysString {
-	return @[@"document.curaProfile"].tf_set;
+	return @[@"document.slicerProfile"].tf_set;
 }
 
 
 + (NSSet *)keyPathsForValuesAffectingProfileValuesString {
-	return @[@"document.curaProfile"].tf_set;
+	return [[self profileKeysToDisplay] tf_mapWithBlock:^NSString*(NSString *key) {
+        return [@"document.slicerProfile." stringByAppendingString:key];
+    }].tf_set;
 }
 
 
 - (NSString*)profileKeysString {
-	if(!self.document.curaProfile) {
+	if(!self.document.slicerProfile) {
 		return @"No Profile";
 	}
 	
-	return [[[self profileKeysToDisplay] tf_mapWithBlock:^NSString*(NSString *key) {
-		return [[self displayNameForProfileKey:key] stringByAppendingString:@":"];
+	return [[[self.class profileKeysToDisplay] tf_mapWithBlock:^NSString*(NSString *key) {
+		return [[self.class displayNameForProfileKey:key] stringByAppendingString:@":"];
 	}] componentsJoinedByString:@"\n"];
 }
 
 
 - (NSString*)profileValuesString {
-	if(!self.document.curaProfile) {
+	if(!self.document.slicerProfile) {
 		return @"";
 	}
 	
-	return [[[self profileKeysToDisplay] tf_mapWithBlock:^NSString*(NSString *key) {
-		NSString *value = self.document.curaProfile[key];
-		return [self displayStringForProfileValue:value key:key];
+	return [[[self.class profileKeysToDisplay] tf_mapWithBlock:^NSString*(NSString *key) {
+		return [self.document.slicerProfile formattedValueForKey:key];
 	}] componentsJoinedByString:@"\n"];
 }
 
