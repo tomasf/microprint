@@ -411,12 +411,12 @@ double TFPBoundedTemperature(double temperature) {
 
 
 + (NSIndexSet*)validM3DGValues {
-	return [NSIndexSet tf_indexSetWithIndexes:0, 1, 4, 28, 90, 91, 92,  30, 32, 33, -1];
+	return [NSIndexSet tf_indexSetWithIndexes:0, 1, 4, 21, 28, 90, 91, 92,  30, 32, 33, -1];
 }
 
 
 + (NSIndexSet*)validM3DMValues {
-	return [NSIndexSet tf_indexSetWithIndexes:0, 1, 17, 18, 104, 105, 106, 107, 108, 109, 110, 114, 115, 117, -1];
+	return [NSIndexSet tf_indexSetWithIndexes:0, 1, 17, 18, 82, 104, 105, 106, 107, 108, 109, 110, 114, 115, 117, -1];
 }
 
 
@@ -447,51 +447,6 @@ double TFPBoundedTemperature(double temperature) {
 	
 	return valid;
 }
-
-
-- (NSString*)curaProfileComment {
-	__block NSString *comment;
-	[self.lines enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(TFPGCode *code, NSUInteger idx, BOOL * _Nonnull stop) {
-		if([code.comment hasPrefix:@"CURA_PROFILE_STRING:"]) {
-			comment = [code.comment substringFromIndex:20];
-			*stop = YES;
-		}
-	}];
-	return comment;
-}
-
-
-- (NSDictionary <NSString*, NSString*> *)curaProfileValues {
-	NSString *base64 = [self curaProfileComment];
-	if(!base64) {
-		return nil;
-	}
-	
-	NSData *deflatedData = [[NSData alloc] initWithBase64EncodedString:base64 options:NSDataBase64DecodingIgnoreUnknownCharacters];
-	NSData *rawData = [deflatedData tf_dataByDecodingDeflate];
-	
-	if(!rawData) {
-		return nil;
-	}
-	
-	NSString *string = [[NSString alloc] initWithData:rawData encoding:NSUTF8StringEncoding];
-	NSArray *pairs = [string componentsSeparatedByString:@"\x08"];
-	NSMutableDictionary *profile = [NSMutableDictionary new];
-	
-	for(NSString *pairString in pairs) {
-		NSUInteger separator = [pairString rangeOfString:@"="].location;
-		if(separator == NSNotFound) {
-			continue;
-		}
-		
-		NSString *key = [pairString substringWithRange:NSMakeRange(0, separator)];
-		NSString *value = [pairString substringWithRange:NSMakeRange(separator+1, pairString.length - separator - 1)];
-		profile[key] = value;
-	}
-	
-	return profile;
-}
-
 
 
 - (NSDictionary <NSNumber*, NSValue*> *)determinePhaseRanges {

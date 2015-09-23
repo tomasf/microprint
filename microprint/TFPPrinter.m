@@ -153,12 +153,13 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 @property NSMutableDictionary<NSNumber*, TFPGCode*> *codeRegistry;
 
 @property (unsafe_unretained) TFPPrinterContext *primaryContext;
+@property NSIndexSet *blockGCodes;
+@property NSIndexSet *blockMCodes;
 @end
 
 
 
 @implementation TFPPrinter
-
 
 - (instancetype)initWithConnection:(TFPPrinterConnection*)connection {
 	if(!(self = [super init])) return nil;
@@ -187,6 +188,8 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 	self.pendingConnection = YES;
 	self.hasValidZLevel = YES; // Assume valid Z for now
 	self.firmwareVersionComparedToTestedRange = NSOrderedSame; // Assume OK firmware for now
+    self.blockGCodes = [NSIndexSet indexSet];
+    self.blockMCodes = self.blockGCodes;
 	
 	[self.connection openWithCompletionHandler:^(NSError *error) {
 		self.pendingConnection = NO;
@@ -272,6 +275,12 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 }
 
 
++ (NSArray<NSArray<NSNumber *> *> *)firmwareBlockCodes:(NSString *)firmwareVersion {
+    // Currently there is no variation in firmware but there will probably be at some point
+    return @[/*G codes*/@[@21], /*M codes*/@[@82]];
+}
+
+
 - (void)refreshState {
 	[self sendGCode:[TFPGCode codeWithField:'M' value:117] responseHandler:^(BOOL success, NSDictionary *value) {
 		if(success && value[@"ZV"]) {
@@ -286,7 +295,10 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 	} else {
 		self.firmwareVersionComparedToTestedRange = NSOrderedSame;
 	}
-	
+    NSArray<NSArray<NSNumber *> *> *blockCodes = [self.class firmwareBlockCodes:self.firmwareVersion];
+    self.blockGCodes = [NSIndexSet ww_indexSetFromArray:blockCodes[0]];
+    self.blockMCodes = [NSIndexSet ww_indexSetFromArray:blockCodes[1]];
+
 	[self fetchBedOffsetsWithCompletionHandler:nil];
 	[self fetchBacklashValuesWithCompletionHandler:nil];
 	[self fetchBedBaseLevelsWithCompletionHandler:nil];
@@ -357,13 +369,20 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 
 - (BOOL)shouldSkipCodeEntry:(TFPPrinterGCodeEntry*)entry {
 	NSInteger G = [entry.code valueForField:'G' fallback:-1];
+    NSInteger M = [entry.code valueForField:'M' fallback:-1];
 	if(G == 0 || G == 1) {
 		if([entry.code hasField:'E'] && self.heaterTargetTemperature <= 100) {
 			[self sendNotice:@"Warning: Tried to cold extrude. Skipping to avoid firmware bugs. Code: %@", entry.code];
 			[entry deliverErrorResponseWithErrorCode:TFPPrinterResponseErrorCodeCannotColdExtrude];
 			return YES;
 		}
-	}
+    } else if([self.blockGCodes containsIndex:G] ||
+              [self.blockMCodes containsIndex:M]) {
+        // Skip blocked codes but pretend we did it
+        [self sendNotice:@"Warning: Skipping unsupported request. Code: %@", entry.code];
+        [entry deliverConfirmationResponseWithValues:[NSDictionary new]];
+        return YES;
+    }
 	return NO;
 }
 

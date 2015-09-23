@@ -22,7 +22,7 @@ static NSString *const savedSettingsKey = @"SavedDocumentSettings";
 @interface TFPGCodeDocument ()
 @property (readwrite) TFPCuboid boundingBox;
 @property (readwrite) BOOL hasBoundingBox;
-@property (readwrite) NSDictionary <NSString*, NSString*> *curaProfile;
+@property (readwrite) TFPSlicerProfile *slicerProfile;
 
 @property NSWindowController *loadingWindowController;
 @end
@@ -40,7 +40,6 @@ static NSString *const savedSettingsKey = @"SavedDocumentSettings";
 	
 	NSData *savedSettings = [[NSUserDefaults standardUserDefaults] dataForKey:savedSettingsKey];
 	[self useEncodedSettings:savedSettings];
-	
 	return self;
 }
 
@@ -64,42 +63,41 @@ static NSString *const savedSettingsKey = @"SavedDocumentSettings";
 
 
 - (BOOL)readFromURL:(NSURL *)absoluteURL ofType:(NSString *)typeName error:(NSError **)outError {
-	dispatch_async(dispatch_get_main_queue(), ^{
-		self.loadingWindowController = [[NSStoryboard storyboardWithName:@"Main" bundle:nil] instantiateControllerWithIdentifier:@"LoadingWindowController"];
-		[self.loadingWindowController showWindow:nil];
-	});
-	
-	void(^stopLoading)() = ^{
-		dispatch_async(dispatch_get_main_queue(), ^{
-			[self.loadingWindowController close];
-		});
-	};
-	
-	self.program = [[TFPGCodeProgram alloc] initWithFileURL:absoluteURL error:outError];
-	if(!self.program) {
-		stopLoading();
-		return NO;
-	}
-	
-	if(![self.program validateForM3D:outError]) {
-		stopLoading();
-		return NO;
-	}
-	
-	stopLoading();
-	
-	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
-		TFPCuboid boundingBox = [self.program measureBoundingBox];
-		dispatch_async(dispatch_get_main_queue(), ^{
-			self.boundingBox = boundingBox;
-			self.hasBoundingBox = YES;
-		});
-		
-		NSDictionary *profile = [self.program curaProfileValues];
-		dispatch_async(dispatch_get_main_queue(), ^{
-			self.curaProfile = profile;
-		});
-	});
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self.loadingWindowController = [[NSStoryboard storyboardWithName:@"Main" bundle:nil] instantiateControllerWithIdentifier:@"LoadingWindowController"];
+        [self.loadingWindowController showWindow:nil];
+    });
+
+    void(^stopLoading)() = ^{
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self.loadingWindowController close];
+        });
+    };
+
+    self.program = [[TFPGCodeProgram alloc] initWithFileURL:absoluteURL error:outError];
+    if(!self.program) {
+        stopLoading();
+        return NO;
+    }
+
+    if(![self.program validateForM3D:outError]) {
+        stopLoading();
+        return NO;
+    }
+
+    stopLoading();
+
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+        TFPCuboid boundingBox = [self.program measureBoundingBox];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            self.boundingBox = boundingBox;
+            self.hasBoundingBox = YES;
+        });
+
+            dispatch_async(dispatch_get_main_queue(), ^{
+                self.slicerProfile = [[TFPSlicerProfile alloc] initFromLines:self.program.lines];
+            });
+    });
 	
 	return YES;
 }
