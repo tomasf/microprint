@@ -20,20 +20,17 @@ typedef NSMutableDictionary<NSString*, NSString*> ProfileDict;
 
 @implementation TFPSlicerProfile
 
-+ (NSSet *)keyPathsForValuesAffectingWall_thickness {
-    return @[@"perimeters", @"external perimeters extrusion width"].tf_set;
-}
++ (NSSet *)keyPathsForValuesAffectingValueForKey: (NSString *)key {
+    NSDictionary<NSString*,NSArray*> *keys =@{
+        @"Layer Height":    @[@"layer_height"],
+        @"Wall Thickness":  @[@"wall_thickness", @"perimeters", @"external perimeters extrusion width"],
+        @"Fill Density":    @[@"fill_density"],
+        @"Bed Adhesion":    @[@"platform_adhesion", @"raft_layers", @"brim_width"],
+        @"Support":         @[@"support", @"support_material"],
+        @"Print Speed":     @[@"print_speed", @"perimeter_speed"]
+        };
 
-+ (NSSet *)keyPathsForValuesAffectingPrint_speed {
-    return @[@"perimeter_speed"].tf_set;
-}
-
-+ (NSSet *)keyPathsForValuesAffectingSupport {
-    return @[@"support_material"].tf_set;
-}
-
-+ (NSSet *)keyPathsForValuesAffectingPlatform_adhesion {
-    return @[@"raft_layers", @"brim_width"].tf_set;
+    return keys[key].tf_set;
 }
 
 - (instancetype)initFromLines: (NSArray<TFPGCode *> *)lines {
@@ -57,28 +54,52 @@ typedef NSMutableDictionary<NSString*, NSString*> ProfileDict;
     return self;
 }
 
-// If the key exists in the dictionary, return that; otherwise translate based on profile type
+// Defined in TFPPrintSettingViewController
+// @[@"Layer Height", @"Wall Thickness", @"Fill Density", @"Bed Adhesion", @"Support", @"Print Speed"]
+// The keys used here are defined in TFPPrintSettingViewController. Each proifle type needs to
+// retrun appropriate values based on the supplied profile dictionary. Cura is a one-to-one
+// definition. Others not so much, it depends on the slicer.
+
 - (id)valueForUndefinedKey:(NSString *)key {
     NSString *retVal= [self.values valueForKey:key];
     if (!retVal) {
         switch (self.profileType) {
             case CuraProfile:
-                // We're done ... nothing to see here
+                if ([key isEqualToString:@"Layer Height"]) {
+                    retVal = self.values[@"layer_height"];
+
+                } else if ([key isEqualToString:@"Wall Thickness"]) {
+                    retVal = self.values[@"wall_thickness"];
+
+                } else if ([key isEqualToString:@"Fill Density"]) {
+                    retVal = self.values[@"fill_density"];
+
+                } else if ([key isEqualToString:@"Bed Adhesion"]) {
+                    retVal = self.values[@"platform_adhesion"];
+
+                } else if ([key isEqualToString:@"Support"]) {
+                    retVal = self.values[@"support"];
+
+                } else if ([key isEqualToString:@"Print Speed"]) {
+                    retVal = self.values[@"print_speed"];
+
+                }
+
                 break;
 
             case Slic3rProfile:
                 // Only check for the things we need to translate ...
-                if ([key isEqualToString: @"wall_thickness"]) {
+                if ([key isEqualToString:@"Layer Height"]) {
+                    retVal = self.values[@"layer_height"];
+
+                } else if ([key isEqualToString: @"Wall Thickness"]) {
                     retVal = @(self.values[@"perimeters"].doubleValue *
                                 self.values[@"external perimeters extrusion width"].doubleValue).stringValue;
 
-                } else if ([key isEqualToString: @"print_speed"]) {
-                    retVal = self.values[@"perimeter_speed"];
+                } else if ([key isEqualToString:@"Fill Density"]) {
+                    retVal = self.values[@"fill_density"];
 
-                } else if ([key isEqualToString: @"support"]) {
-                    retVal = [self.values[@"support_material"] isEqualTo:@"1"] ? @"Yes" : @"None";
-
-                } else if ([key isEqualToString: @"platform_adhesion"]) {
+                } else if ([key isEqualToString: @"Bed Adhesion"]) {
                     int raftLayers = self.values[@"raft_layers"].intValue;
                     int brimWidth = self.values[@"brim_width"].intValue;
 
@@ -98,6 +119,13 @@ typedef NSMutableDictionary<NSString*, NSString*> ProfileDict;
                     }
 
                     if (!retVal) {retVal = @"None";}
+
+                } else if ([key isEqualToString:@"Support"]) {
+                    retVal = self.values[@"support_material"];
+
+                } else if ([key isEqualToString: @"Print Speed"]) {
+                    retVal = self.values[@"perimeter_speed"];
+
                 }
                 break;
 
@@ -131,6 +159,8 @@ typedef NSMutableDictionary<NSString*, NSString*> ProfileDict;
     return lines.count > 0 && [lines[0].comment hasPrefix:SLIC3R_COMMENT];
 }
 
+// Look for the Cura profile comment and return the profile string if found. The string is a zipped and base64 encoded
+// representation of the profile key-value pairs.
 - (NSString *)curaProfileComment:(NSArray<TFPGCode *> *)lines {
     __block NSString *comment;
 
@@ -153,7 +183,8 @@ typedef NSMutableDictionary<NSString*, NSString*> ProfileDict;
         NSData *rawData = [deflatedData tf_dataByDecodingDeflate];
 
         if(rawData) {
-            /* The profile is one string in two sections. The sections are separated by \x0C and each profile item is 
+            /* 
+             The profile is one string in two sections. The sections are separated by \x0C and each profile item "key=value" is
              terminated with \x08. We don't care about the sections so we first turn the \x0C into \x08 then split the result
              with \x08 ...
              */
@@ -177,11 +208,17 @@ typedef NSMutableDictionary<NSString*, NSString*> ProfileDict;
     return self.values.count > 0;
 }
 
+/*
+ The Slic3r profile is embedded within the gcode as comment lines. The general format is "; key = value"
+ */
 - (BOOL)loadSlic3rProfile:(NSArray<TFPGCode *> *)lines {
     if(lines.count > 0) {
         TFPGCode *firstLine = lines[0];
 
-        if(![firstLine hasFields] && firstLine.comment && [firstLine.comment hasPrefix:SLIC3R_COMMENT]) {   // Check to be sure it's a Slic3r profile
+        if(![firstLine hasFields] &&
+             firstLine.comment &&
+            [firstLine.comment hasPrefix:SLIC3R_COMMENT]) {   // Check to be sure it's a Slic3r profile
+
             NSError *error = NULL;
             NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:PROFILE_REGEX options:0 error:&error];
 
@@ -197,6 +234,7 @@ typedef NSMutableDictionary<NSString*, NSString*> ProfileDict;
                     if(matches.count>0) {
                         NSString *key = [line.comment substringWithRange:[matches[0] rangeAtIndex:1]];
                         NSString *val = [line.comment substringWithRange:[matches[0] rangeAtIndex:2]];
+
                         [self willChangeValueForKey:key];
                         [self.values setValue:val forKey:key];
                         [self didChangeValueForKey:key];
@@ -209,8 +247,11 @@ typedef NSMutableDictionary<NSString*, NSString*> ProfileDict;
     return self.values.count > 0;
 }
 
-// Return the formatted value for the attribute key. Keys are translated, when necessary, from the original Cura
-// names to the appropriate slicer names (sometimes with calculations)
+// Return the formatted value for the attribute key. Keys are translated from the TFPPrinterSettingsViewController
+// titles to the appropriate slicer names (sometimes with calculations)
+
+// @[@"Layer Height", @"Wall Thickness", @"Fill Density", @"Bed Adhesion", @"Support", @"Print Speed"]
+
 - (NSString *)formattedValueForKey:(NSString *)key {
     NSNumberFormatter *mmFormatter = [NSNumberFormatter new];
     mmFormatter.minimumIntegerDigits = 1;
@@ -223,27 +264,34 @@ typedef NSMutableDictionary<NSString*, NSString*> ProfileDict;
     mmpsFormatter.positiveSuffix = @" mm/s";
     mmpsFormatter.negativeSuffix = @" mm/s";
 
-    NSString *value = [self valueForKey:key];
+    NSString *value = [self valueForUndefinedKey:key];
 
     double doubleValue = value.doubleValue;
 
-    if([key isEqual:@"layer_height"] || [key isEqual:@"wall_thickness"]) {
+    if([key isEqual:@"Layer Height"] || [key isEqual:@"Wall Thickness"]) {
         return [mmFormatter stringFromNumber:@(doubleValue)];
 
-    }else if([key isEqual:@"print_speed"]) {
+    }else if([key isEqual:@"Print Speed"]) {
         return [mmpsFormatter stringFromNumber:@(doubleValue)];
 
-    }else if([key isEqual:@"fill_density"]) {
+    }else if([key isEqual:@"Fill Density"]) {
         return [NSString stringWithFormat:@"%d%%", value.intValue]; // Handles values like 20 (Cura) or 20% (Slic3r)
 
-    }else if([key isEqual:@"support"]) {
+    }else if([key isEqual:@"Support"]) {
         if([value isEqual:@"Touching buildplate"]) {
             return @"Buildplate";
+
+        } else if ([value isEqualToString:@"1"]) {
+            return @"Yes";
+
+        } else if ([value isEqualToString:@"0"]) {
+            return @"None";
+
         } else {
             return value;
         }
         
-    }else if([key isEqual:@"platform_adhesion"]) {
+    }else if([key isEqual:@"Bed Adhesion"]) {
         return value;
         
     }else{

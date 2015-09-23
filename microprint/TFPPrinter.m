@@ -369,13 +369,20 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 
 - (BOOL)shouldSkipCodeEntry:(TFPPrinterGCodeEntry*)entry {
 	NSInteger G = [entry.code valueForField:'G' fallback:-1];
+    NSInteger M = [entry.code valueForField:'M' fallback:-1];
 	if(G == 0 || G == 1) {
 		if([entry.code hasField:'E'] && self.heaterTargetTemperature <= 100) {
 			[self sendNotice:@"Warning: Tried to cold extrude. Skipping to avoid firmware bugs. Code: %@", entry.code];
 			[entry deliverErrorResponseWithErrorCode:TFPPrinterResponseErrorCodeCannotColdExtrude];
 			return YES;
 		}
-	}
+    } else if([self.blockGCodes containsIndex:G] ||
+              [self.blockMCodes containsIndex:M]) {
+        // Skip blocked codes but pretend we did it
+        [self sendNotice:@"Warning: Skipping unsupported request. Code: %@", entry.code];
+        [entry deliverConfirmationResponseWithValues:[NSDictionary new]];
+        return YES;
+    }
 	return NO;
 }
 

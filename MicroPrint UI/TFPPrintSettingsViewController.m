@@ -219,61 +219,10 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 
 
 + (NSArray*)profileKeysToDisplay {
-	return @[@"layer_height", @"wall_thickness", @"fill_density", @"platform_adhesion", @"support", @"print_speed"];
+	return @[@"Layer Height", @"Wall Thickness", @"Fill Density", @"Bed Adhesion", @"Support", @"Print Speed"];
 }
 
 
-+ (NSString*)displayNameForProfileKey:(NSString*)key {
-	return @{
-			 @"layer_height":       @"Layer Height",
-			 @"wall_thickness":     @"Wall Thickness",
-			 @"fill_density":       @"Fill Density",
-			 @"platform_adhesion":  @"Bed Adhesion",
-			 @"support":            @"Support",
-			 @"print_speed":        @"Print Speed",
-			 }[key];
-}
-
-
-//- (NSString*)displayStringForProfileValue:(NSString*)value key:(NSString*)key {
-//	NSNumberFormatter *mmFormatter = [NSNumberFormatter new];
-//	mmFormatter.minimumIntegerDigits = 1;
-//	mmFormatter.minimumFractionDigits = 2;
-//	mmFormatter.maximumFractionDigits = 2;
-//	mmFormatter.positiveSuffix = @" mm";
-//	mmFormatter.negativeSuffix = @" mm";
-//	
-//	NSNumberFormatter *mmpsFormatter = [mmFormatter copy];
-//	mmpsFormatter.positiveSuffix = @" mm/s";
-//	mmpsFormatter.negativeSuffix = @" mm/s";
-//	
-//	double doubleValue = value.doubleValue;
-//	
-//	if([key isEqual:@"layer_height"] || [key isEqual:@"wall_thickness"]) {
-//		return [mmFormatter stringFromNumber:@(doubleValue)];
-//		
-//	}else if([key isEqual:@"print_speed"]) {
-//		return [mmpsFormatter stringFromNumber:@(doubleValue)];
-//		
-//	}else if([key isEqual:@"fill_density"]) {
-//		return [value stringByAppendingString:@"%"];
-//	
-//	}else if([key isEqual:@"support"]) {
-//		if([value isEqual:@"Touching buildplate"]) {
-//			return @"Buildplate";
-//		} else {
-//			return value;
-//		}
-//	
-//	}else if([key isEqual:@"platform_adhesion"]) {
-//		return value;
-//	
-//	}else{
-//		return nil;
-//	}
-//}
-//
-//
 + (NSSet *)keyPathsForValuesAffectingProfileKeysString {
 	return @[@"document.slicerProfile"].tf_set;
 }
@@ -290,9 +239,9 @@ static NSString *const showAdvancedSettingsKey = @"ShowAdvancedPrintSettings";
 	if(!self.document.slicerProfile) {
 		return @"No Profile";
 	}
-	
-	return [[[self.class profileKeysToDisplay] tf_mapWithBlock:^NSString*(NSString *key) {
-		return [[self.class displayNameForProfileKey:key] stringByAppendingString:@":"];
+
+    return [[[self.class profileKeysToDisplay] tf_mapWithBlock:^NSString*(NSString *key) {
+		return [key stringByAppendingString:@":"];
 	}] componentsJoinedByString:@"\n"];
 }
 
