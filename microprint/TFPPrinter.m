@@ -24,6 +24,8 @@
 static const NSUInteger maxLineNumber = 100;
 const NSString *TFPPrinterResponseErrorCodeKey = @"ErrorCode";
 
+static const double maximumFeedRateForZMovement = 2900;
+
 #define ZERO(x) (x < DBL_EPSILON && x > -DBL_EPSILON)
 
 
@@ -44,8 +46,9 @@ typedef NS_OPTIONS(NSUInteger, TFPGCodeOptions) {
 	TFPGCodeOptionNoLevelCompensation = 1<<0,
 	TFPGCodeOptionNoBacklashCompensation = 1<<1,
 	TFPGCodeOptionNoFeedRateConversion = 1<<2,
-	
-	TFPGCodeOptionPrioritized = 1<<3,
+	TFPGCodeOptionNoZFeedRateLimiting = 1<<3,
+
+	TFPGCodeOptionPrioritized = 1<<10,
 };
 
 
@@ -495,6 +498,7 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 
 	BOOL backlashEnabled = !(options & TFPGCodeOptionNoBacklashCompensation);
 	BOOL levelAdjustmentEnabled = !(options & TFPGCodeOptionNoLevelCompensation);
+	BOOL feedRateLimitEnabled = !(options & TFPGCodeOptionNoZFeedRateLimiting);
 	
 	
 	if(G == 0 || G == 1) {
@@ -580,7 +584,13 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 					code = [code codeByAdjustingField:'Y' offset:self.adjustmentY];
 				}
 				
-				if(self.needsFeedRateReset) {
+				double feedrate = [code valueForField:'F' fallback:self.currentFeedRate];
+				
+				if ([code hasField:'Z'] && feedrate > maximumFeedRateForZMovement && feedRateLimitEnabled) {
+					code = [code codeBySettingField:'F' toValue:maximumFeedRateForZMovement];
+					[self sendNotice:@"Limiting feed rate to %.0f", maximumFeedRateForZMovement];
+					
+				} else if(self.needsFeedRateReset) {
 					if(![code hasField:'F']) {
 						code = [code codeBySettingField:'F' toValue:self.currentFeedRate];
 					}
