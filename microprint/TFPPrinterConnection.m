@@ -14,6 +14,10 @@
 #import "ORSSerialPort.h"
 
 
+static const NSTimeInterval firmwareReconnectionDelay = 4;
+
+
+
 @interface TFPPrinterConnection () <ORSSerialPortDelegate>
 @property (readwrite) ORSSerialPort *serialPort;
 @property dispatch_queue_t serialPortQueue;
@@ -157,18 +161,18 @@
 - (void)processIncomingData {
 	// On serial port thread here
 	
-	if(self.pendingConnection && self.incomingData.length == 1 && *(char*)self.incomingData.bytes == '?') {
+	if(self.pendingConnection && [self.incomingData isEqual:[NSData tf_singleByte:'?']]) {
 		TFLog(@"Switching from bootloader to firmware mode...");
 		
 		[self.incomingData setLength:0];
-		[self.serialPort sendData:[NSData dataWithBytes:"Q" length:1]];
+		[self.serialPort sendData:[NSData tf_singleByte:'Q']];
 		return;
 	}
 	
-	NSData *linefeed = [NSData dataWithBytes:"\n" length:1];
+	NSData *linefeed = [NSData tf_singleByte:'\n'];
 	NSUInteger linefeedIndex;
  
-	while((linefeedIndex = [self.incomingData tf_indexOfData:linefeed]) != NSNotFound) {
+	while((linefeedIndex = [self.incomingData tf_offsetOfData:linefeed]) != NSNotFound) {
 		NSData *line = [self.incomingData subdataWithRange:NSMakeRange(0, linefeedIndex)];
 		[self.incomingData replaceBytesInRange:NSMakeRange(0, linefeedIndex+1) withBytes:NULL length:0];
 		
@@ -190,7 +194,6 @@
 
 - (void)serialPortWasOpened:(ORSSerialPort * __nonnull)serialPort {
 	self.removed = NO;
-	
 	[self sendGCode:[TFPGCode codeWithString:@"M115"]];
 }
 
@@ -198,7 +201,7 @@
 - (void)serialPortWasClosed:(ORSSerialPort * __nonnull)serialPort {
 	
 	if(self.pendingConnection) {
-		dispatch_after(dispatch_time(0, 4 * NSEC_PER_SEC), self.serialPortQueue, ^{
+		dispatch_after(dispatch_time(0, firmwareReconnectionDelay * NSEC_PER_SEC), self.serialPortQueue, ^{
 			[self.serialPort open];
 		});
 	}else{
