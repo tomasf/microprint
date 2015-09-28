@@ -328,9 +328,9 @@
 	[self.stopwatch start];
 	[self runPreamble];
 	
-	IOReturn asserted = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoIdleSleep, kIOPMAssertionLevelOn, CFSTR("MicroPrint print job"), &(self->_powerAssertionID));
+	IOReturn asserted = IOPMAssertionCreateWithName(kIOPMAssertionTypePreventUserIdleSystemSleep, kIOPMAssertionLevelOn, CFSTR("MicroPrint print job"), &(self->_powerAssertionID));
 	if (asserted != kIOReturnSuccess) {
-		TFLog(@"Failed to assert kIOPMAssertionTypeNoIdleSleep!");
+		TFLog(@"Failed to assert kIOPMAssertionTypePreventUserIdleSystemSleep!");
 		self.powerAssertionID = kIOPMNullAssertionID;
 	}
 	
