@@ -434,8 +434,8 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 
 - (BOOL)sendLineNumberResetIfNeeded {
 	if(self.lineNumberCounter > maxLineNumber) {
-		[self sendGCode:[TFPGCode codeForSettingLineNumber:0] options:TFPGCodeOptionPrioritized responseHandler:nil responseQueue:nil];
 		self.lineNumberCounter = 1;
+		[self enqueueCode:[TFPGCode codeForSettingLineNumber:0] options:TFPGCodeOptionPrioritized responseHandler:nil responseQueue:nil];
 		return YES;
 	}
 	return NO;
@@ -681,21 +681,27 @@ typedef NS_ENUM(NSUInteger, TFPMovementDirection) {
 }
 
 
+// Called on communication queue!
+- (void)enqueueCode:(TFPGCode*)code options:(TFPGCodeOptions)options responseHandler:(void(^)(BOOL success, NSDictionary<NSString *, NSString*> *value))block responseQueue:(dispatch_queue_t)queue {
+	BOOL prio = !!(options & TFPGCodeOptionPrioritized);
+	TFPPrinterGCodeEntry *entry = [[TFPPrinterGCodeEntry alloc] initWithCode:code options:options responseBlock:block queue:queue];
+	
+	if(prio) {
+		[self.queuedCodeEntries insertObject:entry atIndex:0];
+	}else{
+		[self.queuedCodeEntries addObject:entry];
+	}
+	[self dequeueCode];
+}
+
+
 - (void)sendGCode:(TFPGCode*)code options:(TFPGCodeOptions)options responseHandler:(void(^)(BOOL success, NSDictionary<NSString *, NSString*> *value))block responseQueue:(dispatch_queue_t)queue {
 	if([self sendReplacementsForGCodeIfNeeded:code responseHandler:block responseQueue:queue]) {
 		return;
 	}
 	
-	BOOL prio = options & TFPGCodeOptionPrioritized;
-	TFPPrinterGCodeEntry *entry = [[TFPPrinterGCodeEntry alloc] initWithCode:code options:options responseBlock:block queue:queue];
-	
 	dispatch_async(self.communicationQueue, ^{
-		if(prio) {
-			[self.queuedCodeEntries insertObject:entry atIndex:0];
-		}else{
-			[self.queuedCodeEntries addObject:entry];
-		}
-		[self dequeueCode];
+		[self enqueueCode:code options:options responseHandler:block responseQueue:queue];
 	});
 }
 
