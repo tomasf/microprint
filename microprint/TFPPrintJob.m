@@ -328,9 +328,9 @@
 	[self.stopwatch start];
 	[self runPreamble];
 	
-	IOReturn asserted = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoIdleSleep, kIOPMAssertionLevelOn, CFSTR("MicroPrint print job"), &(self->_powerAssertionID));
+	IOReturn asserted = IOPMAssertionCreateWithName(kIOPMAssertionTypePreventUserIdleSystemSleep, kIOPMAssertionLevelOn, CFSTR("MicroPrint print job"), &(self->_powerAssertionID));
 	if (asserted != kIOReturnSuccess) {
-		TFLog(@"Failed to assert kIOPMAssertionTypeNoIdleSleep!");
+		TFLog(@"Failed to assert kIOPMAssertionTypePreventUserIdleSystemSleep!");
 		self.powerAssertionID = kIOPMNullAssertionID;
 	}
 	
@@ -434,7 +434,7 @@
 			  self.pausePosition.x, self.pausePosition.y, self.pausePosition.z, self.pausePosition.e, self.pauseTemperature, self.pauseFeedRate);
 		
 		[self.context sendGCode:[TFPGCode codeForHeaterTemperature:self.pauseTemperature waitUntilDone:YES] responseHandler:nil];
-		[self.context moveToPosition:[TFP3DVector vectorWithX:@(self.pausePosition.x) Y:@(self.pausePosition.y) Z:@(self.pausePosition.z)] usingFeedRate:3000 completionHandler:nil];
+		[self.context moveToPosition:[TFP3DVector vectorWithX:@(self.pausePosition.x) Y:@(self.pausePosition.y) Z:@(self.pausePosition.z)] usingFeedRate:2900 completionHandler:nil];
 		[self.context sendGCode:[TFPGCode codeForResettingPosition:nil extrusion:@(self.pausePosition.e - 5.5)] responseHandler:nil];
 		[self.context sendGCode:[TFPGCode codeForSettingFeedRate:self.pauseFeedRate] responseHandler:nil];
 		

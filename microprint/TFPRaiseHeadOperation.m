@@ -34,7 +34,7 @@ static const double raiseStep = 0.1;
 	Z += raiseStep;
 	
 	TFP3DVector *position = [TFP3DVector zVector:Z];
-	[self.context moveToPosition:position usingFeedRate:3000 completionHandler:^(BOOL success) {
+	[self.context moveToPosition:position usingFeedRate:2900 completionHandler:^(BOOL success) {
 		[self raiseStepFromZ:Z toLevel:targetHeight completionHandler:completionHandler];
 	}];
 }

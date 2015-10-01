@@ -17,22 +17,18 @@
 @end
 
 
-@interface NSDecimalNumber (TFPExtras)
-@property (readonly) NSDecimalNumber *tf_squareRoot;
-@property (readonly) BOOL tf_nonZero;
-@end
-
-
 @interface NSData (TFPExtras)
++ (instancetype)tf_singleByte:(uint8_t)byte;
+
 @property (readonly) NSData *tf_fletcher16Checksum;
-- (NSUInteger)tf_indexOfData:(NSData*)subdata;
+- (NSUInteger)tf_offsetOfData:(NSData*)subdata;
 - (NSData *)tf_dataByDecodingDeflate;
 @end
 
 
 @interface NSIndexSet (TFPExtras)
 + (NSIndexSet*)tf_indexSetWithIndexes:(NSInteger)firstIndex, ...; // Terminate with negative
-+ (NSIndexSet*)ww_indexSetFromArray:(NSArray<NSNumber *> *)source; // Terminate with negative
++ (NSIndexSet*)ww_indexSetFromArray:(NSArray<NSNumber *> *)source;
 @end
 
 
@@ -53,10 +49,6 @@ extern void TFLog(NSString *format, ...);
 extern uint64_t TFNanosecondTime(void);
 
 extern CGFloat TFPVectorDot(CGVector a, CGVector b);
-
-extern void TFPListenForInputLine(void(^block)(NSString *line));
-extern NSString *TFPGetInputLine();
-extern void TFPEraseLastLine();
 
 extern void TFAssertMainThread();
 extern void TFMainThread(void(^block)());

@@ -56,41 +56,13 @@ NSString *const TFPErrorGCodeLineKey = @"GCodeLine";
 
 
 
-@implementation NSDecimalNumber (TFPExtras)
-
-- (NSDecimalNumber *)tf_squareRoot {
-	if ([self compare:[NSDecimalNumber zero]] == NSOrderedAscending) {
-		return [NSDecimalNumber notANumber];
-	}else if([self isEqual:[NSDecimalNumber zero]]) {
-		return self;
-	}
-	
-	NSDecimalNumber *half = [NSDecimalNumber decimalNumberWithMantissa:5 exponent:-1 isNegative:NO];
-	NSDecimalNumber *guess = [[self decimalNumberByAdding:[NSDecimalNumber one]] decimalNumberByMultiplyingBy:half];
-	
-	@try {
-		const int NUM_ITERATIONS_TO_CONVERGENCE = 6;
-		for (int i = 0; i < NUM_ITERATIONS_TO_CONVERGENCE; i++) {
-			guess = [[[self decimalNumberByDividingBy:guess] decimalNumberByAdding:guess] decimalNumberByMultiplyingBy:half];
-		}
-	} @catch (NSException *exception) {
-		// deliberately ignore exception and assume the last guess is good enough
-	}
-	
-	return guess;
-}
-
-
-- (BOOL)tf_nonZero {
-	return ![self isEqual:[NSDecimalNumber zero]];
-}
-
-
-@end
-
-
-
 @implementation NSData (TFPExtras)
+
+
++ (instancetype)tf_singleByte:(uint8_t)byte {
+	return [NSData dataWithBytes:&byte length:1];
+}
+
 
 - (NSData*)tf_fletcher16Checksum {
 	uint8_t check1 = 0;
@@ -110,7 +82,7 @@ NSString *const TFPErrorGCodeLineKey = @"GCodeLine";
 }
 
 
-- (NSUInteger)tf_indexOfData:(NSData*)subdata {
+- (NSUInteger)tf_offsetOfData:(NSData*)subdata {
 	return [self rangeOfData:subdata options:0 range:NSMakeRange(0, self.length)].location;
 }
 
@@ -211,38 +183,6 @@ uint64_t TFNanosecondTime(void) {
 
 CGFloat TFPVectorDot(CGVector a, CGVector b) {
 	return a.dx * b.dx + a.dy * b.dy;
-}
-
-
-void TFPListenForInputLine(void(^block)(NSString *line)) {
-	dispatch_source_t source = dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, STDIN_FILENO, 0, dispatch_get_main_queue());
-	dispatch_source_set_event_handler(source, ^{
-		NSMutableData *data = [NSMutableData dataWithLength:1024];
-		size_t len = read(STDIN_FILENO, data.mutableBytes, data.length);
-		[data setLength:len];
-		
-		if([data tf_indexOfData:[NSData dataWithBytes:"\n" length:1]] != NSNotFound) {
-			dispatch_source_cancel(source);
-			NSString *string = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-			block(string);
-		}
-	});
-	dispatch_resume(source);
-}
-
-
-NSString *TFPGetInputLine() {
-	char *line = NULL;
-	size_t cap = 1024;
-	ssize_t length = getline(&line, &cap, stdin);
-	NSString *string = [[NSString alloc] initWithBytes:line length:length encoding:NSUTF8StringEncoding];
-	free(line);
-	return string;
-}
-
-
-void TFPEraseLastLine() {
-	printf("\x1b[A\x1b[K");
 }
 
 
