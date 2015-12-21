@@ -14,6 +14,7 @@
 typedef NS_ENUM (NSInteger, SlicerProfileType) {
     CuraProfile,
     Slic3rProfile,
+    S3dProfile,
 };
 
 @interface TFPSlicerProfile : NSObject
