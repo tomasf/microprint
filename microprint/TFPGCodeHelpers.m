@@ -184,9 +184,14 @@
 - (NSInteger)layerIndexFromComment {
 	if ([self.comment hasPrefix:@"LAYER:"]) {
 		return [[self.comment substringFromIndex:6] integerValue];
-	} else {
-		return NSNotFound;
+    } else if ([self.comment hasPrefix:@" layer "]) {
+        NSArray<NSString*> *parts = [self.comment componentsSeparatedByString:@","];
+        if (parts.count > 1) {
+            return [[parts[0] substringFromIndex:7] integerValue];
+        }
 	}
+
+    return NSNotFound;
 }
 
 
